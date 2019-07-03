@@ -6,6 +6,9 @@
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>java-commons</module>
+    </modules>
     <packaging>pom</packaging>
 
     <properties>
