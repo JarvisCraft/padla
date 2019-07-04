@@ -36,7 +36,7 @@ public interface ValueContainer<T> extends Supplier<T> {
     /**
      * Gets a value container being empty.
      *
-     * @param <T> type of value container
+     * @param <T> type of stored value
      * @return empty value container
      */
     @SuppressWarnings("unchecked")
@@ -47,7 +47,7 @@ public interface ValueContainer<T> extends Supplier<T> {
     /**
      * Gets a non-empty value container containing {@code null}.
      *
-     * @param <T> type of value container
+     * @param <T> type of stored value
      * @return value container containing {@code null}
      */
     @SuppressWarnings("unchecked")
@@ -58,7 +58,7 @@ public interface ValueContainer<T> extends Supplier<T> {
     /**
      * Gets a non-empty value container containing the specified value.
      *
-     * @param <T> type of value container
+     * @param <T> type of stored value
      * @return non-empty value container containing the specified value
      */
     @SuppressWarnings("unchecked")
@@ -69,7 +69,7 @@ public interface ValueContainer<T> extends Supplier<T> {
     /**
      * Gets a value container containing the specified value or an empty one if the values is {@code null}.
      *
-     * @param <T> type of value container
+     * @param <T> type of stored value
      * @return non-empty value container containing the specified value
      * if it is not {@code null} and an empty one otherwise
      */
