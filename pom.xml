@@ -103,6 +103,12 @@
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
+            <!-- TEMPORARILY for preconditions: until ez-validate is created -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>18.0</version>
+            </dependency>
             <!-- Testing -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
