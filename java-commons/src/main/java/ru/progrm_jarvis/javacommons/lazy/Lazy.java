@@ -1,8 +1,9 @@
-package ru.progrm_jarvis.javacommons.util;
+package ru.progrm_jarvis.javacommons.lazy;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.util.ReferenceUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.Lock;

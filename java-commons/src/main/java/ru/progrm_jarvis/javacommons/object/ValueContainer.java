@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.progrm_jarvis.javacommons.util;
+package ru.progrm_jarvis.javacommons.object;
 
 import lombok.*;
 import lombok.experimental.Delegate;
