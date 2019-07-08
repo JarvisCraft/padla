@@ -8,6 +8,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>java-commons</module>
+        <module>reflector</module>
     </modules>
     <packaging>pom</packaging>
 
