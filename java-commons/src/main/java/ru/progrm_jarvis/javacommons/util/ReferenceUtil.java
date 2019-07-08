@@ -23,7 +23,7 @@ public class ReferenceUtil {
      * @return {@link WeakReference} stub singleton
      */
     @SuppressWarnings("unchecked")
-    public static <T> WeakReference<T> weakReerenceStub() {
+    public static <T> WeakReference<T> weakReferenceStub() {
         return (WeakReference<T>) WEAK_REFERENCE_STUB;
     }
 }

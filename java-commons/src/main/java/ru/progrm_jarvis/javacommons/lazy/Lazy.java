@@ -190,7 +190,7 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * The value stored wrapped in {@link WeakReference}
          */
-        @NonNull WeakReference<T> value = ReferenceUtil.weakReerenceStub();
+        @NonNull WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
         @Override
         public T get() {
@@ -235,7 +235,7 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * The value stored wrapped in {@link WeakReference}
          */
-        @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReerenceStub();
+        @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
         public DoubleCheckedWeakLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
