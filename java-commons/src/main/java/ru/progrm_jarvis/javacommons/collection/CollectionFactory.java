@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.getInteger;
 
@@ -180,26 +179,25 @@ public class CollectionFactory {
             /* Generated methods */
 
             // `boolean contains(Object)` method
-            //noinspection ConstantConditions
-            addCtMethod(
-                    "public boolean contains(Object element) {"
-                            + (
-                            Arrays.equals(enumValues, enumType.getEnumConstants())
-                                    // simple check type if any enum values is included
-                                    ? "return element instanceof " + enumTypeName + ';'
-                                    // use switch if not all enum values are included
-                                    : "if (element instanceof " + enumTypeName + ")"
-                                            + "switch (((Enum) element).ordinal()) {"
-                                            // enums switch forces usage of short names
-                                            + Arrays.stream(enumValues)
-                                            .map(element -> "case " + element.ordinal() + ": return true;")
-                                            .collect(Collectors.joining())
-                                            + "default: return false;"
-                                            + "}"
-                                            + "return false;"
-                    ) + "}",
-                    clazz
-            );
+            {
+                val src = new StringBuilder("public boolean contains(Object element) {");
+                // simply check type if any enum values is included
+                if (Arrays.equals(enumValues, enumType.getEnumConstants())) src
+                        .append("return element instanceof ").append(enumTypeName).append(';');
+                    // use ordinal switch if not all enum values are included
+                else {
+                    src
+                            .append("if (element instanceof ").append(enumTypeName).append(")")
+                            .append("switch (((Enum) element).ordinal()) {");
+
+                    for (val enumValue : enumValues)
+                        src
+                                .append("case ").append(enumValue.ordinal()).append(": return true;");
+
+                    src.append("default: return false;").append("}").append("return false;");
+                }
+                addCtMethod(src.append('}').toString(), clazz);
+            }
 
             // `boolean isEmpty()` method
             addCtMethod(
