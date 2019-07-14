@@ -51,6 +51,60 @@ class CollectionFactoryTest {
         assertThat(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ)), equalTo(set));
         assertThat(set, equalTo(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
         assertThat(set, equalTo(new ArrayList<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
+        // test to-array conversion
+        assertThat(set.toArray(), anyOf( // although implementation uses natural order, check any array orders
+                equalTo(new Object[]{TestEnum.BAR, TestEnum.BAZ}),
+                equalTo(new Object[]{TestEnum.BAZ, TestEnum.BAR}))
+        );
+        //noinspection SuspiciousToArrayCall empty wrong-typed array
+        assertThrows(ArrayStoreException.class, () -> set.toArray(new String[0]));
+        //noinspection SuspiciousToArrayCall smaller wrong-typed array
+        assertThrows(ArrayStoreException.class, () -> set.toArray(new String[1]));
+        //noinspection SuspiciousToArrayCall same-sized wrong-typed array
+        assertThrows(ArrayStoreException.class, () -> set.toArray(new String[2]));
+        //noinspection SuspiciousToArrayCall bigger wrong-typed array
+        assertThrows(ArrayStoreException.class, () -> set.toArray(new String[3]));
+        { // empty array
+            val array = new TestEnum[0];
+            val newArray = set.toArray(array);
+
+            assertThat(newArray, not(sameInstance(array)));
+            assertThat(set.toArray(), anyOf( // although implementation uses natural order, check any array orders
+                    equalTo(new Object[]{TestEnum.BAR, TestEnum.BAZ}),
+                    equalTo(new Object[]{TestEnum.BAZ, TestEnum.BAR}))
+            );
+        }
+        { // smaller array
+            val array = new TestEnum[1];
+            val newArray = set.toArray(array);
+
+            assertThat(newArray, not(sameInstance(array)));
+            assertThat(newArray, anyOf( // although implementation uses natural order, check any array orders
+                    equalTo(new Object[]{TestEnum.BAR, TestEnum.BAZ}),
+                    equalTo(new Object[]{TestEnum.BAZ, TestEnum.BAR}))
+            );
+        }
+        { // same-sized array
+            val array = new TestEnum[2];
+            val newArray = set.toArray(array);
+
+            assertThat(newArray, sameInstance(array));
+            assertThat(newArray, anyOf( // although implementation uses natural order, check any array orders
+                    equalTo(new Object[]{TestEnum.BAR, TestEnum.BAZ}),
+                    equalTo(new Object[]{TestEnum.BAZ, TestEnum.BAR}))
+            );
+        }
+        { // bigger array
+            val array = new TestEnum[3];
+            val newArray = set.toArray(array);
+
+            assertThat(newArray, sameInstance(array));
+            assertThat(newArray, anyOf( // although implementation uses natural order, check any array orders
+                    equalTo(new Object[]{TestEnum.BAR, TestEnum.BAZ, null}),
+                    equalTo(new Object[]{TestEnum.BAZ, TestEnum.BAR, null}))
+            );
+            assertThat(newArray[2], nullValue());
+        }
     }
 
     public enum TestEnum {
