@@ -5,7 +5,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
 
-@Value
+@Value(staticConstructor = "of")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SimplePair<F, S> implements Pair<F, S> {
 
