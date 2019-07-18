@@ -9,6 +9,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.intellij.lang.annotations.Language;
+import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 
@@ -21,7 +22,7 @@ import java.util.concurrent.ExecutionException;
 import static java.lang.Integer.getInteger;
 
 /**
- * Factory used for creation of special {@link java.util.Collection collections} at runtime.
+ * Factory used for creation of special {@link java.util.Collection collections} at classload.
  */
 @UtilityClass
 public class CollectionFactory {
@@ -51,12 +52,13 @@ public class CollectionFactory {
     /**
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
-    @SuppressWarnings("UnstableApiUsage") @NonNull
-    private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS = CacheBuilder
+    @SuppressWarnings("UnstableApiUsage") @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
+            = CacheBuilder
             .newBuilder()
             .concurrencyLevel(
                     Math.max(4, getInteger(IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
             )
+            .weakValues()
             .build();
 
     /**
@@ -95,8 +97,7 @@ public class CollectionFactory {
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addEmptyConstructor(@NonNull final CtClass targetClass) throws CannotCompileException {
-        val constructor = CtNewConstructor.make(new CtClass[0], new CtClass[0], targetClass);
-        targetClass.addConstructor(constructor);
+        targetClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], targetClass));
     }
 
     /**
@@ -111,8 +112,7 @@ public class CollectionFactory {
             @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
                                suffix = "}") final String src, @NonNull final CtClass targetClass)
             throws CannotCompileException {
-        val field = CtField.make(src, targetClass);
-        targetClass.addField(field);
+        targetClass.addField(CtField.make(src, targetClass));
     }
 
     /**
@@ -127,12 +127,9 @@ public class CollectionFactory {
             @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
                                suffix = "}") final String src, @NonNull final CtClass targetClass)
             throws CannotCompileException {
-        val method = CtNewMethod.make(src, targetClass);
-        targetClass.addMethod(method);
+        targetClass.addMethod(CtNewMethod.make(src, targetClass));
     }
 
-    // TODO GC-capable class-loading
-    // TODO equals
     /**
      * Creates an immutable enum {@link Set set} from the given array of stored enum constants.
      *
@@ -163,7 +160,6 @@ public class CollectionFactory {
         //noinspection unchecked
         return (Set<E>) IMMUTABLE_ENUM_SETS.get(enumValues, () -> {
             //<editor-fold desc="Class generation" defaultstate="collapsed">
-
             val enumType = values.getClass().getComponentType();
             // name of the class of the enum
             val enumTypeName = enumType.getCanonicalName();
@@ -283,8 +279,9 @@ public class CollectionFactory {
             /*
             Generate iterator
              */
+            final CtClass iteratorClazz;
             {
-                val iteratorClazz = clazz.makeNestedClass(CLASS_NAMING_STRATEGY.get(), true);
+                iteratorClazz = clazz.makeNestedClass(CLASS_NAMING_STRATEGY.get(), true);
                 iteratorClazz.setInterfaces(ITERATOR_CT_CLASS_ARRAY.get());
                 addEmptyConstructor(iteratorClazz);
 
@@ -313,10 +310,9 @@ public class CollectionFactory {
                             iteratorClazz
                     );
                 }
-                iteratorClazz.toClass();
             }
 
-            return (Set<Enum<?>>) clazz.toClass().newInstance();
+            return (Set<Enum<?>>) ClassFactory.defineGCClasses(iteratorClazz, clazz)[1].newInstance();
             //</editor-fold>
         });
     }

@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.collection;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,7 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CollectionFactoryTest {
 
@@ -107,6 +109,17 @@ class CollectionFactoryTest {
         }
     }
 
+    @Test
+    void testClassUnloading() {
+        val set = new WeakReference<>(CollectionFactory
+                .createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR)
+        );
+        System.out.println(set.get());
+        while (set.get() != null) System.gc();
+        CollectionFactory
+                .createImmutableEnumSet(TestEnum.BAR, TestEnum.FOO);
+    }
+
     public enum TestEnum {
         FOO, BAR,
         BAZ {
@@ -116,6 +129,7 @@ class CollectionFactoryTest {
             }
         };
 
+        @SuppressWarnings("unused") // added to fill enum with logic
         public int foo() {
             return 1;
         }
