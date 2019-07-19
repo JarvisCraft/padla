@@ -2,18 +2,12 @@ package ru.progrm_jarvis.reflector.invoke;
 
 import lombok.NonNull;
 import lombok.val;
-import lombok.var;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.annotation.DontOverrideEqualsAndHashCode;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import sun.misc.Unsafe;
 
 import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.function.BiFunction;
