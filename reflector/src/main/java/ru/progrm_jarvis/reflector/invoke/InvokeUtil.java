@@ -58,7 +58,7 @@ public class InvokeUtil {
     /**
      * Lookup factory used by this utility
      */
-    private final LookupFactory LOOKUP_FACTORY = LookupFactory.INSTANTIATING_FACTORY.get();
+    private final LookupFactory LOOKUP_FACTORY = LookupFactory.TRUSTED_LOOKUP_FACTORY.get();
 
     /**
      * Method of {@link Runnable} functional method

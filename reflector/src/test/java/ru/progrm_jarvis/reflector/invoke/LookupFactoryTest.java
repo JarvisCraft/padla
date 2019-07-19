@@ -9,11 +9,11 @@ class LookupFactoryTest {
 
     @Test
     void testInstantiatingFactory() {
-        assertThat(LookupFactory.INSTANTIATING_FACTORY.get(), notNullValue());
+        assertThat(LookupFactory.INSTANTIATING_LOOKUP_FACTORY.get(), notNullValue());
     }
 
     @Test
     void testTrustedSingletonFactory() {
-        assertThat(LookupFactory.TRUSTED_SINGLETON_FACTORY.get(), notNullValue());
+        assertThat(LookupFactory.TRUSTED_LOOKUP_FACTORY.get(), notNullValue());
     }
 }
