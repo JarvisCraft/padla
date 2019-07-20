@@ -1,3 +1,36 @@
+# Programming language
 language: java
-jdk:
-  - openjdk8
+
+### Maven basic build ###
+# Build project, installing to local repo (skip testing and javadoc generation (if those exist))
+install:
+  # Give required permissions to used shell scripts
+  - chmod +x ./install-git-dependencies.sh
+  - ./install-git-dependencies.sh
+  # Normal build part
+  - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+jobs:
+  include:
+    # Test project against multiple JDK versions and then deploy
+    - stage: test
+      jdk: openjdk8
+      script: mvn -q verify
+    - stage: test
+      jdk: oraclejdk8
+      script: mvn -q verify
+
+    # 2. Deploy
+    - stage: deploy
+      if: repo = JarvisCraft/padla AND type != pull_request
+      jdk: openjdk8
+      script:
+        # Enable access to bash-scripts
+        - chmod +x ./deploy.sh
+        - chmod +x ./project-version.sh
+        - chmod +x ./.travis/ossrh-deploy.sh
+        - ./attempt-travis-deploy.sh
+
+# Cached directories
+cache:
+  directories:
+    - ~/.m2/repository # Maven repository
