@@ -316,7 +316,7 @@ public class InvokeUtil {
             return (Supplier<T>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME,
                     SUPPLIER_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
-                    OBJECT__METHOD_TYPE, methodHandle, methodType(method.getReturnType())
+                    OBJECT__METHOD_TYPE, methodHandle, OBJECT__METHOD_TYPE.changeReturnType(method.getReturnType())
             ).getTarget().invoke(target);
         } catch (final Throwable throwable) {
             throw new RuntimeException(
