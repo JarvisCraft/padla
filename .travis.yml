@@ -4,9 +4,6 @@ language: java
 ### Maven basic build ###
 # Build project, installing to local repo (skip testing and javadoc generation (if those exist))
 install:
-  # Give required permissions to used shell scripts
-  - chmod +x ./install-git-dependencies.sh
-  - ./install-git-dependencies.sh
   # Normal build part
   - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
