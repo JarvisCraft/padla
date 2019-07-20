@@ -22,7 +22,7 @@ jobs:
       jdk: openjdk8
       script:
         # Enable access to bash-scripts
-        - chmod +x ./deploy.sh
+        - chmod +x ./attempt-travis-deploy.sh
         - chmod +x ./project-version.sh
         - chmod +x ./.travis/ossrh-deploy.sh
         - ./attempt-travis-deploy.sh
