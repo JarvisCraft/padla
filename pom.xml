@@ -41,6 +41,17 @@
         <developerConnection>scm:git:git@github.com:JarvisCraft/padla.git</developerConnection>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <developers>
         <developer>
             <id>progrm-jarvis</id>
