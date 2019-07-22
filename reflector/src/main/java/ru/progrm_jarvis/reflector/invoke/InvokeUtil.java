@@ -52,7 +52,7 @@ public class InvokeUtil {
     /**
      * Name of a system property responsible for {@link #LOOKUPS} concurrency level.
      */
-    @NonNull public final String LOOKUP_CACHE_CONCURRENCY_LVELSYSTEM_PROPERTY_NAME
+    @NonNull public final String LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeUtil.class.getCanonicalName() + ".lookup-cache-concurrency-level";
 
     /**
@@ -97,7 +97,7 @@ public class InvokeUtil {
     @SuppressWarnings("UnstableApiUsage") @NonNull private Cache<Class<?>, Lookup> LOOKUPS
             = CacheBuilder.newBuilder()
             .softValues() // because there is no need to GC lookups which may be expansive to create
-            .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LVELSYSTEM_PROPERTY_NAME, 4)))
+            .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
             .build();
 
     /**
