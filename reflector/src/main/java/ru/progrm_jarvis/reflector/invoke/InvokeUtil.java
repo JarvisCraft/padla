@@ -22,6 +22,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -101,13 +102,27 @@ public class InvokeUtil {
             .build();
 
     /**
+     * Lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
+     */
+    private LookupFactory DELEGATING_LOOKUP_FACTORY = InvokeUtil::lookup;
+
+    /**
+     * Gets the proxy lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
+     *
+     * @return proxy lookup factory
+     */
+    public LookupFactory getDelegatingLookupFactory() {
+        return DELEGATING_LOOKUP_FACTORY;
+    }
+
+    /**
      * Creates a cache {@link Lookup} for the given class.
      *
      * @param clazz class for which to create a lookup
      * @return created cached lookup fir the given class
      */
     @SneakyThrows(ExecutionException.class)
-    public Lookup lookup(@NonNull final Class<?> clazz) {
+    @NotNull public Lookup lookup(@NonNull final Class<?> clazz) {
         return LOOKUPS.get(clazz, () -> LOOKUP_FACTORY.create(clazz));
     }
 
