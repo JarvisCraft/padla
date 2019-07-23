@@ -81,7 +81,7 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
         this.targetClass = targetClass;
         this.methodHandleCreator = methodHandleCreator;
 
-        return null;
+        return this;
     }
 
     @Override
