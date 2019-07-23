@@ -104,7 +104,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @Nullable Supplier<T> valueSupplier;
 
-        public SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
         }
 
@@ -139,23 +139,23 @@ public interface Lazy<T> extends Supplier<T> {
     class DoubleCheckedLazy<T> implements Lazy<T> {
 
         /**
-         * Supplier used for creation of the value
-         */
-        @Nullable volatile Supplier<T> valueSupplier;
-
-        /**
          * Mutex used for synchronizations
          */
         @NonNull final Object mutex;
+
+        /**
+         * Supplier used for creation of the value
+         */
+        @Nullable volatile Supplier<T> valueSupplier;
 
         /**
          * The value stored
          */
         volatile T value;
 
-        public DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
-            this.valueSupplier = valueSupplier;
+        protected DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
             mutex = new Object[0];
+            this.valueSupplier = valueSupplier;
         }
 
         @Override
@@ -190,6 +190,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
+    @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
     class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
@@ -247,7 +248,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
-        public LockedWeakLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected LockedWeakLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
 
             {
