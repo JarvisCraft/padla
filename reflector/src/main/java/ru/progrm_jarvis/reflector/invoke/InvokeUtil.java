@@ -491,4 +491,16 @@ public class InvokeUtil {
             }
         };
     }
+
+    /**
+     * Creates new {@link InvokeFactory invoke factory} using {@link #DELEGATING_LOOKUP_FACTORY}.
+     *
+     * @param <F> type of functional interface implemented
+     * @param <T> type of target value
+     */
+    public <F, T> InvokeFactory<F, T> invokeFactory() {
+        return SimpleInvokeFactory
+                .<F, T>newInstance()
+                .using(DELEGATING_LOOKUP_FACTORY);
+    }
 }
