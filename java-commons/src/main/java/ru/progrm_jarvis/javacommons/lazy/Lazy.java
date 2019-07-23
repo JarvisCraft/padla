@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.lazy;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.util.ReferenceUtil;
 
 import java.lang.ref.WeakReference;
@@ -101,7 +102,11 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Supplier used for creation of the value
          */
-        @NonNull Supplier<T> valueSupplier;
+        @Nullable Supplier<T> valueSupplier;
+
+        public SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
+            this.valueSupplier = valueSupplier;
+        }
 
         /**
          * The value stored
@@ -120,7 +125,7 @@ public interface Lazy<T> extends Supplier<T> {
 
         @Override
         public boolean isInitialized() {
-            return valueSupplier != null;
+            return valueSupplier == null;
         }
     }
 
@@ -134,19 +139,24 @@ public interface Lazy<T> extends Supplier<T> {
     class DoubleCheckedLazy<T> implements Lazy<T> {
 
         /**
-         * Mutex used for synchronizations
-         */
-        @NonNull final Object mutex = new Object[0];
-
-        /**
          * Supplier used for creation of the value
          */
-        @NonNull volatile Supplier<T> valueSupplier;
+        @Nullable volatile Supplier<T> valueSupplier;
+
+        /**
+         * Mutex used for synchronizations
+         */
+        @NonNull final Object mutex;
 
         /**
          * The value stored
          */
         volatile T value;
+
+        public DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
+            this.valueSupplier = valueSupplier;
+            mutex = new Object[0];
+        }
 
         @Override
         public T get() {
@@ -162,10 +172,10 @@ public interface Lazy<T> extends Supplier<T> {
 
         @Override
         public boolean isInitialized() {
-            if (valueSupplier != null) return true;
+            if (valueSupplier == null) return true;
 
             synchronized (mutex) {
-                return valueSupplier != null;
+                return valueSupplier == null;
             }
         }
     }
