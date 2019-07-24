@@ -16,15 +16,15 @@ public interface ThrowingFunction<T, R, X extends Throwable> extends Function<T,
     /**
      * Applies this function to the given argument.
      *
-     * @param parameters the function argument
+     * @param t the function argument
      * @return the function result
      * @throws X if an exception happens
      */
-    R invoke(T parameters) throws X;
+    R invoke(T t) throws X;
 
     @Override
     @SneakyThrows
-    default R apply(final T parameters) {
-        return invoke(parameters);
+    default R apply(final T t) {
+        return invoke(t);
     }
 }
