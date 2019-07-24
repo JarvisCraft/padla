@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.reflector.invoke;
 
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
 
@@ -180,4 +181,17 @@ public interface InvokeFactory<F, T> {
      * @throws Throwable if an exception occurs while creating an implementation of the functional interface
      */
     F create() throws Throwable;
+
+    /**
+     * Creates the implementation of the functional interface not declaring {@code throws}.
+     * This is actually an alias of {@link #create()}.
+     * May actually throw an exception (with the same logic as {@link #create()}).
+     *
+     * @return implemented  functional interface
+     * @throws IllegalStateException if any of the required factory properties has not been set
+     */
+    @SneakyThrows
+    default F createUnsafely() {
+        return create();
+    }
 }
