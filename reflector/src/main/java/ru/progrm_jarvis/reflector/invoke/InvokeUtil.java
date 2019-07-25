@@ -336,7 +336,7 @@ public class InvokeUtil {
 
         final MethodHandle methodHandle;
         try {
-            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            methodHandle = lookup(field.getDeclaringClass()).unreflectGetter(field);
         } catch (final IllegalAccessException e) {
             throw new RuntimeException("Unable to create a MethodHandle for getter of field " + field, e);
         }
@@ -365,7 +365,7 @@ public class InvokeUtil {
 
         final MethodHandle methodHandle;
         try {
-            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
+            methodHandle = lookup(field.getDeclaringClass()).unreflectGetter(field).bindTo(target);
         } catch (final IllegalAccessException e) {
             throw new RuntimeException("Unable to create a MethodHandle for getter of field " + field, e);
         }
@@ -373,7 +373,7 @@ public class InvokeUtil {
         return () -> {
             try {
                 //noinspection unchecked
-                return (V) methodHandle.invoke(target);
+                return (V) methodHandle.invoke();
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
@@ -394,7 +394,7 @@ public class InvokeUtil {
 
         final MethodHandle methodHandle;
         try {
-            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            methodHandle = lookup(field.getDeclaringClass()).unreflectGetter(field);
         } catch (final IllegalAccessException e) {
             throw new RuntimeException("Unable to create a MethodHandle for getter of field " + field, e);
         }
@@ -457,7 +457,7 @@ public class InvokeUtil {
 
         return value -> {
             try {
-                methodHandle.invoke(target, value);
+                methodHandle.invoke(value);
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
