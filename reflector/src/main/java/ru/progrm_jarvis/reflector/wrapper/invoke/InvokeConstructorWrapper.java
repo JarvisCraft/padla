@@ -30,7 +30,7 @@ public class InvokeConstructorWrapper<T> extends AbstractConstructorWrapper<T> {
     /**
      * Weak cache of allocated instance of this constructor wrapper
      */
-    @SuppressWarnings("UnstableApiUsage") private static final Cache<Constructor<?>, InvokeConstructorWrapper<?>> CACHE
+    @SuppressWarnings("UnstableApiUsage") protected static final Cache<Constructor<?>, InvokeConstructorWrapper<?>> CACHE
             = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(Math.max(1, Integer.getInteger(CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
