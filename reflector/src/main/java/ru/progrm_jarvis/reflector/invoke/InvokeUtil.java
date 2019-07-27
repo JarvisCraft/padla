@@ -122,7 +122,8 @@ public class InvokeUtil {
      * @return created cached lookup fir the given class
      */
     @SneakyThrows(ExecutionException.class)
-    @NotNull public Lookup lookup(@NonNull final Class<?> clazz) {
+    @NotNull
+    public Lookup lookup(@NonNull final Class<?> clazz) {
         return LOOKUPS.get(clazz, () -> LOOKUP_FACTORY.create(clazz));
     }
 
@@ -234,8 +235,8 @@ public class InvokeUtil {
      * Creates a {@link Supplier} to invoke the given static method getting its returned value.
      *
      * @param method static method from which to create a {@link Supplier}
-     * @return runnable invoking the given method
      * @param <R> return type of the method
+     * @return runnable invoking the given method
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is not static
      */
@@ -413,8 +414,8 @@ public class InvokeUtil {
      * Creates a {@link Consumer} to set the value of the given static field.
      *
      * @param field static field from which to create a {@link Consumer}
-     * @return consumer setting the value of the field
      * @param <V> type of field value
+     * @return consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is not static
      */
     public <V> Consumer<V> toStaticSetterConsumer(@NonNull final Field field) {
@@ -477,7 +478,17 @@ public class InvokeUtil {
         checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
 
         final MethodHandle methodHandle;
-        try {
+        if (Modifier.isFinal(field.getModifiers())) {
+            val accessible = field.isAccessible();
+            field.setAccessible(true);
+            try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            } finally {
+                field.setAccessible(accessible);
+            }
+        } else try {
             methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
         } catch (final IllegalAccessException e) {
             throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
