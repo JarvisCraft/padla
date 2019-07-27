@@ -419,13 +419,27 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given field is not static
      */
     public <V> Consumer<V> toStaticSetterConsumer(@NonNull final Field field) {
-        checkArgument(Modifier.isStatic(field.getModifiers()), "field should be static");
-
         final MethodHandle methodHandle;
-        try {
-            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
-        } catch (final IllegalAccessException e) {
-            throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+        {
+            val modifiers = field.getModifiers();
+
+            checkArgument(Modifier.isStatic(modifiers), "field should be static");
+
+            if (Modifier.isFinal(modifiers)) {
+                val accessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+                } finally {
+                    field.setAccessible(accessible);
+                }
+            } else try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            }
         }
 
         return value -> {
@@ -447,13 +461,27 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given field is static
      */
     public <V> Consumer<V> toBoundSetterConsumer(@NonNull final Field field, @NonNull final Object target) {
-        checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
-
         final MethodHandle methodHandle;
-        try {
-            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
-        } catch (final IllegalAccessException e) {
-            throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+        {
+            val modifiers = field.getModifiers();
+
+            checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
+
+            if (Modifier.isFinal(modifiers)) {
+                val accessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+                } finally {
+                    field.setAccessible(accessible);
+                }
+            } else try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            }
         }
 
         return value -> {
@@ -475,23 +503,27 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given field is static
      */
     public <T, V> BiConsumer<T, V> toSetterBiConsumer(@NonNull final Field field) {
-        checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
-
         final MethodHandle methodHandle;
-        if (Modifier.isFinal(field.getModifiers())) {
-            val accessible = field.isAccessible();
-            field.setAccessible(true);
-            try {
+        {
+            val modifiers = field.getModifiers();
+
+            checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
+
+            if (Modifier.isFinal(modifiers)) {
+                val accessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+                } finally {
+                    field.setAccessible(accessible);
+                }
+            } else try {
                 methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
             } catch (final IllegalAccessException e) {
                 throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
-            } finally {
-                field.setAccessible(accessible);
             }
-        } else try {
-            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
-        } catch (final IllegalAccessException e) {
-            throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
         }
 
         return (target, value) -> {
