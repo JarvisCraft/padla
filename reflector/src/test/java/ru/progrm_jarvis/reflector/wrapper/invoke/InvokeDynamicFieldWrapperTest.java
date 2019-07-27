@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -21,11 +22,11 @@ class InvokeDynamicFieldWrapperTest {
         val field = InvokeDynamicFieldWrapper.<Areg, Integer>from(Areg.class.getDeclaredField("icq"));
 
         // get
-        assertThat(field.get(instance), equalTo(icq));
+        assertThat(field.get(instance), allOf(equalTo(icq), equalTo(instance.icq)));
         // set
         val newIcq = icq + random.nextInt(1, Integer.MAX_VALUE);
         assertDoesNotThrow(() -> field.set(instance, newIcq));
-        assertThat(field.get(instance), equalTo(newIcq));
+        assertThat(field.get(instance), allOf(equalTo(newIcq), equalTo(instance.icq)));
     }
 
     @Test
@@ -37,11 +38,11 @@ class InvokeDynamicFieldWrapperTest {
         val field = InvokeDynamicFieldWrapper.<Areg, String>from(Areg.class.getDeclaredField("nut"));
 
         // get
-        assertThat(field.get(instance), equalTo(nut));
+        assertThat(field.get(instance), allOf(equalTo(nut), equalTo(instance.nut)));
         // set
         val newNut = nut + random.nextInt();
         assertDoesNotThrow(() -> field.set(instance, newNut));
-        assertThat(field.get(instance), equalTo(newNut));
+        assertThat(field.get(instance), allOf(equalTo(newNut), equalTo(instance.nut)));
     }
 
     @Test
@@ -49,14 +50,15 @@ class InvokeDynamicFieldWrapperTest {
         val random = ThreadLocalRandom.current();
 
         val instance = new Areg(53876, "Oreshishe");
-        val field = InvokeDynamicFieldWrapper.<Areg, Integer>from(Areg.class.getDeclaredField("aregId"));
+        val field = InvokeDynamicFieldWrapper.<Areg, Integer>from(Areg.class.getDeclaredField("id"));
 
         // get
-        assertThat(field.get(instance), equalTo(127));
+        assertThat(field.get(instance), allOf(equalTo(127), equalTo(instance.id)));
         // set
         val newId = random.nextInt(128, Integer.MAX_VALUE);
         assertDoesNotThrow(() -> field.set(instance, newId));
-        assertThat(field.get(instance), equalTo(newId));
+        // value gets cached (?)
+        assertThat(field.get(instance), /*allOf(*/equalTo(newId)/*, equalTo(instance.id))*/);
     }
 
     @Test
@@ -67,18 +69,19 @@ class InvokeDynamicFieldWrapperTest {
         val field = InvokeDynamicFieldWrapper.<Areg, String>from(Areg.class.getDeclaredField("name"));
 
         // get
-        assertThat(field.get(instance), equalTo("Mr Areshek"));
+        assertThat(field.get(instance), allOf(equalTo("Mr Areshek"), equalTo(instance.name)));
         // set
         val newName = "Mr. " + random.nextInt();
         assertDoesNotThrow(() -> field.set(instance, newName));
-        assertThat(field.get(instance), equalTo(newName));
+        // value gets cached (?)
+        assertThat(field.get(instance), /*allOf(*/equalTo(newName)/*, equalTo(instance.name))*/);
     }
 
     @AllArgsConstructor
     private static final class Areg {
         private int icq;
         private String nut;
-        private final int aregId = 127;
+        private final int id = 127;
         private final String name = "Mr Areshek";
     }
 }
