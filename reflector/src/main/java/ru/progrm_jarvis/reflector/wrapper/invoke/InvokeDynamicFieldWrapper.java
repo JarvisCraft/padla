@@ -31,7 +31,7 @@ public class InvokeDynamicFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> 
     @NonNull BiConsumer<T, V> setter;
 
     /**
-     * Weak cache of allocated instance of this static field wrapper
+     * Weak cache of allocated instance of this dynamic field wrapper
      */
     protected static final Cache<Field, InvokeDynamicFieldWrapper<?, ?>> CACHE
             = CacheBuilder.newBuilder()
