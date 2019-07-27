@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.equalTo;
 class InvokeConstructorWrapperTest {
 
     @Test
-    public void testNoArgs() throws NoSuchMethodException {
+    void testInvokePrivateNoArgs() throws NoSuchMethodException {
         assertThat(
                 InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor())
                         .invoke().args, equalTo(0)
@@ -18,7 +18,7 @@ class InvokeConstructorWrapperTest {
     }
 
     @Test
-    public void test1Arg() throws NoSuchMethodException {
+    void testInvokePrivate1Arg() throws NoSuchMethodException {
         assertThat(
                 InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor(String.class))
                         .invoke("Hello world").args, equalTo(1)
@@ -26,7 +26,7 @@ class InvokeConstructorWrapperTest {
     }
 
     @Test
-    public void test2Args() throws NoSuchMethodException {
+    void testInvokePrivate2Args() throws NoSuchMethodException {
         assertThat(
                 InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor(int.class, int.class))
                         .invoke(23, 42).args, equalTo(2)
@@ -34,7 +34,7 @@ class InvokeConstructorWrapperTest {
     }
 
     @Test
-    public void test3Args() throws NoSuchMethodException {
+    void testInvokePrivate3Args() throws NoSuchMethodException {
         assertThat(
                 InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor(int.class, int.class, int.class))
                         .invoke(743, 523, 24).args, equalTo(3)
