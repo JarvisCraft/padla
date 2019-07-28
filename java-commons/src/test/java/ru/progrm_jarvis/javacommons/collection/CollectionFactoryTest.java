@@ -114,7 +114,6 @@ class CollectionFactoryTest {
         val set = new WeakReference<>(CollectionFactory
                 .createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR)
         );
-        System.out.println(set.get());
         while (set.get() != null) System.gc();
         CollectionFactory
                 .createImmutableEnumSet(TestEnum.BAR, TestEnum.FOO);

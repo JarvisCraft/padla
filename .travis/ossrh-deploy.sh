@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 echo 'Decrypting encryption key'
-openssl aes-256-cbc -K ${encrypted_e886223f36f4_key} -iv ${encrypted_e886223f36f4_iv} -in codesigning.asc.enc -out codesigning.asc -d
+openssl aes-256-cbc -K ${ENCRYPTED_CODESIGNING_KEY} -iv ${ENCRYPTED_CODESIGNING_IV} \
+-in .travis/gpg/codesigning.asc.enc -out .travis/gpg/codesigning.asc -d
 echo 'Decrypted encryption key'
 
 echo 'Importing encryption key'

@@ -22,6 +22,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -52,7 +53,7 @@ public class InvokeUtil {
     /**
      * Name of a system property responsible for {@link #LOOKUPS} concurrency level.
      */
-    @NonNull public final String LOOKUP_CACHE_CONCURRENCY_LVELSYSTEM_PROPERTY_NAME
+    @NonNull public final String LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeUtil.class.getCanonicalName() + ".lookup-cache-concurrency-level";
 
     /**
@@ -94,11 +95,25 @@ public class InvokeUtil {
      */
     SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
 
-    @SuppressWarnings("UnstableApiUsage") @NonNull private Cache<Class<?>, Lookup> LOOKUPS
+    @NonNull private Cache<Class<?>, Lookup> LOOKUPS
             = CacheBuilder.newBuilder()
             .softValues() // because there is no need to GC lookups which may be expansive to create
-            .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LVELSYSTEM_PROPERTY_NAME, 4)))
+            .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
             .build();
+
+    /**
+     * Lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
+     */
+    private LookupFactory DELEGATING_LOOKUP_FACTORY = InvokeUtil::lookup;
+
+    /**
+     * Gets the proxy lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
+     *
+     * @return proxy lookup factory
+     */
+    public LookupFactory getDelegatingLookupFactory() {
+        return DELEGATING_LOOKUP_FACTORY;
+    }
 
     /**
      * Creates a cache {@link Lookup} for the given class.
@@ -107,6 +122,7 @@ public class InvokeUtil {
      * @return created cached lookup fir the given class
      */
     @SneakyThrows(ExecutionException.class)
+    @NotNull
     public Lookup lookup(@NonNull final Class<?> clazz) {
         return LOOKUPS.get(clazz, () -> LOOKUP_FACTORY.create(clazz));
     }
@@ -115,92 +131,44 @@ public class InvokeUtil {
      * Converts the given method to a {@link MethodHandle}.
      *
      * @param method method to convert to {@link MethodHandle}
-     * @param lookup lookup to use for conversion
      * @return {@link MethodHandle} created from the given method
      */
-    public MethodHandle toMethodHandle(@NonNull final Method method, @NonNull final Lookup lookup) {
-        final MethodHandle methodHandle;
-        {
-            val accessible = method.isAccessible();
-            method.setAccessible(true);
-            try {
-                methodHandle = lookup.unreflect(method);
-            } catch (final IllegalAccessException e) {
-                throw new RuntimeException("Method " + method + " cannot be accessed", e);
-            } finally {
-                method.setAccessible(accessible);
-            }
-        }
-        return methodHandle;
+    @SneakyThrows(IllegalAccessException.class)
+    public MethodHandle toMethodHandle(@NonNull final Method method) {
+        return lookup(method.getDeclaringClass()).unreflect(method);
     }
 
     /**
      * Converts the given constructor to a {@link MethodHandle}.
      *
      * @param constructor constructor to convert to {@link MethodHandle}
-     * @param lookup lookup to use for conversion
      * @return {@link MethodHandle} created from the given constructor
      */
-    public MethodHandle toMethodHandle(@NonNull final Constructor<?> constructor, @NonNull final Lookup lookup) {
-        final MethodHandle methodHandle;
-        {
-            val accessible = constructor.isAccessible();
-            constructor.setAccessible(true);
-            try {
-                methodHandle = lookup.unreflectConstructor(constructor);
-            } catch (final IllegalAccessException e) {
-                throw new RuntimeException("Constructor " + constructor + " cannot be accessed", e);
-            } finally {
-                constructor.setAccessible(accessible);
-            }
-        }
-        return methodHandle;
+    @SneakyThrows(IllegalAccessException.class)
+    public MethodHandle toMethodHandle(@NonNull final Constructor<?> constructor) {
+        return lookup(constructor.getDeclaringClass()).unreflectConstructor(constructor);
     }
 
     /**
      * Converts the given field to a getter-{@link MethodHandle}.
      *
      * @param field field to convert to getter-{@link MethodHandle}
-     * @param lookup lookup to use for conversion
      * @return getter-{@link MethodHandle} created from the given field
      */
-    public MethodHandle toGetterMethodHandle(@NonNull final Field field, @NonNull final Lookup lookup) {
-        final MethodHandle methodHandle;
-        {
-            val accessible = field.isAccessible();
-            field.setAccessible(true);
-            try {
-                methodHandle = lookup.unreflectGetter(field);
-            } catch (final IllegalAccessException e) {
-                throw new RuntimeException("Method " + field + " cannot be accessed", e);
-            } finally {
-                field.setAccessible(accessible);
-            }
-        }
-        return methodHandle;
+    @SneakyThrows(IllegalAccessException.class)
+    public MethodHandle toGetterMethodHandle(@NonNull final Field field) {
+        return lookup(field.getDeclaringClass()).unreflectGetter(field);
     }
 
     /**
      * Converts the given field to a setter-{@link MethodHandle}.
      *
      * @param field field to convert to setter-{@link MethodHandle}
-     * @param lookup lookup to use for conversion
      * @return setter-{@link MethodHandle} created from the given field
      */
-    public MethodHandle toSetterMethodHandle(@NonNull final Field field, @NonNull final Lookup lookup) {
-        final MethodHandle methodHandle;
-        {
-            val accessible = field.isAccessible();
-            field.setAccessible(true);
-            try {
-                methodHandle = lookup.unreflectSetter(field);
-            } catch (final IllegalAccessException e) {
-                throw new RuntimeException("Method " + field + " cannot be accessed", e);
-            } finally {
-                field.setAccessible(accessible);
-            }
-        }
-        return methodHandle;
+    @SneakyThrows(IllegalAccessException.class)
+    public MethodHandle toSetterMethodHandle(@NonNull final Field field) {
+        return lookup(field.getDeclaringClass()).unreflectSetter(field);
     }
 
     /**
@@ -219,15 +187,15 @@ public class InvokeUtil {
         checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
 
         val lookup = lookup(method.getDeclaringClass());
-        val methodHandle = toMethodHandle(method, lookup);
         try {
+            val methodHandle = lookup.unreflect(method);
             return (Runnable) metafactory(
                     lookup, RUNNABLE_FUNCTIONAL_METHOD_NAME, RUNNABLE__METHOD_TYPE,
                     VOID__METHOD_TYPE, methodHandle, VOID__METHOD_TYPE
             ).getTarget().invokeExact();
         } catch (final Throwable throwable) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + "to Runnable"
+                    "An exception occurred while trying to convert method " + method + " to Runnable"
             );
         }
     }
@@ -249,8 +217,8 @@ public class InvokeUtil {
         checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
         val lookup = lookup(method.getDeclaringClass());
-        val methodHandle = toMethodHandle(method, lookup);
         try {
+            val methodHandle = lookup.unreflect(method);
             return (Runnable) metafactory(
                     lookup, RUNNABLE_FUNCTIONAL_METHOD_NAME,
                     RUNNABLE_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
@@ -258,7 +226,7 @@ public class InvokeUtil {
             ).getTarget().invoke(target);
         } catch (final Throwable throwable) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + "to Runnable"
+                    "An exception occurred while trying to convert method " + method + " to Runnable"
             );
         }
     }
@@ -267,11 +235,12 @@ public class InvokeUtil {
      * Creates a {@link Supplier} to invoke the given static method getting its returned value.
      *
      * @param method static method from which to create a {@link Supplier}
+     * @param <R> return type of the method
      * @return runnable invoking the given method
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is not static
      */
-    public <T> Supplier<T> toStaticSupplier(@NonNull final Method method) {
+    public <R> Supplier<R> toStaticSupplier(@NonNull final Method method) {
         {
             val parameterCount = method.getParameterCount();
             checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
@@ -279,16 +248,16 @@ public class InvokeUtil {
         checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
 
         val lookup = lookup(method.getDeclaringClass());
-        val methodHandle = toMethodHandle(method, lookup);
         try {
-            //noinspection unchecked: generic type o returned object
-            return (Supplier<T>) metafactory(
+            val methodHandle = lookup.unreflect(method);
+            //noinspection unchecked: generic type of returned object
+            return (Supplier<R>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
             ).getTarget().invokeExact();
         } catch (final Throwable throwable) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + "to Supplier"
+                    "An exception occurred while trying to convert method " + method + " to Supplier"
             );
         }
     }
@@ -298,11 +267,12 @@ public class InvokeUtil {
      *
      * @param method non-static method from which to create a {@link Supplier}
      * @param target object on which the method should be invoked
+     * @param <R> return type of the method
      * @return supplier invoking the given method
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is static
      */
-    public <T> Supplier<T> toBoundSupplier(@NonNull final Method method, @NonNull final Object target) {
+    public <R> Supplier<R> toBoundSupplier(@NonNull final Method method, @NonNull final Object target) {
         {
             val parameterCount = method.getParameterCount();
             checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
@@ -310,17 +280,17 @@ public class InvokeUtil {
         checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
         val lookup = lookup(method.getDeclaringClass());
-        val methodHandle = toMethodHandle(method, lookup);
         try {
-            //noinspection unchecked: generic type o returned object
-            return (Supplier<T>) metafactory(
+            val methodHandle = lookup.unreflect(method);
+            //noinspection unchecked: generic type of returned object
+            return (Supplier<R>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME,
                     SUPPLIER_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
                     OBJECT__METHOD_TYPE, methodHandle, OBJECT__METHOD_TYPE.changeReturnType(method.getReturnType())
             ).getTarget().invoke(target);
         } catch (final Throwable throwable) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + "to Supplier"
+                    "An exception occurred while trying to convert method " + method + " to Supplier"
             );
         }
     }
@@ -329,6 +299,7 @@ public class InvokeUtil {
      * Creates a {@link Supplier} to invoke the given constructor.
      *
      * @param constructor constructor from which to create a {@link Supplier}
+     * @param <T> type of object instantiated by the constructor
      * @return supplier invoking the given constructor
      * @throws IllegalArgumentException if the given constructor requires parameters
      */
@@ -339,16 +310,16 @@ public class InvokeUtil {
         }
 
         val lookup = lookup(constructor.getDeclaringClass());
-        val methodHandle = toMethodHandle(constructor, lookup);
         try {
-            //noinspection unchecked: generic type o returned object
+            val methodHandle = lookup.unreflectConstructor(constructor);
+            //noinspection unchecked: generic type of returned object
             return (Supplier<T>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
             ).getTarget().invokeExact();
         } catch (final Throwable throwable) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert constructor " + constructor + "to Supplier"
+                    "An exception occurred while trying to convert constructor " + constructor + " to Supplier"
             );
         }
     }
@@ -357,14 +328,19 @@ public class InvokeUtil {
      * Creates a {@link Supplier} to get the value of the given static field.
      *
      * @param field static field from which to create a {@link Supplier}
+     * @param <V> type of field value
      * @return supplier getting the value of the field
      * @throws IllegalArgumentException if the given field is not static
      */
     public <V> Supplier<V> toStaticGetterSupplier(@NonNull final Field field) {
         checkArgument(Modifier.isStatic(field.getModifiers()), "field should be static");
 
-        val lookup = lookup(field.getDeclaringClass());
-        val methodHandle = toGetterMethodHandle(field, lookup);
+        final MethodHandle methodHandle;
+        try {
+            methodHandle = lookup(field.getDeclaringClass()).unreflectGetter(field);
+        } catch (final IllegalAccessException e) {
+            throw new RuntimeException("Unable to create a MethodHandle for getter of field " + field, e);
+        }
 
         return () -> {
             try {
@@ -381,19 +357,24 @@ public class InvokeUtil {
      *
      * @param field static field from which to create a {@link Supplier}
      * @param target object whose field value should be got
+     * @param <V> type of field value
      * @return supplier getting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
     public <V> Supplier<V> toBoundGetterSupplier(@NonNull final Field field, @NonNull final Object target) {
         checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
 
-        val lookup = lookup(field.getDeclaringClass());
-        val methodHandle = toGetterMethodHandle(field, lookup);
+        final MethodHandle methodHandle;
+        try {
+            methodHandle = lookup(field.getDeclaringClass()).unreflectGetter(field).bindTo(target);
+        } catch (final IllegalAccessException e) {
+            throw new RuntimeException("Unable to create a MethodHandle for getter of field " + field, e);
+        }
 
         return () -> {
             try {
                 //noinspection unchecked
-                return (V) methodHandle.invoke(target);
+                return (V) methodHandle.invoke();
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
@@ -404,14 +385,20 @@ public class InvokeUtil {
      * Creates a {@link Function} to get the value of the given non-static field.
      *
      * @param field static field from which to create a {@link Function}
+     * @param <T> type of target class
+     * @param <V> type of field value
      * @return function getting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
     public <T, V> Function<T, V> toGetterFunction(@NonNull final Field field) {
         checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
 
-        val lookup = lookup(field.getDeclaringClass());
-        val methodHandle = toGetterMethodHandle(field, lookup);
+        final MethodHandle methodHandle;
+        try {
+            methodHandle = lookup(field.getDeclaringClass()).unreflectGetter(field);
+        } catch (final IllegalAccessException e) {
+            throw new RuntimeException("Unable to create a MethodHandle for getter of field " + field, e);
+        }
 
         return target -> {
             try {
@@ -427,14 +414,33 @@ public class InvokeUtil {
      * Creates a {@link Consumer} to set the value of the given static field.
      *
      * @param field static field from which to create a {@link Consumer}
+     * @param <V> type of field value
      * @return consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is not static
      */
     public <V> Consumer<V> toStaticSetterConsumer(@NonNull final Field field) {
-        checkArgument(Modifier.isStatic(field.getModifiers()), "field should be static");
+        final MethodHandle methodHandle;
+        {
+            val modifiers = field.getModifiers();
 
-        val lookup = lookup(field.getDeclaringClass());
-        val methodHandle = toSetterMethodHandle(field, lookup);
+            checkArgument(Modifier.isStatic(modifiers), "field should be static");
+
+            if (Modifier.isFinal(modifiers)) {
+                val accessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+                } finally {
+                    field.setAccessible(accessible);
+                }
+            } else try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            }
+        }
 
         return value -> {
             try {
@@ -450,18 +456,37 @@ public class InvokeUtil {
      *
      * @param field static field from which to create a {@link Consumer}
      * @param target object whose field value should be set
+     * @param <V> type of field value
      * @return consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
     public <V> Consumer<V> toBoundSetterConsumer(@NonNull final Field field, @NonNull final Object target) {
-        checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
+        final MethodHandle methodHandle;
+        {
+            val modifiers = field.getModifiers();
 
-        val lookup = lookup(field.getDeclaringClass());
-        val methodHandle = toSetterMethodHandle(field, lookup);
+            checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
+
+            if (Modifier.isFinal(modifiers)) {
+                val accessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+                } finally {
+                    field.setAccessible(accessible);
+                }
+            } else try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            }
+        }
 
         return value -> {
             try {
-                methodHandle.invoke(target, value);
+                methodHandle.invoke(value);
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
@@ -472,14 +497,34 @@ public class InvokeUtil {
      * Creates a {@link BiConsumer} to set the value of the given non-static field.
      *
      * @param field static field from which to create a {@link BiConsumer}
+     * @param <T> type of target class
+     * @param <V> type of field value
      * @return bi-consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
     public <T, V> BiConsumer<T, V> toSetterBiConsumer(@NonNull final Field field) {
-        checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
+        final MethodHandle methodHandle;
+        {
+            val modifiers = field.getModifiers();
 
-        val lookup = lookup(field.getDeclaringClass());
-        val methodHandle = toSetterMethodHandle(field, lookup);
+            checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
+
+            if (Modifier.isFinal(modifiers)) {
+                val accessible = field.isAccessible();
+                field.setAccessible(true);
+                try {
+                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+                } catch (final IllegalAccessException e) {
+                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+                } finally {
+                    field.setAccessible(accessible);
+                }
+            } else try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            }
+        }
 
         return (target, value) -> {
             try {
@@ -488,5 +533,17 @@ public class InvokeUtil {
                 throw new RuntimeException(throwable);
             }
         };
+    }
+
+    /**
+     * Creates new {@link InvokeFactory invoke factory} using {@link #DELEGATING_LOOKUP_FACTORY}.
+     *
+     * @param <F> type of functional interface implemented
+     * @param <T> type of target value
+     */
+    public <F, T> InvokeFactory<F, T> invokeFactory() {
+        return SimpleInvokeFactory
+                .<F, T>newInstance()
+                .using(DELEGATING_LOOKUP_FACTORY);
     }
 }

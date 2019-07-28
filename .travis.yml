@@ -8,12 +8,9 @@ install:
   - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
-    # Test project against multiple JDK versions and then deploy
+    # 1. Test project against OpenJDK8
     - stage: test
       jdk: openjdk8
-      script: mvn -q verify
-    - stage: test
-      jdk: oraclejdk8
       script: mvn -q verify
 
     # 2. Deploy

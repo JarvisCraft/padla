@@ -17,9 +17,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Testing -->
-        <version.junit>5.5.0</version.junit>
-        <version.junit.platform>1.4.2</version.junit.platform>
-        <version.mockito>2.28.2</version.mockito>
+        <version.junit>5.5.1</version.junit>
+        <version.junit.platform>1.5.1</version.junit.platform>
+        <version.mockito>3.0.0</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -40,6 +40,17 @@
         <connection>scm:git:git://github.com:JarvisCraft/padla.git</connection>
         <developerConnection>scm:git:git@github.com:JarvisCraft/padla.git</developerConnection>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <developers>
         <developer>
@@ -67,7 +78,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -121,14 +132,14 @@
         <dependencies>
             <!-- Self dependencies -->
             <dependency>
-                <groupId>${groupId}</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>java-commons</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>${groupId}</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>reflector</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <!-- Annotations -->
             <dependency>
@@ -149,7 +160,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>18.0</version>
+                <version>28.0-jre</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
