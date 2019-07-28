@@ -15,7 +15,7 @@ jobs:
 
     # 2. Deploy
     - stage: deploy
-      if: repo = JarvisCraft/padla AND type != pull_request
+      if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
       jdk: openjdk8
       script:
         # Enable access to bash-scripts

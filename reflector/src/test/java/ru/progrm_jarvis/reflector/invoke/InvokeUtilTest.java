@@ -21,6 +21,7 @@ import lombok.val;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -127,6 +128,20 @@ class InvokeUtilTest {
         assertThat(instance.privateIntField, equalTo(value));
     }
 
+    @Test
+    void testInvokeFactory() throws Throwable {
+        assertThat(
+                InvokeUtil
+                        .<Function<String, Integer>, StrToInter>invokeFactory()
+                        .implementing(Function.class)
+                        .via(StrToInter.class.getDeclaredMethod("strToInt", String.class))
+                        .boundTo(new StrToInter())
+                        .create()
+                        .apply("127001"),
+                equalTo(127001)
+        );
+    }
+
     @EqualsAndHashCode // to test constructors
     public static class TestClass {
 
@@ -146,6 +161,15 @@ class InvokeUtilTest {
 
         private String nonStaticStringMethod() {
             return "bro";
+        }
+    }
+
+    private static class StrToInter {
+
+        private int strToInt(final String possibleInteger) {
+            if (possibleInteger == null) throw new NullPointerException("string is null");
+
+            return Integer.parseInt(possibleInteger);
         }
     }
 }
