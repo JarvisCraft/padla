@@ -1,15 +1,15 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 class InvokeStaticFieldWrapperTest {
@@ -148,11 +148,11 @@ class InvokeStaticFieldWrapperTest {
         private final String name = "Mr Areshek";
     }
 
-    @NoArgsConstructor(access = AccessLevel.NONE)
-    private static final class StaticAreg {
-        private static int icq;
-        private static String nut;
-        private static final int id = 127;
-        private static final String name = "Mr Areshek";
+    @UtilityClass // static (everything) + final (class) + no constructor
+    private class StaticAreg {
+        private int icq;
+        private String nut;
+        private final int id = 127;
+        private final String name = "Mr Areshek";
     }
 }
