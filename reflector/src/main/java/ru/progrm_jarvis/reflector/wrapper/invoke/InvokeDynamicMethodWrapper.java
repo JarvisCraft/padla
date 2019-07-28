@@ -11,12 +11,21 @@ import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.DynamicMethodWrapper;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+/**
+ * {@link DynamicMethodWrapper} based on {@link java.lang.invoke Invoke API}.
+ *
+ * @param <T> type of the object containing the wrapped method
+ * @param <R> type of the method's return-value
+ */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
 public class InvokeDynamicMethodWrapper<T, R>
@@ -27,9 +36,6 @@ public class InvokeDynamicMethodWrapper<T, R>
      */
     @NonNull protected static final String CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeDynamicMethodWrapper.class.getCanonicalName() + ".cache-concurrency-level";
-
-    @NonNull BiFunction<T, Object[], R> invoker;
-
     /**
      * Weak cache of allocated instance of this constructor wrapper
      */
@@ -39,6 +45,18 @@ public class InvokeDynamicMethodWrapper<T, R>
             .concurrencyLevel(Math.max(1, Integer.getInteger(CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
             .build();
 
+    /**
+     * Bi-function performing the method invocation
+     */
+    @NonNull BiFunction<T, Object[], R> invoker;
+
+    /**
+     * Creates a new dynamic method wrapper.
+     *
+     * @param containingClass class containing the wrapped object
+     * @param wrapped wrapped object
+     * @param invoker bi-function performing the method invocation
+     */
     protected InvokeDynamicMethodWrapper(@NonNull final Class<? extends T> containingClass,
                                          @NonNull final Method wrapped,
                                          @NonNull final BiFunction<T, Object[], R> invoker) {
@@ -51,10 +69,20 @@ public class InvokeDynamicMethodWrapper<T, R>
         return invoker.apply(target, parameters);
     }
 
+    /**
+     * Creates a new cached dynamic method wrapper for the given non-static method.
+     *
+     * @param method method to wrap
+     * @param <T> type of the object containing the method
+     * @param <R> type of the method's return-value
+     * @return cached dynamic method wrapper for the given constructor
+     */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
     public static <T, R> InvokeDynamicMethodWrapper<T, R> from(@NonNull final Method method) {
         return (InvokeDynamicMethodWrapper<T, R>) CACHE.get(method, () -> {
+            checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
+
             switch (method.getParameterCount()) {
                 case 0: {
                     // handle void specifically as it can't be cast to Object
@@ -65,7 +93,7 @@ public class InvokeDynamicMethodWrapper<T, R>
                                 .createUnsafely();
 
                         return new InvokeDynamicMethodWrapper<>(
-                                (Class<T>) method.getDeclaringClass(), method, (target, parameters) -> {
+                                method.getDeclaringClass(), method, (target, parameters) -> {
                             if (parameters.length != 0) throw new IllegalArgumentException(
                                     "This method requires no parameters"
                             );
@@ -97,7 +125,7 @@ public class InvokeDynamicMethodWrapper<T, R>
                                 .createUnsafely();
 
                         return new InvokeDynamicMethodWrapper<>(
-                                (Class<T>) method.getDeclaringClass(), method, (target, parameters) -> {
+                                method.getDeclaringClass(), method, (target, parameters) -> {
                             if (parameters.length != 1) throw new IllegalArgumentException(
                                     "This method requires 1 parameter"
                             );
@@ -113,7 +141,7 @@ public class InvokeDynamicMethodWrapper<T, R>
                             .createUnsafely();
 
                     return new InvokeDynamicMethodWrapper<>(
-                            (Class<T>) method.getDeclaringClass(), method, (target, parameters) -> {
+                            method.getDeclaringClass(), method, (target, parameters) -> {
                         if (parameters.length != 1) throw new IllegalArgumentException(
                                 "This method requires 1 parameter"
                         );
