@@ -95,7 +95,7 @@ public class InvokeUtil {
      */
     SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
 
-    @SuppressWarnings("UnstableApiUsage") @NonNull private Cache<Class<?>, Lookup> LOOKUPS
+    @NonNull private Cache<Class<?>, Lookup> LOOKUPS
             = CacheBuilder.newBuilder()
             .softValues() // because there is no need to GC lookups which may be expansive to create
             .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
