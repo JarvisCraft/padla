@@ -35,7 +35,7 @@ class InvokeDynamicMethodWrapperTest {
 
         final class Petya {
             private boolean called;
-            private void call(int arg1) {
+            private void call(final int arg1) {
                 assertThat(arg1, is(val1));
 
                 called = true;
@@ -61,7 +61,7 @@ class InvokeDynamicMethodWrapperTest {
 
         final class Petya {
             private boolean called;
-            private void call(int arg1, int arg2) {
+            private void call(final int arg1, final int arg2) {
                 assertThat(arg1, is(val1));
                 assertThat(arg2, is(val2));
 
@@ -106,7 +106,7 @@ class InvokeDynamicMethodWrapperTest {
 
         final class Petya {
             private boolean called;
-            private String call(int arg1) {
+            private String call(final int arg1) {
                 assertThat(arg1, is(val1));
 
                 return result;
@@ -132,7 +132,7 @@ class InvokeDynamicMethodWrapperTest {
         }
 
         class Petya {
-            private String call(int arg1, int arg2) {
+            private String call(final int arg1, final int arg2) {
                 assertThat(arg1, is(val1));
                 assertThat(arg2, is(val2));
 
