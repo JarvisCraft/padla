@@ -1,6 +1,8 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
@@ -146,7 +148,7 @@ class InvokeStaticFieldWrapperTest {
         private final String name = "Mr Areshek";
     }
 
-    @AllArgsConstructor
+    @NoArgsConstructor(access = AccessLevel.NONE)
     private static final class StaticAreg {
         private static int icq;
         private static String nut;
