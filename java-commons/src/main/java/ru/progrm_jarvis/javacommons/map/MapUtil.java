@@ -181,8 +181,8 @@ public class MapUtil {
      * Creates new {@link MapFiller} from the map specified initialized with the value specified.
      *
      * @param map map for which to create the filler
-     * @param firstValueKey the key of first value
-     * @param firstValue first value to be put to the map
+     * @param firstKey the key of the first value
+     * @param firstValue the first value to be put to the map
      * @param <K> type of keys
      * @param <V> type of values
      * @return map filler created for the specified map with initial value put
@@ -190,9 +190,9 @@ public class MapUtil {
      * @see MapFiller
      * @see #mapFiller(Map)
      */
-    public <K, V> MapFiller<K, V> mapFiller(@NonNull final Map<K, V> map, K firstValueKey, final V firstValue) {
+    public <K, V> MapFiller<K, V> mapFiller(@NonNull final Map<K, V> map, K firstKey, final V firstValue) {
         return new MapFiller<>(map)
-                .put(firstValueKey, firstValue);
+                .put(firstKey, firstValue);
     }
 
     public <K, V> V getOrDefault(@NonNull final Map<K, V> map, final K key, final Supplier<V> defaultValueSupplier) {
