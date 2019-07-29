@@ -8,8 +8,7 @@ import java.lang.annotation.*;
  */
 @Inherited
 @Documented
-@Retention(RetentionPolicy.CLASS)
-@Target(value = ElementType.TYPE)
+@Target(ElementType.TYPE)
 public @interface DontOverrideEqualsAndHashCode {
 
     /**
