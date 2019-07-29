@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util.map;
+package ru.progrm_jarvis.javacommons.map;
 
 import lombok.val;
 import org.junit.jupiter.api.Test;

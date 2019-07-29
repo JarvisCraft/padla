@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util.random;
+package ru.progrm_jarvis.javacommons.random;
 
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
