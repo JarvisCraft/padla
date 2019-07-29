@@ -72,7 +72,7 @@ public class MapUtil {
      * @param keyValuePairs key-value pairs to put to the map ordered as <i>key1, value1, key2, value2...</i>
      */
     @SuppressWarnings("unchecked")
-    private void fillMapNoChecks(final Map map, final Object... keyValuePairs) {
+    private void fillMapNoChecks(@NonNull final Map map, @NonNull final Object... keyValuePairs) {
         var value = true; // will get reverted for the first value
 
         Object key = null; // requires to be initialized for some reason :)
@@ -91,7 +91,7 @@ public class MapUtil {
      * @return the map passed filled with key-value pairs specified
      */
     @SafeVarargs
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, final Pair<K, V>... entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, @NonNull final Pair<K, V>... entries) {
         for (val entry : entries) map.put(entry.getFirst(), entry.getSecond());
 
         return map;
@@ -107,7 +107,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, final Iterator<Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map,
+                                                 @NonNull final Iterator<? extends Pair<K, V>> entries) {
         while (entries.hasNext()) {
             val entry = entries.next();
             map.put(entry.getFirst(), entry.getSecond());
@@ -126,7 +127,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, final Iterable<Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map,
+                                                 @NonNull final Iterable<? extends Pair<K, V>> entries) {
         return fillMap(map, entries.iterator());
     }
 
@@ -140,7 +142,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, final Stream<Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map,
+                                                 @NonNull final Stream<? extends Pair<K, V>> entries) {
         entries.forEach(entry -> map.put(entry.getFirst(), entry.getSecond()));
 
         return map;
@@ -156,7 +159,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMapOrdered(@NonNull final M map, final Stream<Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMapOrdered(@NonNull final M map,
+                                                        @NonNull final Stream<? extends Pair<K, V>> entries) {
         entries.forEachOrdered(entry -> map.put(entry.getFirst(), entry.getSecond()));
 
         return map;
