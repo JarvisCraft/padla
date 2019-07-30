@@ -9,6 +9,7 @@
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
+        <module>ultimate-messenger</module>
     </modules>
     <packaging>pom</packaging>
 
