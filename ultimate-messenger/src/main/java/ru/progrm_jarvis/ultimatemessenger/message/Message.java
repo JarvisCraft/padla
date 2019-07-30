@@ -20,7 +20,7 @@ public interface Message<R> {
      *
      * @param receiver the one to whom to send the message
      */
-    void send(R receiver);
+    void send(@NonNull R receiver);
 
     /**
      * Send the message to the receivers.
