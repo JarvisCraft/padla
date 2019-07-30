@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.Objects;
 
 /**
- * A wrapper for {@link Iterator<E>} to make it treated as a {@link Collection<E>}.
+ * A wrapper for {@link Iterator} to make it treated as a {@link Collection}.
  * It provides lazy access to its entries so that iteration happens only when needed.
  *
  * @param <E> type of element stored
