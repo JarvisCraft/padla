@@ -6,7 +6,11 @@ import lombok.NonNull;
 import lombok.val;
 
 /**
- * @param <R> type of message receiver
+ * Message which may be sent to receivers and which may be serialized.
+ * <p>
+ * The basic object of UltimateMessenger API.
+ *
+ * @param <R> type of message receivers
  */
 public interface Message<R> {
 
