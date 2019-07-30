@@ -18,7 +18,9 @@ public interface ThrowingBiFunction<T, U, R, X extends Throwable> extends BiFunc
      *
      * @param t the first function argument
      * @param u the second function argument
+     * @return the function result
      * @throws X if an exception happens
+     *
      */
     R invoke(T t, U u) throws X;
 

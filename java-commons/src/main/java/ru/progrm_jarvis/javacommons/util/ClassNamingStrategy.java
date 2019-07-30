@@ -44,6 +44,8 @@ public interface ClassNamingStrategy extends Supplier<String> {
      * This strategy will append numeric IDs to the given base name.
      *
      * @param baseName base name of the generated class names to which the ID should be appended
+     *
+     * @return created paginated class naming strategy
      */
     static PaginatedClassNamingStrategy createPaginated(@NonNull final String baseName) {
         return new PaginatedClassNamingStrategy(baseName);
