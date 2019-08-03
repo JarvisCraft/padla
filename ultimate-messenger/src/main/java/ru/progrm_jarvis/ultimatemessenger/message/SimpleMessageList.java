@@ -35,7 +35,7 @@ public class SimpleMessageList<R> implements MessageList<R> {
      * @implNote the created  message list will use the given list as its internal storage of messages
      * and so any changes to it from outside may also affect this message list
      */
-    public static <R> SimpleMessageList from(@NonNull final List<Message<R>> messages) {
+    public static <R> SimpleMessageList<R> from(@NonNull final List<Message<R>> messages) {
         return new SimpleMessageList<>(messages);
     }
 }
