@@ -22,21 +22,22 @@ class SimplePlaceholdersTest {
 
     @BeforeEach
     void setUp() {
-        placeholders = new SimplePlaceholders<>(new HashMap<>(), '{', '}', ':', '\\');
-        placeholders.add("test", (value, target) -> {
-            switch (value) {
-                case "name": return target.name;
-                case "id": return Integer.toString(target.ordinal());
-                case "dynamic": {
-                    val dynamicValue = ThreadLocalRandom.current().nextInt();
-                    target.dynamicValue.set(dynamicValue);
+        placeholders = SimplePlaceholders.<Target>builder()
+                .formatter("test", (value, target) -> {
+                    switch (value) {
+                        case "name": return target.name;
+                        case "id": return Integer.toString(target.ordinal());
+                        case "dynamic": {
+                            val dynamicValue = ThreadLocalRandom.current().nextInt();
+                            target.dynamicValue.set(dynamicValue);
 
-                    return Integer.toString(dynamicValue);
-                }
-                case "{test:id}": return ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER;
-                default: return UNKNOWN_VALUE_PLACEHOLDER;
-            }
-        });
+                            return Integer.toString(dynamicValue);
+                        }
+                        case "{test:id}": return ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER;
+                        default: return UNKNOWN_VALUE_PLACEHOLDER;
+                    }
+                })
+                .build();
     }
 
     @Test

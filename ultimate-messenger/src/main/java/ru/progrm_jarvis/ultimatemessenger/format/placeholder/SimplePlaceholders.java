@@ -22,8 +22,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class SimplePlaceholders<T> implements Placeholders<T> {
 
-    @NonNull Map<String, StringFormatter<T>> formatters;
-    char prefix, suffix, delimiter, escapeCharacter;
+    @NonNull @Singular Map<String, StringFormatter<T>> formatters;
+    @Builder.Default char prefix = '{', suffix = '}', delimiter = ':', escapeCharacter = '\\';
 
     @Override
     public String format(@NotNull String source, final T target) {
