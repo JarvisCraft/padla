@@ -84,7 +84,6 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                 }
                             }
 
-                            System.out.println("Finding formatter for: " + placeholder);
                             // apply formatter if it is present
                             formatter = formatters.get(placeholder);
 
