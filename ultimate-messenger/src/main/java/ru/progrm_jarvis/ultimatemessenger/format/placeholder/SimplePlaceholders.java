@@ -26,8 +26,43 @@ import static com.google.common.base.Preconditions.checkArgument;
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T> {
 
-    @NonNull @Singular Map<String, StringFormatter<T>> formatters;
-    @Builder.Default char prefix = '{', suffix = '}', delimiter = ':', escapeCharacter = '\\';
+    /**
+     * Formatters used for handling placeholders which accept placeholder value and formatting target
+     */
+    @NonNull @Singular Map<String, StringFormatter<T>> handlers;
+    /**
+     * Prefix of placeholders
+     */
+    @Builder.Default char prefix = '{',
+    /**
+     * Suffix of placeholders
+     */
+    suffix = '}',
+    /**
+     * Delimiter separating placeholders' keys from values
+     */
+    delimiter = ':',
+    /**
+     * Character used for escaping other characters (including itself)
+     */
+    escapeCharacter = '\\',
+    /* ********************************************* Special characters ********************************************* */
+    /**
+     * Tab character ({@code \t})
+     */
+    tabCharacter = 't',
+    /**
+     * Backspace character ({@code \b})
+     */
+    backspaceCharacter = 'b',
+    /**
+     * New line character ({@code \n})
+     */
+    newLineCharacter = 'n',
+    /**
+     * Carriage return character ({@code \r})
+     */
+    carriageReturnCharacter = 'r';
     @Builder.Default @NonNull String unknownPlaceholderReplacement = "???";
 
     @Override
@@ -85,7 +120,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                             }
 
                             // apply formatter if it is present
-                            formatter = formatters.get(placeholder);
+                            formatter = handlers.get(placeholder);
 
                             /*
                              * Finally update the result
@@ -109,6 +144,13 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                 } else if (escaping) { // handle escaping if in escape mode and not inside of placeholder
                     // reset escape state
                     escaping = false;
+
+                    // convert the current character to a special character if needed
+                    if (character == tabCharacter) character = '\t';
+                    else if (character == backspaceCharacter) character = '\b';
+                    else if (character == newLineCharacter) character = '\n';
+                    else if (character == carriageReturnCharacter) character = '\r';
+
                     // update the result with the given text
                     (result == null                                 /* not include current char & escape char */
                             ? result = new StringBuilder(source.substring(0, (lastWriteIndex = index) - 1))
@@ -146,8 +188,9 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                     delimiterIndex, // index of the delimiter contextually
                     escapeCount = 0; // amount of escapes inside the placeholder
             val length = characters.length;
+            char character;
             for (var index = 0; index < length; index++) {
-                val character = characters[index];
+                character = characters[index];
                 if (inPlaceholder) {
                     if (escaping) escaping = false;
                     else {
@@ -205,7 +248,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                     val finalKey = placeholder;
                                     val finalValue = value;
                                     template.append(target -> {
-                                        val formatter = formatters.get(finalKey);
+                                        val formatter = handlers.get(finalKey);
 
                                         return formatter == null
                                                 ? unknownPlaceholderReplacement // replacement for unknown placeholder
@@ -220,6 +263,13 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                 } else if (escaping) {
                     // reset escape state
                     escaping = false;
+
+                    // convert the current character to a special character if needed
+                    if (character == tabCharacter) character = '\t';
+                    else if (character == backspaceCharacter) character = '\b';
+                    else if (character == newLineCharacter) character = '\n';
+                    else if (character == carriageReturnCharacter) character = '\r';
+
                     // update text according to escaping
                     (lastRawText == null
                             ? lastRawText = new StringBuilder(
@@ -250,16 +300,16 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
         );
         checkArgument(!name.isEmpty(), "name should not be empty (%s)");
 
-        formatters.put(name, formatter);
+        handlers.put(name, formatter);
     }
 
     @Override
     public Optional<StringFormatter<T>> get(@NonNull final String name) {
-        return Optional.ofNullable(formatters.get(name));
+        return Optional.ofNullable(handlers.get(name));
     }
 
     @Override
     public Optional<StringFormatter<T>> remove(@NonNull final String name) {
-        return Optional.ofNullable(formatters.remove(name));
+        return Optional.ofNullable(handlers.remove(name));
     }
 }

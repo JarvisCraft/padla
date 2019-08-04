@@ -25,8 +25,8 @@ class SimplePlaceholdersTest {
     @BeforeEach
     void setUp() {
         placeholders = SimplePlaceholders.<Target>builder()
-                .formatter("n", ((value, target) -> "\n"))
-                .formatter("test", (value, target) -> {
+                .handler("*", ((value, target) -> "#"))
+                .handler("test", (value, target) -> {
                     switch (value) {
                         case "name": return target.name;
                         case "id": return Integer.toString(target.ordinal());
@@ -45,7 +45,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithoutRegisteredPlaceholders() {
+    void testFormatWithoutRegisteredPlaceholders() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(placeholders.format("Hello world", target), equalTo("Hello world"));
@@ -72,7 +72,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithSinglePlaceholder() {
+    void testFormatWithSinglePlaceholder() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -95,7 +95,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithMultiplePlaceholders() {
+    void testFormatWithMultiplePlaceholders() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -115,7 +115,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithoutRegisteredPlaceholdersAndEscaping() {
+    void testFormatWithoutRegisteredPlaceholdersAndEscaping() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(placeholders.format("Hello \\\\world", target), equalTo("Hello \\world"));
@@ -124,7 +124,7 @@ class SimplePlaceholdersTest {
             assertThat(placeholders.format("Hello, dear \\\\{.", target), equalTo("Hello, dear \\{."));
             assertThat(placeholders.format("He\\llo, dear {123.", target), equalTo("Hello, dear {123."));
             assertThat(placeholders.format("Hel\\lo, de\\ar \\}\\", target), equalTo("Hello, dear }\\"));
-            assertThat(placeholders.format("Hello, dea\\r }.\\", target), equalTo("Hello, dear }.\\"));
+            assertThat(placeholders.format("Hello, dea\\r }.\\", target), equalTo("Hello, dea\r }.\\"));
             assertThat(placeholders.format("Hell\\o, dear }...", target), equalTo("Hello, dear }..."));
             assertThat(placeholders.format("Hello,\ndear 12}...", target), equalTo("Hello,\ndear 12}..."));
             assertThat(placeholders.format("Hello,\\\\ndear {}", target), equalTo("Hello,\\ndear {}"));
@@ -144,7 +144,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithSinglePlaceholderAndEscaping() {
+    void testFormatWithSinglePlaceholderAndEscaping() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -167,7 +167,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithMultiplePlaceholdersAndEscaping() {
+    void testFormatWithMultiplePlaceholdersAndEscaping() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -187,7 +187,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testWithEscapedPlaceholders() {
+    void testFormatWithEscapedPlaceholders() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -214,24 +214,31 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testFactoryWithSingleCharacterProperty() {
+    void testFactoryWithSingleCharacterPlaceholderName() {
         // test against each value
         for (val target : Target.values()) {
-            assertThat(placeholders.format("Foo{n}Bar", target), equalTo("Foo\nBar")
-            );
-            assertThat(placeholders.format("Foo{n}Bar{n}", target), equalTo("Foo\nBar\n")
-            );
-            assertThat(placeholders.format("{n}Foo{n}Bar", target), equalTo("\nFoo\nBar")
-            );
-            assertThat(placeholders.format("{n}Foo{n}Bar{n}", target), equalTo("\nFoo\nBar\n")
-            );
-            assertThat(placeholders.format("{n}{n}Foo{n}{n}Bar{n}{n}", target), equalTo("\n\nFoo\n\nBar\n\n")
-            );
+            assertThat(placeholders.format("Foo{*}Bar", target), equalTo("Foo#Bar"));
+            assertThat(placeholders.format("Foo{*}Bar{*}", target), equalTo("Foo#Bar#"));
+            assertThat(placeholders.format("{*}Foo{*}Bar", target), equalTo("#Foo#Bar"));
+            assertThat(placeholders.format("{*}Foo{*}Bar{*}", target), equalTo("#Foo#Bar#"));
+            assertThat(placeholders.format("{*}{*}Foo{*}{*}Bar{*}{*}", target), equalTo("##Foo##Bar##"));
         }
     }
 
     @Test
-    void testTextModelFactoryWithoutRegisteredPlaceholders() {
+    void testFactoryWithEscapedChars() {
+        // test against each value
+        for (val target : Target.values()) {
+            assertThat(placeholders.format("Foo\\nBar", target), equalTo("Foo\nBar"));
+            assertThat(placeholders.format("Foo\\nBar\\n", target), equalTo("Foo\nBar\n"));
+            assertThat(placeholders.format("\\nFoo\\nBar", target), equalTo("\nFoo\nBar"));
+            assertThat(placeholders.format("\\nFoo\\nBar\\n", target), equalTo("\nFoo\nBar\n"));
+            assertThat(placeholders.format("\\n\\nFoo\\n\\nBar\\n\\n", target), equalTo("\n\nFoo\n\nBar\n\n"));
+        }
+    }
+
+    @Test
+    void testParseFactoryWithoutRegisteredPlaceholders() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -300,7 +307,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithSinglePlaceholder() {
+    void testParseFactoryWithSinglePlaceholder() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -323,7 +330,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithMultiplePlaceholders() {
+    void testParseFactoryWithMultiplePlaceholders() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -344,7 +351,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithoutRegisteredPlaceholdersAndEscaping() {
+    void testParseFactoryWithoutRegisteredPlaceholdersAndEscaping() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -372,7 +379,7 @@ class SimplePlaceholdersTest {
             );
             assertThat(
                     placeholders.parse(modelFactory, "Hello, dea\\r }.\\").getText(target),
-                    equalTo("Hello, dear }.\\")
+                    equalTo("Hello, dea\r }.\\")
             );
             assertThat(
                     placeholders.parse(modelFactory, "Hell\\o, dear }...").getText(target),
@@ -431,7 +438,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithSinglePlaceholderAndEscaping() {
+    void testParseFactoryWithSinglePlaceholderAndEscaping() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -454,7 +461,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithMultiplePlaceholdersAndEscaping() {
+    void testParseFactoryWithMultiplePlaceholdersAndEscaping() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -475,7 +482,7 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithEscapedPlaceholders() {
+    void testParseFactoryWithEscapedPlaceholders() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
@@ -504,27 +511,54 @@ class SimplePlaceholdersTest {
     }
 
     @Test
-    void testTextModelFactoryWithSingleCharacterProperty() {
+    void testParseFactoryWithSingleCharacterPlaceholderName() {
         // test against each value
         for (val target : Target.values()) {
             assertThat(
-                    placeholders.parse(modelFactory, "Foo{n}Bar").getText(target),
+                    placeholders.parse(modelFactory, "Foo{*}Bar").getText(target),
+                    equalTo("Foo#Bar")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "Foo{*}Bar{*}").getText(target),
+                    equalTo("Foo#Bar#")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "{*}Foo{*}Bar").getText(target),
+                    equalTo("#Foo#Bar")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "{*}Foo{*}Bar{*}").getText(target),
+                    equalTo("#Foo#Bar#")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "{*}{*}Foo{*}{*}Bar{*}{*}").getText(target),
+                    equalTo("##Foo##Bar##")
+            );
+        }
+    }
+
+    @Test
+    void testParseFactoryWithEscapedChars() {
+        // test against each value
+        for (val target : Target.values()) {
+            assertThat(
+                    placeholders.parse(modelFactory, "Foo\\nBar").getText(target),
                     equalTo("Foo\nBar")
             );
             assertThat(
-                    placeholders.parse(modelFactory, "Foo{n}Bar{n}").getText(target),
+                    placeholders.parse(modelFactory, "Foo\\nBar\\n").getText(target),
                     equalTo("Foo\nBar\n")
             );
             assertThat(
-                    placeholders.parse(modelFactory, "{n}Foo{n}Bar").getText(target),
+                    placeholders.parse(modelFactory, "\\nFoo\\nBar").getText(target),
                     equalTo("\nFoo\nBar")
             );
             assertThat(
-                    placeholders.parse(modelFactory, "{n}Foo{n}Bar{n}").getText(target),
+                    placeholders.parse(modelFactory, "\\nFoo\\nBar\\n").getText(target),
                     equalTo("\nFoo\nBar\n")
             );
             assertThat(
-                    placeholders.parse(modelFactory, "{n}{n}Foo{n}{n}Bar{n}{n}").getText(target),
+                    placeholders.parse(modelFactory, "\\n\\nFoo\\n\\nBar\\n\\n").getText(target),
                     equalTo("\n\nFoo\n\nBar\n\n")
             );
         }
