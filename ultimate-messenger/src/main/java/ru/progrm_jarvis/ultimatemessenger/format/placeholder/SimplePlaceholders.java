@@ -63,7 +63,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                 if (singleChar == delimiter) break format; // "PrefDelSuf"
 
                                 value = "";
-                                placeholder = Character.toString(delimiter);
+                                placeholder = Character.toString(singleChar);
                             } else { // handle "PrefPlaceholderSuf"
                                 placeholder = source.substring(placeholderStartIndex + 1, index);
                                 if (escapeCount > 0) {
@@ -163,7 +163,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                     if (singleChar == delimiter) break format; // "PrefDelSuf"
 
                                     value = "";
-                                    placeholder = Character.toString(delimiter);
+                                    placeholder = Character.toString(singleChar);
                                 } else {
                                     placeholder = text.substring(placeholderStartIndex + 1, index);
                                     if (escapeCount > 0) {

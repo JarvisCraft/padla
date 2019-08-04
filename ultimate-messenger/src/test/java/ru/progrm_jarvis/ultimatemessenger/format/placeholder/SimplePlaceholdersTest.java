@@ -25,6 +25,7 @@ class SimplePlaceholdersTest {
     @BeforeEach
     void setUp() {
         placeholders = SimplePlaceholders.<Target>builder()
+                .formatter("n", ((value, target) -> "\n"))
                 .formatter("test", (value, target) -> {
                     switch (value) {
                         case "name": return target.name;
@@ -214,6 +215,18 @@ class SimplePlaceholdersTest {
     }
 
     @Test
+    void testFactoryWithSingleCharacterProperty() {
+        // test against each value
+        for (val target : Target.values()) {
+            assertThat(placeholders.format("Foo{n}Bar", target), equalTo("Foo\nBar"));
+            assertThat(placeholders.format("Foo{n}Bar{n}", target),equalTo("Foo\nBar\n"));
+            assertThat(placeholders.format("{n}Foo{n}Bar", target), equalTo("\nFoo\nBar"));
+            assertThat(placeholders.format("{n}Foo{n}Bar{n}", target), equalTo("\nFoo\nBar\n"));
+            assertThat(placeholders.format("{n}{n}Foo{n}{n}Bar{n}{n}", target), equalTo("\n\nFoo\n\nBar\n\n"));
+        }
+    }
+
+    @Test
     void testTextModelFactoryWithoutRegisteredPlaceholders() {
         // test against each value
         for (val target : Target.values()) {
@@ -378,6 +391,33 @@ class SimplePlaceholdersTest {
             assertThat(
                     placeholders.parse(modelFactory, "Raw value in non-raw value: {test:\\{test:ordinal\\}}").getText(target),
                     equalTo("Raw value in non-raw value: " + UNKNOWN_VALUE_PLACEHOLDER)
+            );
+        }
+    }
+
+    @Test
+    void testTextModelFactoryWithSingleCharacterProperty() {
+        // test against each value
+        for (val target : Target.values()) {
+            assertThat(
+                    placeholders.parse(modelFactory, "Foo{n}Bar").getText(target),
+                    equalTo("Foo\nBar")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "Foo{n}Bar{n}").getText(target),
+                    equalTo("Foo\nBar\n")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "{n}Foo{n}Bar").getText(target),
+                    equalTo("\nFoo\nBar")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "{n}Foo{n}Bar{n}").getText(target),
+                    equalTo("\nFoo\nBar\n")
+            );
+            assertThat(
+                    placeholders.parse(modelFactory, "{n}{n}Foo{n}{n}Bar{n}{n}").getText(target),
+                    equalTo("\n\nFoo\n\nBar\n\n")
             );
         }
     }
