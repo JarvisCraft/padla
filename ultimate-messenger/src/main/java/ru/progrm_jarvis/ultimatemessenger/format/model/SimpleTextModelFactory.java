@@ -60,12 +60,12 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
 
         @Override
         public TextModel<T> create() {
-            return DelegatingNestingTextModel.fromCopyOf(elements);
+            return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.fromCopyOf(elements);
         }
 
         @Override
         public TextModel<T> createAndRelease() {
-            return DelegatingNestingTextModel.from(elements);
+            return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.from(elements);
         }
     }
 }
