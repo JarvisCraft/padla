@@ -19,6 +19,11 @@
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>java-commons</artifactId>
         </dependency>
+        <!-- reflector -->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>reflector</artifactId>
+        </dependency>
         <!-- Basic dependencies -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
