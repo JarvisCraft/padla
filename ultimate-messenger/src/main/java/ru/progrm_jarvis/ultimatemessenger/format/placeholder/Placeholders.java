@@ -2,6 +2,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.placeholder;
 
 import lombok.NonNull;
 import ru.progrm_jarvis.ultimatemessenger.format.StringFormatter;
+import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelParser;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
  *
  * @param <T> type of the object according to which the string should be formatted
  */
-public interface Placeholders<T> extends Placeholder<T> {
+public interface Placeholders<T> extends StringFormatter<T>, TextModelParser<T> {
 
     /**
      * Adds a new formatter to be used for placeholder replacement by the given name.
