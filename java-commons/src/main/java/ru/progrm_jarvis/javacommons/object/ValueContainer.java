@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 /**
  * A value which may be present (which includes {@code null}) or not-present.
  * <p>
- * This differs from {@link java.util.Optional<T>} as presence of a {@code null} value
+ * This differs from {@link java.util.Optional} as presence of a {@code null} value
  * does not make this value container empty.
  *
  * @param <T> type of stored value
@@ -58,6 +58,7 @@ public interface ValueContainer<T> extends Supplier<T> {
     /**
      * Gets a non-empty value container containing the specified value.
      *
+     * @param value nullable value stored in the container
      * @param <T> type of stored value
      * @return non-empty value container containing the specified value
      */
@@ -69,6 +70,7 @@ public interface ValueContainer<T> extends Supplier<T> {
     /**
      * Gets a value container containing the specified value or an empty one if the values is {@code null}.
      *
+     * @param value value stored in the container
      * @param <T> type of stored value
      * @return non-empty value container containing the specified value
      * if it is not {@code null} and an empty one otherwise
