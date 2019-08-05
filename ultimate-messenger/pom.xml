@@ -29,6 +29,10 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+        </dependency>
         <!-- Annotations -->
         <dependency>
             <groupId>org.projectlombok</groupId>
