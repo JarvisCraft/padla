@@ -1,5 +1,6 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,6 +13,7 @@ public interface TextModel<T> {
 
     @NotNull String getText(@NotNull T target);
 
+    @Contract(pure = true)
     default boolean isDynamic() {
         return true;
     }
