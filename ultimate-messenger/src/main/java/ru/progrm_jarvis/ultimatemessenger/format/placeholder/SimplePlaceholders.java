@@ -62,7 +62,11 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     /**
      * Carriage return character ({@code \r})
      */
-    carriageReturnCharacter = 'r';
+    carriageReturnCharacter = 'r',
+    /**
+     * Form feed character ({@code \f})
+     */
+    formFeedCharacter = 'f';
     @Builder.Default @NonNull String unknownPlaceholderReplacement = "???";
 
     @Override
@@ -150,6 +154,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                     else if (character == backspaceCharacter) character = '\b';
                     else if (character == newLineCharacter) character = '\n';
                     else if (character == carriageReturnCharacter) character = '\r';
+                    else if (character == formFeedCharacter) character = '\f';
 
                     // update the result with the given text
                     (result == null                                 /* not include current char & escape char */
