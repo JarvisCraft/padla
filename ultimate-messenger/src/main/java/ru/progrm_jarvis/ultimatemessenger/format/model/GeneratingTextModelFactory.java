@@ -110,7 +110,6 @@ public class GeneratingTextModelFactory<T> implements TextModelFactory<T> {
                 val constructorSignature = new CtClass[dynamicElementCount];
                 Arrays.fill(constructorSignature, textModelCtClass);
                 try {
-                    clazz.addConstructor(CtNewConstructor.defaultConstructor(clazz));
                     clazz.addConstructor(CtNewConstructor.skeleton(constructorSignature, null, clazz));
                 } catch (final CannotCompileException e) {
                     throw new IllegalStateException("Could not add constructor to generated TextModel");
@@ -127,22 +126,6 @@ public class GeneratingTextModelFactory<T> implements TextModelFactory<T> {
                     }
                 }
             }
-            /*
-            { // Constructor
-                val src = new StringBuilder("public ").append(clazz.getName()).append('(');
-                for (var i = 0; i < dynamicModels.length; i++) {
-                    src.append('p').append(i);
-                    if (i != 0) src.append(',');
-                }
-                src.append('{')
-                Arrays.fill(constructorSignature, textModelCtClass);
-                try {
-                    clazz.addConstructor(CtNewConstructor.skeleton(constructorSignature, new CtClass[0], clazz));
-                } catch (final CannotCompileException e) {
-                    throw new IllegalStateException("Could not add constructor to generated TextModel");
-                }
-            }
-            */
 
             { // Method (#getText(T))
                 final StringBuilder src = new StringBuilder(
