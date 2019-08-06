@@ -8,13 +8,13 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-class GeneratingTextModelFactoryTest {
+class JavassistGeneratingTextModelFactoryTest {
 
     private static TextModelFactory<User> factory;
 
     @BeforeAll
     static void setUp() {
-        factory = new GeneratingTextModelFactory<>();
+        factory = new JavassistGeneratingTextModelFactory<>();
     }
 
     @Test
