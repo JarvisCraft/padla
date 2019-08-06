@@ -3,6 +3,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import ru.progrm_jarvis.javacommons.lazy.Lazy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,21 @@ import java.util.List;
  * Simple implementation of {@link TextModelFactory text model factory}.
  */
 public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
+
+    /**
+     * Lazy singleton of this text model factory
+     */
+    private static final Lazy<SimpleTextModelFactory> INSTANCE
+            = Lazy.createThreadSafe(SimpleTextModelFactory::new);
+
+    /**
+     * Returns this {@link TextModelFactory text model factory} singleton.
+     *
+     * @return shared instance of this {@link TextModelFactory text model factory}
+     */
+    public static SimpleTextModelFactory get() {
+        return INSTANCE.get();
+    }
 
     @Override
     public TextModelFactory.TextModelTemplate<T> newTemplate() {

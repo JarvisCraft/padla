@@ -6,6 +6,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
+import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 
 import java.lang.reflect.InvocationTargetException;
@@ -17,6 +18,21 @@ import static org.objectweb.asm.Opcodes.*;
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
 public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
+
+    /**
+     * Lazy singleton of this text model factory
+     */
+    private static final Lazy<AsmGeneratingTextModelFactory> INSTANCE
+            = Lazy.createThreadSafe(AsmGeneratingTextModelFactory::new);
+
+    /**
+     * Returns this {@link TextModelFactory text model factory} singleton.
+     *
+     * @return shared instance of this {@link TextModelFactory text model factory}
+     */
+    public static AsmGeneratingTextModelFactory get() {
+        return INSTANCE.get();
+    }
 
     /**
      * Class naming strategy used to allocate names for generated classes

@@ -19,6 +19,21 @@ import java.util.stream.Collectors;
  */
 public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<T> {
 
+    /**
+     * Lazy singleton of this text model factory
+     */
+    private static final Lazy<JavassistGeneratingTextModelFactory> INSTANCE
+            = Lazy.createThreadSafe(JavassistGeneratingTextModelFactory::new);
+
+    /**
+     * Returns this {@link TextModelFactory text model factory} singleton.
+     *
+     * @return shared instance of this {@link TextModelFactory text model factory}
+     */
+    public static JavassistGeneratingTextModelFactory get() {
+        return INSTANCE.get();
+    }
+
     private static Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
     private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
         val className = TextModel.class.getCanonicalName();
