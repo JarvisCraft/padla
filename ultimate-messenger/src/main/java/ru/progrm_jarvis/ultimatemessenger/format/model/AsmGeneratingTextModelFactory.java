@@ -30,7 +30,8 @@ public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
      *
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
-    public static AsmGeneratingTextModelFactory get() {
+    @SuppressWarnings("unchecked")
+    public static <T> AsmGeneratingTextModelFactory<T> get() {
         return INSTANCE.get();
     }
 

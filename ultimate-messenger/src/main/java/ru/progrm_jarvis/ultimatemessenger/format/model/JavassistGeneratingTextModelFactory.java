@@ -30,7 +30,8 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
      *
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
-    public static JavassistGeneratingTextModelFactory get() {
+    @SuppressWarnings("unchecked")
+    public static <T> JavassistGeneratingTextModelFactory<T> get() {
         return INSTANCE.get();
     }
 

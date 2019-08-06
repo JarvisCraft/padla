@@ -24,7 +24,8 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      *
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
-    public static SimpleTextModelFactory get() {
+    @SuppressWarnings("unchecked")
+    public static <T> SimpleTextModelFactory<T> get() {
         return INSTANCE.get();
     }
 
