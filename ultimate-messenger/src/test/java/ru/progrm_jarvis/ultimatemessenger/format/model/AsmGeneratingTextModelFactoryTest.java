@@ -19,7 +19,7 @@ class AsmGeneratingTextModelFactoryTest {
 
     @Test
     void testWithLongHandmadeString() {
-        // this string is long so that I can check if the right bytecode operations is used
+        // this string is long so that I can check if the right bytecode operations are used
         // static part is 192 chars which is cool as I was not planning it, haha
         assertThat(
                 factory.newTemplate().append(
