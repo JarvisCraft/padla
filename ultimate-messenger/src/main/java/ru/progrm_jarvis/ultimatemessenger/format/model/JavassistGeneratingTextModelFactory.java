@@ -28,6 +28,7 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
     /**
      * Returns this {@link TextModelFactory text model factory} singleton.
      *
+     * @param <T> generic type of got {@link TextModelFactory text model factory}
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
