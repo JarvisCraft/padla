@@ -1,10 +1,12 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
+import lombok.experimental.UtilityClass;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 
 /**
  * Utility making use of {@link TextModelFactory text model factories} easier.
  */
+@UtilityClass
 public class TextModelFactories {
 
     /**
