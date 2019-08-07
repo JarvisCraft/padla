@@ -74,40 +74,71 @@ public class StringMicroOptimizationUtil {
         val length = characters.length;
         for (var index = 0; index < length; index++) {
             val character = characters[index];
-            if (character == '\t') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('t');
-            else if (character == '\b') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('b');
-            else if (character == '\n') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('n');
-            else if (character == '\r') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('r');
-            else if (character == '\f') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('f');
-            else if (character == '\'') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('\'');
-            else if (character == '"') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('"');
-            else if (character == '\\') (result == null
-                    ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                    : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                    .append('\\').append('\\');
+            switch (character) {
+                case '\t': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('t');
+                    break;
+                case '\b': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('b');
+                    break;
+                case '\n': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('n');
+                    break;
+                case '\r': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('r');
+                    break;
+                case '\f': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('f');
+                    break;
+                case '\'': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('\'');
+                    break;
+                case '"': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('"');
+                    break;
+                case '\\': (result == null
+                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                        .append('\\').append('\\');
+                    break;
+            }
         }
 
         return result == null ? source : result.append(source, lastWriteIndex + 1, length).toString();
+    }
+
+    /**
+     * Escaped the given {@code char} so that it can be inserted between {@code '}s
+     * in Java code making this {@code character} literal's value be equal to the source one.
+     *
+     * @param source source {@code char}
+     * @return valid value for copying into {@code character} literal {@code '}s
+     */
+    public String escapeJavaCharLiteral(final char source) {
+        switch (source) {
+            case '\t': return "\\t";
+            case '\b': return "\\b";
+            case '\n': return "\\n";
+            case '\r': return "\\r";
+            case '\f': return "\\f";
+            case '\'': return "\\'";
+            case '"': return "\\\"";
+            case '\\': return "\\\\";
+        }
+        return Character.toString(source);
     }
 }
