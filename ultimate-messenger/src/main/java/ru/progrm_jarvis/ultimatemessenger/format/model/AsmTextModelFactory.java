@@ -305,10 +305,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                 {
                     val length = staticLength;
                     switch (length) {
-                        case -1: {
-                            method.visitInsn(ICONST_M1);
-                            break;
-                        }
                         case 0: {
                             method.visitInsn(ICONST_0);
                             break;
@@ -334,8 +330,8 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                             break;
                         }
                         default: {
-                            if (length <= 127) method.visitIntInsn(BIPUSH, length);
-                            else if (length <= 32767) method.visitIntInsn(SIPUSH, length);
+                            if (length <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, length);
+                            else if (length <= Short.MAX_VALUE) method.visitIntInsn(SIPUSH, length);
                             else method.visitLdcInsn(length);
                         }
                     }
