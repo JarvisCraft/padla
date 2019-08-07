@@ -113,11 +113,17 @@ public abstract class AbstractGeneratingTextModelFactoryTemplate<T> extends Abst
     @Override
     protected TextModel<T> createTextModel(final boolean release) {
         if (elements.isEmpty()) return TextModel.empty();
-        if (dynamicElementCount == 0) {
+        if (dynamicElementCount == 0) { // no dynamic elements
             val tail = lastAppendedElement;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;
             return StaticTextModel.of(tail.getStaticContent());
+        }
+        if (staticLength == 0 && dynamicElementCount == 1) { // only 1 dynamic element without static ones
+            val tail = lastAppendedElement;
+            // this should never happen actually, but it might be an error marker for broken implementations
+            assert tail != null;
+            return tail.getDynamicContent();
         }
 
         return performTextModelCreation(release);
