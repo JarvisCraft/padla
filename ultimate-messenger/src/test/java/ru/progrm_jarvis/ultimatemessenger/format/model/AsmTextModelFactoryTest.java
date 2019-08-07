@@ -95,6 +95,65 @@ class AsmTextModelFactoryTest {
         assertThat(text.getText(new User("Tester", 17)), equalTo("Mr. Tester is 17 years old."));
     }
 
+    @Test
+    void testJustDynamicTemplate() {
+        assertThat(
+                factory.newTemplate()
+                        .append(User::getName)
+                        .createAndRelease()
+                        .getText(new User("Petro", 12)),
+                equalTo("Petro")
+        );
+        assertThat(
+                factory.newTemplate()
+                        .append(User::getName)
+                        .append(user -> Integer.toString(user.getAge()))
+                        .createAndRelease()
+                        .getText(new User("Mikhail", 24)),
+                equalTo("Mikhail24")
+        );
+    }
+
+    @Test
+    void testDynamicWithSingleCharTemplate() {
+        assertThat(
+                factory.newTemplate()
+                        .append("Q")
+                        .append(User::getName)
+                        .createAndRelease()
+                        .getText(new User("Petro", 12)),
+                equalTo("QPetro")
+        );
+        assertThat(
+                factory.newTemplate()
+                        .append("Q")
+                        .append(User::getName)
+                        .append("AB")
+                        .append(user -> Integer.toString(user.getAge()))
+                        .append("C")
+                        .createAndRelease()
+                        .getText(new User("Mikhail", 24)),
+                equalTo("QMikhailAB24C")
+        );
+    }
+
+    @Test
+    // This is an ASM specific test, because I use SIPUSH for all non-small char's while javac usese LDC dor some reason
+    // I had to check if it javac who is wrong rather than me
+    void testSingleCharDynamicTemplates() {
+        val user = new User("John", 123);
+        for (var character = Character.MIN_VALUE; true; character++) {
+            val model = factory.newTemplate()
+                    .append(Character.toString(character))
+                    .append(User::getName)
+                    .append(Character.toString(character))
+                    .createAndRelease();
+            assertThat(model.getText(user), equalTo(character + "John" + character));
+
+            if (character == Character.MAX_VALUE) break;
+        }
+    }
+
     @Value
     @FieldDefaults(level = AccessLevel.PRIVATE)
     private static class User {
