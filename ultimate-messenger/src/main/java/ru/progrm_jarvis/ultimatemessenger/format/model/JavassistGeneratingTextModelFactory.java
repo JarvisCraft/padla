@@ -54,7 +54,14 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
             return INSTANCE.get();
         }
 
+        /**
+         * Lazily initialized {@link ClassPool Javassist class pool}
+         */
         private static Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+
+        /**
+         * Lazily initialized {@link CtClass compile-time class} of {@link TextModel text model}
+         */
         private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
             val className = TextModel.class.getCanonicalName();
             try {
@@ -63,6 +70,10 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
                 throw new IllegalStateException("Unable to get CtClass by name " + className);
             }
         });
+
+        /**
+         * Result of {@link Modifier#PUBLIC} and {@link Modifier#FINAL} flags disjunction
+         */
         private static final int PUBLIC_FINAL_MODIFIERS = Modifier.PUBLIC | Modifier.FINAL;
 
         /**
