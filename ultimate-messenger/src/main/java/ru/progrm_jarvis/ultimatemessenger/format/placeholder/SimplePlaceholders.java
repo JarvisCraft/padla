@@ -30,7 +30,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
      * Formatters used for handling placeholders which accept placeholder value and formatting target
      */
     // Note: @Singular can't be used here as Lombok does not allow further modifications to the created collection
-    @Builder.Default @NonNull Map<String, StringFormatter<T>> handlers;
+    @Builder.Default @NonNull Map<String, StringFormatter<T>> handlers = new HashMap<>();
     /**
      * Prefix of placeholders
      */
