@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
@@ -85,12 +84,6 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
         @Override
         public TextModel<T> performTextModelCreation(final boolean release) {
-            if (elements.isEmpty()) return TextModel.empty();
-
-            if (dynamicElementCount == 0) return StaticTextModel.of(
-                    elements.stream().map(Element::getStaticContent).collect(Collectors.joining())
-            );
-
             val clazz = CLASS_POOL.get().makeClass(CLASS_NAMING_STRATEGY.get());
             val textModelCtClass = TEXT_MODEL_CT_CLASS.get();
             clazz.setModifiers(PUBLIC_FINAL_MODIFIERS);
@@ -126,6 +119,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 {
                     int dynamicIndex = 0;
 
+                    if (staticLength == 0) { // only dynamic elements
+
+                    }
                     for (val element : elements) if (element.isDynamic()) {
                         dynamicModels[dynamicIndex] = element.getDynamicContent();
                         src.append(".append(d").append(dynamicIndex++).append(".getText(t))"); // .append(d#.getText(t))
