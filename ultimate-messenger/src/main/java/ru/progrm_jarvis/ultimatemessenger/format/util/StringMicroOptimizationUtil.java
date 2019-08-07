@@ -75,46 +75,62 @@ public class StringMicroOptimizationUtil {
         for (var index = 0; index < length; index++) {
             val character = characters[index];
             switch (character) {
-                case '\t': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('t');
+                case '\t': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('t');
                     break;
-                case '\b': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('b');
+                }
+                case '\b': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('b');
                     break;
-                case '\n': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('n');
+                }
+                case '\n': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('n');
                     break;
-                case '\r': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('r');
+                }
+                case '\r': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('r');
                     break;
-                case '\f': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('f');
+                }
+                case '\f': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('f');
                     break;
-                case '\'': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('\'');
+                }
+                case '\'': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('\'');
                     break;
-                case '"': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('"');
+                }
+                case '"': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('"');
                     break;
-                case '\\': (result == null
-                        ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                        : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                        .append('\\').append('\\');
+                }
+                case '\\': {
+                    (result == null
+                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
+                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
+                            .append('\\').append('\\');
                     break;
+                }
             }
         }
 
@@ -138,7 +154,7 @@ public class StringMicroOptimizationUtil {
             case '\'': return "\\'";
             case '"': return "\\\"";
             case '\\': return "\\\\";
+            default: return Character.toString(source);
         }
-        return Character.toString(source);
     }
 }
