@@ -15,6 +15,9 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 @FieldDefaults(level = AccessLevel.PROTECTED)
 public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextModelFactory.TextModelBuilder<T> {
 
+    /**
+     * Cached instance of the last created text model reset on change
+     */
     @Nullable transient TextModel<T> cachedTextModel;
 
     /**
