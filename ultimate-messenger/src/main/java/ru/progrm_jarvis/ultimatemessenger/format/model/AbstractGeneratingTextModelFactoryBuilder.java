@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Common abstract base for {@link TextModelFactory.TextModelTemplate} capable of caching
+ * Common abstract base for {@link TextModelFactory.TextModelBuilder} capable of caching
  * which generates {@link TextModel text models} using its internal elements.
  *
  * @param <T> type of object according to which the created text models are formatted
@@ -19,12 +19,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true) // because why not? (also allows caching)
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public abstract class AbstractGeneratingTextModelFactoryTemplate<T> extends AbstractCachingTextModelFactoryTemplate<T> {
+public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
 
     /**
-     * Instantiates new {@link AbstractGeneratingTextModelFactoryTemplate} using {@link ArrayList} for its backend.
+     * Instantiates new {@link AbstractGeneratingTextModelFactoryBuilder} using {@link ArrayList} for its backend.
      */
-    protected AbstractGeneratingTextModelFactoryTemplate() {
+    protected AbstractGeneratingTextModelFactoryBuilder() {
         this(new ArrayList<>());
     }
 
@@ -49,7 +49,7 @@ public abstract class AbstractGeneratingTextModelFactoryTemplate<T> extends Abst
     @NonFinal @Nullable transient Element<T> lastAppendedElement;
 
     @Override
-    public TextModelFactory.TextModelTemplate<T> append(@NonNull final String staticText) {
+    public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
         if (!staticText.isEmpty()) {
             val tail = lastAppendedElement;
 
@@ -67,7 +67,7 @@ public abstract class AbstractGeneratingTextModelFactoryTemplate<T> extends Abst
     }
 
     @Override
-    public TextModelFactory.TextModelTemplate<T> append(@NonNull final TextModel<T> dynamicText) {
+    public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
         elements.add(lastAppendedElement = new DynamicElement<>(dynamicText));
         // increment the amount of dynamic elements
         dynamicElementCount++;
@@ -78,7 +78,7 @@ public abstract class AbstractGeneratingTextModelFactoryTemplate<T> extends Abst
     }
 
     @Override
-    public TextModelFactory.TextModelTemplate<T> clear() {
+    public TextModelFactory.TextModelBuilder<T> clear() {
         if (!elements.isEmpty()) {
             elements.clear();
             lastAppendedElement = null;

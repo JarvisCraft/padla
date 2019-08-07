@@ -26,7 +26,7 @@ class JavassistTextModelFactoryTest {
 
     @Test
     void testNotReusedTemplate() {
-        var template = factory.newTemplate()
+        var template = factory.newBuilder()
                 .append("Hi")
                 .append(" ")
                 .append(User::getName)
@@ -37,7 +37,7 @@ class JavassistTextModelFactoryTest {
         assertThat(text.getText(new User("Beta", 2)), equalTo("Hi Beta :)"));
         assertThat(text.getText(new User("Gamma", 3)), equalTo("Hi Gamma :)"));
 
-        template = factory.newTemplate()
+        template = factory.newBuilder()
                 .append("qq ")
                 .append(User::getName)
                 .append(" \\")
@@ -51,7 +51,7 @@ class JavassistTextModelFactoryTest {
 
     @Test
     void testReusedTemplate() {
-        val template = factory.newTemplate()
+        val template = factory.newBuilder()
                 .append("Hello")
                 .append(" ")
                 .append("World and ")
@@ -89,14 +89,14 @@ class JavassistTextModelFactoryTest {
     @Test
     void testJustDynamicTemplate() {
         assertThat(
-                factory.newTemplate()
+                factory.newBuilder()
                         .append(User::getName)
                         .createAndRelease()
                         .getText(new User("Petro", 12)),
                 equalTo("Petro")
         );
         assertThat(
-                factory.newTemplate()
+                factory.newBuilder()
                         .append(User::getName)
                         .append(user -> Integer.toString(user.getAge()))
                         .createAndRelease()
@@ -108,7 +108,7 @@ class JavassistTextModelFactoryTest {
     @Test
     void testDynamicWithSingleCharTemplate() {
         assertThat(
-                factory.newTemplate()
+                factory.newBuilder()
                         .append("Q")
                         .append(User::getName)
                         .createAndRelease()
@@ -116,7 +116,7 @@ class JavassistTextModelFactoryTest {
                 equalTo("QPetro")
         );
         assertThat(
-                factory.newTemplate()
+                factory.newBuilder()
                         .append("Q")
                         .append(User::getName)
                         .append("AB")

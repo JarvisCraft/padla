@@ -24,48 +24,48 @@ public interface TextModelFactory<T> {
     }
 
     /**
-     * Creates new empty {@link TextModelTemplate text model template}
+     * Creates new empty {@link TextModelBuilder text model builder}
      * which may be used for creation of {@link TextModel text models}.
      *
-     * @return new text model template
+     * @return new text model builder
      */
-    TextModelTemplate<T> newTemplate();
+    TextModelBuilder<T> newBuilder();
 
     /**
      * Stateful object used for creation of {@link TextModel text model}.
      * <p>
      * This object may be reused in single-threaded environment via {@link #clear()} although it is not bad practice
-     * to create new ones via {@link #newTemplate()}.
+     * to create new ones via {@link #newBuilder()}.
      *
      * @param <T> type of object according to which the created text models are formatted
      *
      * @apiNote this is not expected to be used in multi-threaded environment as it is (in most cases) meaningless
      * @apiNote this object is allowed to perform its optimizations such as joining nearby static text blocks
      */
-    interface TextModelTemplate<T> {
+    interface TextModelBuilder<T> {
 
         /**
          * Appends a block of static text.
          *
          * @param staticText static text in the added {@link TextModel text model} block
-         * @return this text model template
+         * @return this text model builder
          */
-        TextModelTemplate<T> append(@NonNull String staticText);
+        TextModelBuilder<T> append(@NonNull String staticText);
 
         /**
          * Appends a possibly dynamic {@link TextModel text model} block.
          *
          * @param dynamicText function dynamically providing text
-         * @return this text model template
+         * @return this text model builder
          */
-        TextModelTemplate<T> append(@NonNull TextModel<T> dynamicText);
+        TextModelBuilder<T> append(@NonNull TextModel<T> dynamicText);
 
         /**
          * Clears this template allowing its reuse.
          *
          * @return this text model cleared from any contents
          */
-        TextModelTemplate<T> clear();
+        TextModelBuilder<T> clear();
 
         /**
          * Creates a new {@link TextModel text model} from this template.

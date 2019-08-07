@@ -7,12 +7,12 @@ import org.jetbrains.annotations.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /**
- * Common abstract base for {@link TextModelFactory.TextModelTemplate} capable of caching.
+ * Common abstract base for {@link TextModelFactory.TextModelBuilder} capable of caching.
  *
  * @param <T> type of object according to which the created text models are formatted
  */
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public abstract class AbstractCachingTextModelFactoryTemplate<T> implements TextModelFactory.TextModelTemplate<T> {
+public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextModelFactory.TextModelBuilder<T> {
 
     @Nullable transient TextModel<T> cachedTextModel;
 

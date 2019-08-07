@@ -31,13 +31,13 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    public TextModelFactory.TextModelTemplate<T> newTemplate() {
-        return new TextModelTemplate<>();
+    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+        return new TextModelBuilder<>();
     }
 
     /**
      * Simple implementation of
-     * {@link TextModelFactory.TextModelTemplate text model template}
+     * {@link TextModelFactory.TextModelBuilder text model builder}
      * capable of joining nearby static text blocks and optimizing {@link #createAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
@@ -45,14 +45,14 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this also allows instance caching)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelTemplate<T> extends AbstractCachingTextModelFactoryTemplate<T> {
+    protected static class TextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
 
         @NonNull List<TextModel<T>> elements = new ArrayList<>();
 
         @NonFinal transient String lastStaticText;
 
         @Override
-        public TextModelFactory.TextModelTemplate<T> append(@NonNull final String staticText) {
+        public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
             if (!staticText.isEmpty()) {
                 if (lastStaticText == null) elements.add(StaticTextModel.of(lastStaticText = staticText));
                 else elements.set(elements.size() - 1, StaticTextModel.of(lastStaticText += staticText)); // ...
@@ -65,7 +65,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public TextModelFactory.TextModelTemplate<T> append(@NonNull final TextModel<T> dynamicText) {
+        public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
             elements.add(dynamicText);
             lastStaticText = null;
             markAsChanged();
@@ -74,7 +74,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public TextModelFactory.TextModelTemplate<T> clear() {
+        public TextModelFactory.TextModelBuilder<T> clear() {
             if (!elements.isEmpty()) {
                 elements.clear();
                 lastStaticText = null;

@@ -40,13 +40,13 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    public TextModelFactory.TextModelTemplate<T> newTemplate() {
-        return new TextModelTemplate<>();
+    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+        return new TextModelBuilder<>();
     }
 
     /**
      * Implementation of
-     * {@link TextModelFactory.TextModelTemplate text model template}
+     * {@link TextModelFactory.TextModelBuilder text model builder}
      * which uses runtime class generation
      * and is capable of joining nearby static text blocks and optimizing {@link #createAndRelease()}.
      *
@@ -55,13 +55,13 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelTemplate<T> extends AbstractGeneratingTextModelFactoryTemplate<T> {
+    protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<T> {
 
         /**
          * Class naming strategy used to allocate names for generated classes
          */
         @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                TextModelTemplate.class.getName() + "$$Generated$$TextModel$$"
+                TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
         //<editor-fold desc="Bytecode generation constants" defaultstate="collapsed">

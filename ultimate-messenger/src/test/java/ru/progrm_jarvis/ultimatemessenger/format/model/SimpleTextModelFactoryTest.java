@@ -26,7 +26,7 @@ class SimpleTextModelFactoryTest {
 
     @Test
     void testNotReusedTemplate() {
-        var template = factory.newTemplate()
+        var template = factory.newBuilder()
                 .append("Hi")
                 .append(" ")
                 .append(User::getName)
@@ -37,7 +37,7 @@ class SimpleTextModelFactoryTest {
         assertThat(text.getText(new User("Beta", 2)), equalTo("Hi Beta :)"));
         assertThat(text.getText(new User("Gamma", 3)), equalTo("Hi Gamma :)"));
 
-        template = factory.newTemplate()
+        template = factory.newBuilder()
                 .append("qq ")
                 .append(User::getName)
                 .append(" \\")
@@ -51,7 +51,7 @@ class SimpleTextModelFactoryTest {
 
     @Test
     void testReusedTemplate() {
-        val template = factory.newTemplate()
+        val template = factory.newBuilder()
                 .append("Hello")
                 .append(" ")
                 .append("World and ")

@@ -185,7 +185,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                               @NonNull final String text) {
         if (text.isEmpty()) return factory.empty();
 
-        val template = factory.newTemplate();
+        val template = factory.newBuilder();
         {
             val characters = StringMicroOptimizationUtil.getStringChars(text);
             boolean escaping = false, inPlaceholder = false;
