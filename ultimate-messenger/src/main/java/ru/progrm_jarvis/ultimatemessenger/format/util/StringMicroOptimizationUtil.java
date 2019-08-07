@@ -144,7 +144,7 @@ public class StringMicroOptimizationUtil {
      * @param source source {@code char}
      * @return valid value for copying into {@code character} literal {@code '}s
      */
-    public String escapeJavaCharLiteral(final char source) {
+    public String escapeJavaCharacterLiteral(final char source) {
         switch (source) {
             case '\t': return "\\t";
             case '\b': return "\\b";
