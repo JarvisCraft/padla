@@ -53,7 +53,7 @@ public interface TextModelFactory<T> {
         TextModelTemplate<T> append(@NonNull String staticText);
 
         /**
-         * Appends a possibly dynamic {@link TextModel text model} bolck.
+         * Appends a possibly dynamic {@link TextModel text model} block.
          *
          * @param dynamicText function dynamically providing text
          * @return this text model template
