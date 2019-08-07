@@ -63,7 +63,30 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
 
         //<editor-fold desc="Bytecode generation constants" defaultstate="collapsed">
 
-        /* *********************************** JVM type names without delimiters *********************************** */
+        ///////////////////////////////////////////////////////////////////////////
+        // Types
+        ///////////////////////////////////////////////////////////////////////////
+        /* ******************************************** ASM Type objects ******************************************** */
+        /**
+         * ASM type of {@link Object}
+         */
+        protected static final Type OBJECT_TYPE = getType(Object.class),
+        /**
+         * ASM type of {@link String}
+         */
+        STRING_TYPE = getType(String.class),
+        /**
+         * ASM type of {@link StringBuilder}
+         */
+        STRING_BUILDER_TYPE = getType(StringBuilder.class),
+        /**
+         * ASM type of {@link TextModel}
+         */
+        TEXT_MODEL_TYPE = getType(TextModel.class);
+        ///////////////////////////////////////////////////////////////////////////
+        // Strings
+        ///////////////////////////////////////////////////////////////////////////
+        /* ******************************************* Parts of this API ******************************************* */
         /**
          * Prefix of generated fields after which the index will go
          */

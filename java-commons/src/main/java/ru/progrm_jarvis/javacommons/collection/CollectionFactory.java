@@ -35,7 +35,7 @@ public class CollectionFactory {
      * Class naming strategy used to allocate names for generated immutable enum set classes
      */
     @NonNull private static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
-            .createPaginated(THIS_CANONICAL_CLASS_NAME + "Generated Immutable Enum Set$$#");
+            .createPaginated(THIS_CANONICAL_CLASS_NAME + "$$Generated$$ImmutableEnumSet$$");
 
     /**
      * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
