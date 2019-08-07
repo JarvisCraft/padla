@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Type.*;
 
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
@@ -92,6 +94,11 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         protected static final String GENERATED_FIELD_NAME_PREFIX = "d",
         /**
+         * Name of parent generic in current context
+         */
+        PARENT_T_GENERIC_DESCRIPTOR = "TT;",
+        /* ********************************************** Method names ********************************************** */
+        /**
          * Name of constructor-method
          */
         CONSTRUCTOR_METHOD_NAME = "<init>",
@@ -100,109 +107,103 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         GET_TEXT_METHOD_NAME = "getText",
         /**
-         * Name of {@code StringBuilder#append(}<i>?</i>i{@code )} method
+         * Name of {@link StringBuilder}{@code .append(}<i>?</i>i{@code )} method
          */
         APPEND_METHOD_NAME = "append",
         /**
          * Name of {@link Object#toString()} method
          */
         TO_STRING_METHOD_NAME = "toString",
+        /* ********************************************* Internal names ********************************************* */
         /**
-         * Signature of {@code void ()} method
+         * Internal name of {@link Object}
          */
-        VOID_METHOD_SIGNATURE = "()V",
+        OBJECT_INTERNAL_NAME = OBJECT_TYPE.getInternalName(),
         /**
-         * Signature of {@code void (int)} method
+         * Internal name of {@link StringBuilder}
          */
-        VOID_INT_METHOD_SIGNATURE = "(I)V",
+        STRING_BUILDER_INTERNAL_NAME = STRING_BUILDER_TYPE.getInternalName(),
         /**
-         * JVM-name of {@link Object} class
+         * Internal name of {@link TextModel}
          */
-        OBJECT_JVM_CLASS_NAME = toBytecodeClassName(Object.class),
+        TEXT_MODEL_INTERNAL_NAME = TEXT_MODEL_TYPE.getInternalName(),
+        /* ********************************************** Descriptors ********************************************** */
         /**
-         * JVM-name of {@link StringBuilder} class
+         * Descriptor of {@link Object}
          */
-        STRING_BUILDER_JVM_CLASS_NAME = toBytecodeClassName(StringBuilder.class),
+        OBJECT_DESCRIPTOR = OBJECT_TYPE.getDescriptor(),
         /**
-         * JVM-name of {@link TextModel} class
+         * Descriptor of {@link String}
          */
-        TEXT_MODEL_JVM_CLASS_NAME = toBytecodeClassName(TextModel.class),
-
-        /* ************************************ JVM type names with descriptors ************************************ */
+        STRING_DESCRIPTOR = STRING_TYPE.getDescriptor(),
         /**
-         * JVM-name of {@link Object} class with its descriptor
+         * Descriptor of {@link StringBuilder}
          */
-        OBJECT_JVM_CLASS_NAME_WITH_DESCRIPTOR = 'L' + OBJECT_JVM_CLASS_NAME + ';',
+        STRING_BUILDER_DESCRIPTOR = STRING_BUILDER_TYPE.getDescriptor(),
         /**
-         * JVM-name of {@link String} class with its descriptor
+         * Descriptor of {@link TextModel}
          */
-        STRING_JVM_CLASS_NAME_WITH_DESCRIPTOR = 'L' + toBytecodeClassName(String.class) + ';',
+        TEXT_MODEL_DESCRIPTOR = TEXT_MODEL_TYPE.getDescriptor(),
+        /* ********************************** Method descriptors (aka signatures) ********************************** */
         /**
-         * JVM-name of {@link StringBuilder} class
+         * Signature of {@code TextModel(Object)} method
          */
-        STRING_BUILDER_JVM_CLASS_NAME_WITH_DESCRIPTOR = 'L' + toBytecodeClassName(StringBuilder.class) + ';',
+        STRING_OBJECT_METHOD_DESCRIPTOR = getMethodType(STRING_TYPE, OBJECT_TYPE).getDescriptor(),
         /**
-         * JVM-name of {@link TextModel} class
+         * Signature of {@code void()} method
          */
-        TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR = 'L' + TEXT_MODEL_JVM_CLASS_NAME + ';',
+        VOID_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE).getDescriptor(),
         /**
-         * Signature of {@link TextModel#getText(Object)} method
+         * Signature of {@code void(int)} method
          */
-        GET_TEXT_METHOD_JVM_SIGNATURE
-                = '(' + OBJECT_JVM_CLASS_NAME_WITH_DESCRIPTOR + ')' + STRING_JVM_CLASS_NAME_WITH_DESCRIPTOR,
-
-        /* ************************************* Generic-related JVM type names ************************************* */
+        VOID_INT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, INT_TYPE).getDescriptor(),
         /**
-         * JVM-name of parent generic type
+         * Signature of {@code String()} method
          */
-        PARENT_GENERIC_JVM_CLASS_NAME_WITH_DESCRIPTOR = "TT;",
+        STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_TYPE),
         /**
-         * JVM-name of {@link TextModel} with its descriptor
+         * Signature of {@code StringBuilder(String)} method
          */
-        TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR
-                = 'L' + TEXT_MODEL_JVM_CLASS_NAME + '<' + PARENT_GENERIC_JVM_CLASS_NAME_WITH_DESCRIPTOR + ">;",
-
-        /* *********************************************** Signatures *********************************************** */
-        /**
-         * Generic signature of the generated class
-         *
-         * @see #PARENT_GENERIC_JVM_CLASS_NAME_WITH_DESCRIPTOR name of the parent generic type
-         */
-        GENERIC_CLASS_SIGNATURE
-                = "<T:" + OBJECT_JVM_CLASS_NAME_WITH_DESCRIPTOR + '>' + OBJECT_JVM_CLASS_NAME_WITH_DESCRIPTOR
-                + TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR,
+        STRING_BUILDER_STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_BUILDER_TYPE, STRING_TYPE),
         /**
          * Generic signature of {@link TextModel#getText(Object)} method
          */
-        GET_TEXT_METHOD_JVM_GENERIC_SIGNATURE
-                = '(' + PARENT_GENERIC_JVM_CLASS_NAME_WITH_DESCRIPTOR + ')' + STRING_JVM_CLASS_NAME_WITH_DESCRIPTOR,
+        STRING_GENERIC_T_METHOD_SIGNATURE = '(' + PARENT_T_GENERIC_DESCRIPTOR + ')' + STRING_DESCRIPTOR,
+        /* ******************************************* Generic signatures ******************************************* */
         /**
-         * Signature of {@link Object#toString()} method
+         * Generic descriptor of {@link TextModel}
          */
-        TO_STRING_METHOD_SIGNATURE = "()" + STRING_JVM_CLASS_NAME_WITH_DESCRIPTOR,
+        TEXT_MODEL_SIGNATURE
+                = 'L' + TEXT_MODEL_INTERNAL_NAME + '<' + PARENT_T_GENERIC_DESCRIPTOR + ">;",
         /**
-         * Generic signature of {@link StringBuilder#append(String)} method
+         * Generic signature of the generated class
+         *
+         * @see #PARENT_T_GENERIC_DESCRIPTOR name of the parent generic type
          */
-        APPEND_STRING_METHOD_SIGNATURE
-                = '(' + STRING_JVM_CLASS_NAME_WITH_DESCRIPTOR + ')' + STRING_BUILDER_JVM_CLASS_NAME_WITH_DESCRIPTOR;
+        GENERIC_CLASS_SIGNATURE
+                = "<T:" + OBJECT_DESCRIPTOR + '>' + OBJECT_DESCRIPTOR + TEXT_MODEL_SIGNATURE;
 
+        ///////////////////////////////////////////////////////////////////////////
+        // Ints
+        ///////////////////////////////////////////////////////////////////////////
         /* *************************************** Precomputed string lengths *************************************** */
         /**
-         * Length of {@link #TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR}
+         * Length of {@link #TEXT_MODEL_DESCRIPTOR}
          */
-        private final int TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR_LENGTH
-                = TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR.length(),
+        private final int TEXT_MODEL_DESCRIPTOR_LENGTH = TEXT_MODEL_DESCRIPTOR.length(),
         /**
-         * Length of {@link #TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR}
+         * Length of {@link #TEXT_MODEL_SIGNATURE}
          */
-        TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR_LENGTH
-                = TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR.length();
+        TEXT_MODEL_GENERIC_DESCRIPTOR_LENGTH = TEXT_MODEL_SIGNATURE.length();
 
-        /* *********************************** Constant arrays of JVM type names *********************************** */
+        ///////////////////////////////////////////////////////////////////////////
+        // Constant String arrays
+        ///////////////////////////////////////////////////////////////////////////
+        /* ***************************************** Arrays of descriptors ***************************************** */
         /**
-         * Array whose only value is {@link #TEXT_MODEL_JVM_CLASS_NAME}.
+         * Array whose only value is {@link #TEXT_MODEL_INTERNAL_NAME}.
          */
-        protected static final String[] TEXT_MODEL_JVM_CLASS_NAME_ARRAY = new String[]{TEXT_MODEL_JVM_CLASS_NAME};
+        protected static final String[] TEXT_MODEL_JVM_CLASS_NAME_ARRAY = new String[]{TEXT_MODEL_INTERNAL_NAME};
 
         /* ****************************************** Stored multi-opcodes ****************************************** */
         /**
@@ -217,48 +218,27 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
 
         //</editor-fold>
 
-        /**
-         * Converts the given class name to the corresponding bytecode class name.
-         *
-         * @param className name of the class at runtime (using dot delimiter)
-         * @return name of the class in bytecode
-         *
-         * @see #toBytecodeClassName(Class)
-         */
-        protected static String toBytecodeClassName(@NonNull final String className) {
-            return className.replace('.', '/');
-        }
-
-        /**
-         * Gets the given class's name used in bytecode.
-         *
-         * @param clazz class whose bytecode name should be computed
-         * @return name of the class in bytecode
-         *
-         * @see #toBytecodeClassName(String)
-         */
-        protected static String toBytecodeClassName(@NonNull final Class<?> clazz) {
-            return toBytecodeClassName(clazz.getCanonicalName());
-        }
-
         @Override
         protected TextModel<T> performTextModelCreation(final boolean release) {
             val clazz = new ClassWriter(0); // MAXs are already computed 😎
 
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
             val className = CLASS_NAMING_STRATEGY.get();
-            val bytecodeClassName = toBytecodeClassName(className);
+
+            // ASM does not provide any comfortable method fot this :(
+            // PS yet ASM is <3
+            val internalClassName = className.replace('.', '/');
             clazz.visit(
                     V1_8 /* generate bytecode for JVM1.8 */, OPCODES_ACC_PUBLIC_FINAL_SUPER,
-                    bytecodeClassName, GENERIC_CLASS_SIGNATURE, OBJECT_JVM_CLASS_NAME /* inherit Object */,
+                    internalClassName, GENERIC_CLASS_SIGNATURE, OBJECT_INTERNAL_NAME /* inherit Object */,
                     TEXT_MODEL_JVM_CLASS_NAME_ARRAY /* implement TextModel interface */
             );
             { // Add fields to store passed dynamic text models
                 for (var i = 0; i < dynamicElementCount; i++) clazz
                         .visitField(
                                 OPCODES_ACC_PUBLIC_FINAL, GENERATED_FIELD_NAME_PREFIX + i /* name prefix + index */,
-                                TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR /* field type is TextModel<T> */,
-                                TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR, null /* no default value [*] */
+                                TEXT_MODEL_DESCRIPTOR /* field type is TextModel<T> */,
+                                TEXT_MODEL_SIGNATURE, null /* no default value [*] */
                         )
                         .visitEnd();
                 // [*] Default value could have been anything what can be stored in const pool :(
@@ -268,14 +248,14 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
             MethodVisitor method; // reused method visitor field
             { // Add constructor through which all field get set
                 final StringBuilder descriptor = new StringBuilder(
-                        3 + TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR_LENGTH * dynamicElementCount
+                        3 + TEXT_MODEL_DESCRIPTOR_LENGTH * dynamicElementCount
                 ).append('('),
                         signature = new StringBuilder(
-                                3 + TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR_LENGTH * dynamicElementCount
+                                3 + TEXT_MODEL_GENERIC_DESCRIPTOR_LENGTH * dynamicElementCount
                         ).append('(');
                 for (var i = 0; i < dynamicElementCount; i++) {
-                    descriptor.append(TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR);
-                    signature.append(TEXT_MODEL_JVM_CLASS_NAME_WITH_GENERIC_AND_DESCRIPTOR);
+                    descriptor.append(TEXT_MODEL_DESCRIPTOR);
+                    signature.append(TEXT_MODEL_SIGNATURE);
                 }
                 // Add constructor `void <init>(TextModel[...TextModel])`
                 method = clazz.visitMethod(
@@ -290,15 +270,15 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                 method.visitVarInsn(ALOAD, 0);
                 // Invoke Object constructor
                 method.visitMethodInsn(
-                        INVOKESPECIAL, OBJECT_JVM_CLASS_NAME, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_SIGNATURE, false
+                        INVOKESPECIAL, OBJECT_INTERNAL_NAME, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_DESCRIPTOR, false
                 );
                 // Set each field's value to constructor's parameter at the corresponding index
                 for (var i = 0; i < dynamicElementCount; i++) {
                     method.visitVarInsn(ALOAD, 0);
                     method.visitVarInsn(ALOAD, i + 1);
                     method.visitFieldInsn(
-                            PUTFIELD, bytecodeClassName, GENERATED_FIELD_NAME_PREFIX + i,
-                            TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR
+                            PUTFIELD, internalClassName, GENERATED_FIELD_NAME_PREFIX + i,
+                            TEXT_MODEL_DESCRIPTOR
                     );
                 }
                 // Return from method
@@ -316,13 +296,13 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
             { // Add `TextModel#getText(T)` method
                 // Implement `String getText(T)` method
                 method = clazz.visitMethod(
-                        ACC_PUBLIC, GET_TEXT_METHOD_NAME, GET_TEXT_METHOD_JVM_SIGNATURE,
-                        GET_TEXT_METHOD_JVM_GENERIC_SIGNATURE, null
+                        ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
+                        STRING_GENERIC_T_METHOD_SIGNATURE, null
                 );
 
                 method.visitCode();
                 //<editor-fold desc="Method code generation" defaultstate="collapsed">
-                method.visitTypeInsn(NEW, STRING_BUILDER_JVM_CLASS_NAME);
+                method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
                 method.visitInsn(DUP);
                 // Specify initial length of StringBuilder via its constructor
                 {
@@ -361,8 +341,8 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                 }
                 // Call constructor `StringBuilder(int)`
                 method.visitMethodInsn(
-                        INVOKESPECIAL, STRING_BUILDER_JVM_CLASS_NAME,
-                        CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_SIGNATURE, false
+                        INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
+                        CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_DESCRIPTOR, false
                 );
 
                 { // Append text to string builder
@@ -377,29 +357,29 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                             method.visitVarInsn(ALOAD, 0);
                             // Get value of field storing dynamic value
                             method.visitFieldInsn(
-                                    GETFIELD, bytecodeClassName, GENERATED_FIELD_NAME_PREFIX + dynamicIndex,
-                                    TEXT_MODEL_JVM_CLASS_NAME_WITH_DESCRIPTOR
+                                    GETFIELD, internalClassName, GENERATED_FIELD_NAME_PREFIX + dynamicIndex,
+                                    TEXT_MODEL_DESCRIPTOR
                             );
                             // Get value of the field
                             method.visitVarInsn(ALOAD, 1);
                             // Invoke `TextModel.getText(T)` on field's value
                             method.visitMethodInsn(
-                                    INVOKEINTERFACE, TEXT_MODEL_JVM_CLASS_NAME, GET_TEXT_METHOD_NAME,
-                                    GET_TEXT_METHOD_JVM_SIGNATURE, true
+                                    INVOKEINTERFACE, TEXT_MODEL_INTERNAL_NAME, GET_TEXT_METHOD_NAME,
+                                    STRING_OBJECT_METHOD_DESCRIPTOR, true
                             );
                         } else method.visitLdcInsn(element.getStaticContent()); // get constant String value
 
                         // Invoke `StringBuilder.append(String)`
                         method.visitMethodInsn(
-                                INVOKEVIRTUAL, STRING_BUILDER_JVM_CLASS_NAME,
-                                APPEND_METHOD_NAME, APPEND_STRING_METHOD_SIGNATURE, false
+                                INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
+                                APPEND_METHOD_NAME, STRING_BUILDER_STRING_METHOD_SIGNATURE, false
                         );
                     }
                 }
 
                 method.visitMethodInsn(
-                        INVOKEVIRTUAL, STRING_BUILDER_JVM_CLASS_NAME,
-                        TO_STRING_METHOD_NAME, TO_STRING_METHOD_SIGNATURE, false
+                        INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
+                        TO_STRING_METHOD_NAME, STRING_METHOD_SIGNATURE, false
                 );
                 // Return String from method
                 method.visitInsn(ARETURN);
@@ -408,6 +388,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                 method.visitMaxs(3, 2 /* [StringBuilder instance] + [this|appended value] */);
                 method.visitEnd();
             }
+            clazz.visitEnd();
             //</editor-fold>
 
             val constructorSignature = new Class<?>[dynamicElementCount];
