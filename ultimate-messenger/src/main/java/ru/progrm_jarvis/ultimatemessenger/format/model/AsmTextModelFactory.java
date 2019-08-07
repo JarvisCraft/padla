@@ -367,44 +367,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                         } else {
                             val staticContent = element.getStaticContent();
                             if (staticContent.length() == 1) {
-                                val character = staticContent.charAt(0);
-                                // characters are all positive integers from 0 to 65535
-                                switch (character) {
-                                    case Character.MAX_VALUE: { // also -1, also 65536
-                                        method.visitInsn(ICONST_M1);
-                                        break;
-                                    }
-                                    case 0: {
-                                        method.visitInsn(ICONST_0);
-                                        break;
-                                    }
-                                    case 1: {
-                                        method.visitInsn(ICONST_1);
-                                        break;
-                                    }
-                                    case 2: {
-                                        method.visitInsn(ICONST_2);
-                                        break;
-                                    }
-                                    case 3: {
-                                        method.visitInsn(ICONST_3);
-                                        break;
-                                    }
-                                    case 4: {
-                                        method.visitInsn(ICONST_4);
-                                        break;
-                                    }
-                                    case 5: {
-                                        method.visitInsn(ICONST_5);
-                                        break;
-                                    }
-                                    default: {
-                                        if (character <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, character);
-                                        // theory: this should work for all characters
-                                        // UPD: it works!
-                                        else method.visitIntInsn(SIPUSH, (short) character);
-                                    }
-                                }
+                                asm$pushCharacter(method, staticContent.charAt(0));
                                 asm$invokeStringBuilderAppendChar(method);
                             } else {
                                 method.visitLdcInsn(element.getStaticContent()); // get constant String value
@@ -479,6 +442,52 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                     if (value <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, value);
                     else if (value <= Short.MAX_VALUE) method.visitIntInsn(SIPUSH, value);
                     else method.visitLdcInsn(value);
+                }
+            }
+        }
+
+        /**
+         * Adds code to the method so that it pushes a character onto the stack head.
+         *
+         * @param method method visitor through which the code should be updated
+         * @param value value which should be updated
+         */
+        protected static void asm$pushCharacter(@NotNull final MethodVisitor method, final char value) {
+            // characters are all positive integers from 0 to 65535
+            switch (value) {
+                case Character.MAX_VALUE: { // also -1, also 65536
+                    method.visitInsn(ICONST_M1);
+                    break;
+                }
+                case 0: {
+                    method.visitInsn(ICONST_0);
+                    break;
+                }
+                case 1: {
+                    method.visitInsn(ICONST_1);
+                    break;
+                }
+                case 2: {
+                    method.visitInsn(ICONST_2);
+                    break;
+                }
+                case 3: {
+                    method.visitInsn(ICONST_3);
+                    break;
+                }
+                case 4: {
+                    method.visitInsn(ICONST_4);
+                    break;
+                }
+                case 5: {
+                    method.visitInsn(ICONST_5);
+                    break;
+                }
+                default: {
+                    if (value <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, value);
+                        // theory: this should work for all characters
+                        // UPD: it works!
+                    else method.visitIntInsn(SIPUSH, (short) value);
                 }
             }
         }
