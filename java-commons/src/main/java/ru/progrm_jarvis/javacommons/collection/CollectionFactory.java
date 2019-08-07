@@ -27,21 +27,16 @@ import static java.util.Collections.unmodifiableSet;
 public class CollectionFactory {
 
     /**
-     * Canonical name of this class
-     */
-    private static final String THIS_CANONICAL_CLASS_NAME = CollectionFactory.class.getCanonicalName();
-
-    /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
      */
     @NonNull private static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
-            .createPaginated(THIS_CANONICAL_CLASS_NAME + "$$Generated$$ImmutableEnumSet$$");
+            .createPaginated(CollectionFactory.class.getName() + "$$Generated$$ImmutableEnumSet$$");
 
     /**
      * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
      */
     @NonNull private final String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = THIS_CANONICAL_CLASS_NAME + ".immutable-enum-set-instance-cache-concurrency-level";
+            = CollectionFactory.class.getCanonicalName() + ".immutable-enum-set-instance-cache-concurrency-level";
 
     /**
      * Default javassist class pool

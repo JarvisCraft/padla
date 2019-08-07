@@ -58,7 +58,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          * Class naming strategy used to allocate names for generated classes
          */
         @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                AsmTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
+                TextModelTemplate.class.getName() + "$$Generated$$TextModel$$"
         );
 
         //<editor-fold desc="Bytecode generation constants" defaultstate="collapsed">
