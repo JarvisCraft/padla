@@ -19,6 +19,23 @@ import java.util.stream.Collectors;
  */
 public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
+    /**
+     * Lazy singleton of this text model factory
+     */
+    private static final Lazy<JavassistTextModelFactory> INSTANCE
+            = Lazy.createThreadSafe(JavassistTextModelFactory::new);
+
+    /**
+     * Returns this {@link TextModelFactory text model factory} singleton.
+     *
+     * @param <T> generic type of got {@link TextModelFactory text model factory}
+     * @return shared instance of this {@link TextModelFactory text model factory}
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> JavassistTextModelFactory<T> get() {
+        return INSTANCE.get();
+    }
+
     @Override
     public TextModelFactory.TextModelTemplate<T> newTemplate() {
         return new TextModelTemplate<>();
@@ -36,23 +53,6 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     protected static class TextModelTemplate<T> extends AbstractGeneratingTextModelFactoryTemplate<T> {
-
-        /**
-         * Lazy singleton of this text model factory
-         */
-        private static final Lazy<JavassistTextModelFactory> INSTANCE
-                = Lazy.createThreadSafe(JavassistTextModelFactory::new);
-
-        /**
-         * Returns this {@link TextModelFactory text model factory} singleton.
-         *
-         * @param <T> generic type of got {@link TextModelFactory text model factory}
-         * @return shared instance of this {@link TextModelFactory text model factory}
-         */
-        @SuppressWarnings("unchecked")
-        public static <T> JavassistTextModelFactory<T> get() {
-            return INSTANCE.get();
-        }
 
         /**
          * Lazily initialized {@link ClassPool Javassist class pool}

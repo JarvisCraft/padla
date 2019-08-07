@@ -21,7 +21,7 @@ public class TextModelFactories {
         } catch (final Throwable ignored) {}
 
         if (BytecodeLibrary.JAVASSIST.isAvailable()) try {
-            return AsmTextModelFactory.get();
+            return JavassistTextModelFactory.get();
         } catch (final Throwable ignored) {}
 
         return SimpleTextModelFactory.get();
