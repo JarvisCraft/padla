@@ -113,22 +113,34 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             }
 
             { // Method (#getText(T))
-                final StringBuilder src = new StringBuilder(
-                        "public String getText(Object t){return new StringBuilder("
-                ).append(staticLength).append(')');
-                {
-                    int dynamicIndex = 0;
-
-                    if (staticLength == 0) { // only dynamic elements
-
+                StringBuilder src;
+                if (staticLength == 0) { // constructor StringBuilder from the first object
+                    // only dynamic elements (yet, there are multiple of those)
+                    src = new StringBuilder("public String getText(Object t){return new StringBuilder(d0.getText(t))");
+                    dynamicModels[0] = elements.get(0).getDynamicContent();
+                    // dynamic elements count is at least 2
+                    for (var index = 1; index < dynamicElementCount; index++) {
+                        dynamicModels[index] = elements.get(index).getDynamicContent();
+                        src.append(".append(d").append(index).append(".getText(t))"); // .append(d#.getText(t))
                     }
+                } else {
+                    src = new StringBuilder(
+                            "public String getText(Object t){return new StringBuilder("
+                    ).append(staticLength).append(')');
+                    // there are static elements
+                    int dynamicIndex = 0;
                     for (val element : elements) if (element.isDynamic()) {
                         dynamicModels[dynamicIndex] = element.getDynamicContent();
                         src.append(".append(d").append(dynamicIndex++).append(".getText(t))"); // .append(d#.getText(t))
-                    } else src.append(".append(\"").append(
-                            StringMicroOptimizationUtil.escapeJavaStringLiteral(element.getStaticContent())
-                    ).append('"').append(')');
-
+                    } else {
+                        val staticContent = element.getStaticContent();
+                        if (staticContent.length() == 1) src.append(".append(\'").append(
+                                StringMicroOptimizationUtil.escapeJavaCharacterLiteral(staticContent.charAt(0))
+                        ).append('\'').append(')');
+                        else src.append(".append(\"").append(
+                                StringMicroOptimizationUtil.escapeJavaStringLiteral(staticContent)
+                        ).append('"').append(')');
+                    }
                 }
 
                 try {

@@ -85,4 +85,46 @@ class JavassistTextModelFactoryTest {
         @NonNull String name;
         int age;
     }
+
+    @Test
+    void testJustDynamicTemplate() {
+        assertThat(
+                factory.newTemplate()
+                        .append(User::getName)
+                        .createAndRelease()
+                        .getText(new User("Petro", 12)),
+                equalTo("Petro")
+        );
+        assertThat(
+                factory.newTemplate()
+                        .append(User::getName)
+                        .append(user -> Integer.toString(user.getAge()))
+                        .createAndRelease()
+                        .getText(new User("Mikhail", 24)),
+                equalTo("Mikhail24")
+        );
+    }
+
+    @Test
+    void testDynamicWithSingleCharTemplate() {
+        assertThat(
+                factory.newTemplate()
+                        .append("Q")
+                        .append(User::getName)
+                        .createAndRelease()
+                        .getText(new User("Petro", 12)),
+                equalTo("QPetro")
+        );
+        assertThat(
+                factory.newTemplate()
+                        .append("Q")
+                        .append(User::getName)
+                        .append("AB")
+                        .append(user -> Integer.toString(user.getAge()))
+                        .append("C")
+                        .createAndRelease()
+                        .getText(new User("Mikhail", 24)),
+                equalTo("QMikhailAB24C")
+        );
+    }
 }
