@@ -32,7 +32,7 @@ public class CollectionFactory {
     private static final String THIS_CANONICAL_CLASS_NAME = CollectionFactory.class.getCanonicalName();
 
     /**
-     * Class naming strategy used to allocate names for generated classes
+     * Class naming strategy used to allocate names for generated immutable enum set classes
      */
     @NonNull private static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
             .createPaginated(THIS_CANONICAL_CLASS_NAME + "Generated Immutable Enum Set$$#");
