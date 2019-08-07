@@ -29,7 +29,8 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     /**
      * Formatters used for handling placeholders which accept placeholder value and formatting target
      */
-    @NonNull @Singular Map<String, StringFormatter<T>> handlers;
+    // Note: @Singular can't be used here as Lombok does not allow further modifications to the created collection
+    @Builder.Default @NonNull Map<String, StringFormatter<T>> handlers;
     /**
      * Prefix of placeholders
      */
@@ -68,6 +69,8 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
      */
     formFeedCharacter = 'f';
     @Builder.Default @NonNull String unknownPlaceholderReplacement = "???";
+
+
 
     @Override
     public String format(@NotNull String source, final T target) {
