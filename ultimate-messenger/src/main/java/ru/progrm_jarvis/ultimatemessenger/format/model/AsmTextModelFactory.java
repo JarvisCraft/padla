@@ -40,7 +40,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    @NotNull public TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>();
     }
 
@@ -228,7 +228,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         //</editor-fold>
 
         @Override
-        protected TextModel<T> performTextModelCreation(final boolean release) {
+        @NotNull protected TextModel<T> performTextModelCreation(final boolean release) {
             boolean w = false;
             val clazz = new ClassWriter(0); // MAXs are already computed 😎
 

@@ -1,8 +1,12 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 
 import java.util.ArrayList;
@@ -26,12 +30,12 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> SimpleTextModelFactory<T> get() {
+    @NotNull public static <T> SimpleTextModelFactory<T> get() {
         return INSTANCE.get();
     }
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    @NotNull public TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>();
     }
 
@@ -52,7 +56,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         @NonFinal transient String lastStaticText;
 
         @Override
-        public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+        @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
             if (!staticText.isEmpty()) {
                 if (lastStaticText == null) elements.add(StaticTextModel.of(lastStaticText = staticText));
                 else elements.set(elements.size() - 1, StaticTextModel.of(lastStaticText += staticText)); // ...
@@ -65,7 +69,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+        @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
             elements.add(dynamicText);
             lastStaticText = null;
             markAsChanged();
@@ -74,7 +78,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public TextModelFactory.TextModelBuilder<T> clear() {
+        @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
             if (!elements.isEmpty()) {
                 elements.clear();
                 lastStaticText = null;
@@ -86,7 +90,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        protected TextModel<T> createTextModel(final boolean release) {
+        @NotNull protected TextModel<T> createTextModel(final boolean release) {
             return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.fromCopyOf(elements);
         }
     }

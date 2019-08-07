@@ -2,6 +2,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -34,17 +35,17 @@ public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextM
      * @param release {@code true} if this template will be released after the call and {@code false} otherwise
      * @return created text model
      */
-    protected abstract TextModel<T> createTextModel(boolean release);
+    @NotNull protected abstract TextModel<T> createTextModel(boolean release);
 
     @Override
-    public TextModel<T> createAndRelease() {
+    @NotNull public TextModel<T> createAndRelease() {
         // no need to cache as this method is guaranteed to be called at last on this instance
         // (at least in the given context, custom implementations may allow instance caching and reuse)
         return cachedTextModel == null ? createTextModel(true) : cachedTextModel;
     }
 
     @Override
-    public TextModel<T> create() {
+    @NotNull public TextModel<T> create() {
         // cache the computed value so that it does not get computed again if attempt to create the same model happens
         return cachedTextModel == null ? cachedTextModel = createTextModel(false) : cachedTextModel;
     }

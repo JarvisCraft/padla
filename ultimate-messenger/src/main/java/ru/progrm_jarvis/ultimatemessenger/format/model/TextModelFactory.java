@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Object used to create {@link TextModel text models}.
@@ -19,7 +20,7 @@ public interface TextModelFactory<T> {
      *
      * @apiNote as {@link TextModel text models} are immutable, this method may return an empty singleton
      */
-    default TextModel<T> empty() {
+    @NotNull default TextModel<T> empty() {
         return TextModel.empty();
     }
 
@@ -29,7 +30,7 @@ public interface TextModelFactory<T> {
      *
      * @return new text model builder
      */
-    TextModelBuilder<T> newBuilder();
+    @NotNull TextModelBuilder<T> newBuilder();
 
     /**
      * Stateful object used for creation of {@link TextModel text model}.
@@ -50,7 +51,7 @@ public interface TextModelFactory<T> {
          * @param staticText static text in the added {@link TextModel text model} block
          * @return this text model builder
          */
-        TextModelBuilder<T> append(@NonNull String staticText);
+        @NotNull TextModelBuilder<T> append(@NonNull String staticText);
 
         /**
          * Appends a possibly dynamic {@link TextModel text model} block.
@@ -58,14 +59,14 @@ public interface TextModelFactory<T> {
          * @param dynamicText function dynamically providing text
          * @return this text model builder
          */
-        TextModelBuilder<T> append(@NonNull TextModel<T> dynamicText);
+        @NotNull TextModelBuilder<T> append(@NonNull TextModel<T> dynamicText);
 
         /**
          * Clears this template allowing its reuse.
          *
          * @return this text model cleared from any contents
          */
-        TextModelBuilder<T> clear();
+        @NotNull TextModelBuilder<T> clear();
 
         /**
          * Creates a new {@link TextModel text model} from this template.
@@ -75,7 +76,7 @@ public interface TextModelFactory<T> {
          * @apiNote calls to this method allow reuse of this template;
          * if not planning to reuse it better use {@link #createAndRelease()} instead
          */
-        TextModel<T> create();
+        @NotNull TextModel<T> create();
 
         /**
          * Creates a new {@link TextModel text model} from this template releasing itself.
@@ -85,6 +86,6 @@ public interface TextModelFactory<T> {
          * @apiNote this method differs from {@link #create()} as call to it guarantees
          * that this template won't be used anymore
          */
-        TextModel<T> createAndRelease();
+        @NotNull TextModel<T> createAndRelease();
     }
 }

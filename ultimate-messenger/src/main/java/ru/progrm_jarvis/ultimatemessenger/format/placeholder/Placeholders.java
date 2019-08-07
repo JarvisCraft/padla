@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.placeholder;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.ultimatemessenger.format.StringFormatter;
 import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelParser;
 
@@ -34,7 +35,7 @@ public interface Placeholders<T> extends StringFormatter<T>, TextModelParser<T> 
      * @param name identifier of the formatter
      * @return optional formatter by the given name
      */
-    Optional<StringFormatter<T>> get(@NonNull String name);
+    @NotNull Optional<StringFormatter<T>> get(@NonNull String name);
 
     /**
      * Removes the formatter by the given name.
@@ -42,5 +43,5 @@ public interface Placeholders<T> extends StringFormatter<T>, TextModelParser<T> 
      * @param name identifier of the formatter
      * @return optional formatter removed by the given name being empty if there was no formatter by this name
      */
-    Optional<StringFormatter<T>> remove(@NonNull String name);
+    @NotNull Optional<StringFormatter<T>> remove(@NonNull String name);
 }

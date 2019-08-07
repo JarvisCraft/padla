@@ -22,7 +22,7 @@ public interface StringFormatter<T> extends BiFunction<String, T, String> {
      * @apiNote the method should (but is not forced to) return the source string object
      * in case there were no changes to it, however
      */
-    String format(@NotNull String source, T target);
+    @NotNull String format(@NotNull String source, T target);
 
     @Override
     default String apply(final String source, final T target) {

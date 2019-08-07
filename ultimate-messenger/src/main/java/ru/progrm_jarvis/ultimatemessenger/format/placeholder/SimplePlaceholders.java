@@ -10,6 +10,7 @@ import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelFactory;
 import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelParser;
 import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -70,10 +71,8 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     formFeedCharacter = 'f';
     @Builder.Default @NonNull String unknownPlaceholderReplacement = "???";
 
-
-
     @Override
-    public String format(@NotNull String source, final T target) {
+    @NotNull public String format(@NotNull String source, final T target) {
         if (source.isEmpty()) return source;
 
         @Nullable StringBuilder result = null;
@@ -181,7 +180,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     }
 
     @Override
-    public TextModel<T> parse(@NotNull final TextModelFactory<T> factory,
+    public TextModel<T> parse(@NonNull final TextModelFactory<T> factory,
                               @NonNull final String text) {
         if (text.isEmpty()) return factory.empty();
 
@@ -312,12 +311,12 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     }
 
     @Override
-    public Optional<StringFormatter<T>> get(@NonNull final String name) {
+    @NotNull public Optional<StringFormatter<T>> get(@NonNull final String name) {
         return Optional.ofNullable(handlers.get(name));
     }
 
     @Override
-    public Optional<StringFormatter<T>> remove(@NonNull final String name) {
+    @NotNull public Optional<StringFormatter<T>> remove(@NonNull final String name) {
         return Optional.ofNullable(handlers.remove(name));
     }
 }

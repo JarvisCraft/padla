@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +33,7 @@ public class DelegatingNestingTextModel<T> implements NestingTextModel<T> {
      * @param <T> type of object according to which the text model is formatted
      * @return created {@link DelegatingNestingTextModel}
      */
-    public static <T> DelegatingNestingTextModel<T> from(@NonNull final List<TextModel<T>> elements) {
+    @NotNull public static <T> DelegatingNestingTextModel<T> from(@NonNull final List<TextModel<T>> elements) {
         return new DelegatingNestingTextModel<>(elements);
     }
 
@@ -44,7 +45,7 @@ public class DelegatingNestingTextModel<T> implements NestingTextModel<T> {
      * @param <T> type of object according to which the text model is formatted
      * @return created {@link DelegatingNestingTextModel}
      */
-    public static <T> DelegatingNestingTextModel<T> fromCopyOf(@NonNull final List<TextModel<T>> elements) {
+    @NotNull public static <T> DelegatingNestingTextModel<T> fromCopyOf(@NonNull final List<TextModel<T>> elements) {
         return new DelegatingNestingTextModel<>(new ArrayList<>(elements));
     }
 }

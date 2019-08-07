@@ -37,7 +37,7 @@ public interface TextModel<T> {
      * @return singleton of an empty static {@link TextModel text model}
      */
     @SuppressWarnings("unchecked")
-    static <T> TextModel<T> empty() {
+    @NotNull static <T> TextModel<T> empty() {
         return EmptyTextModel.INSTANCE;
     }
 

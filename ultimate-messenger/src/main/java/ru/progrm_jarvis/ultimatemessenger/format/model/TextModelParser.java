@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Parser of a {@link TextModel text model}.
@@ -17,5 +18,5 @@ public interface TextModelParser<T> {
      * @param text text to parse
      * @return parsed text model
      */
-    TextModel<T> parse(@NonNull TextModelFactory<T> factory, @NonNull String text);
+    @NotNull TextModel<T> parse(@NonNull TextModelFactory<T> factory, @NonNull String text);
 }

@@ -3,6 +3,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import javassist.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
@@ -31,7 +32,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> JavassistTextModelFactory<T> get() {
+    @NotNull public static <T> JavassistTextModelFactory<T> get() {
         return INSTANCE.get();
     }
 
@@ -83,7 +84,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         );
 
         @Override
-        public TextModel<T> performTextModelCreation(final boolean release) {
+        @NotNull public TextModel<T> performTextModelCreation(final boolean release) {
             val clazz = CLASS_POOL.get().makeClass(CLASS_NAMING_STRATEGY.get());
             val textModelCtClass = TEXT_MODEL_CT_CLASS.get();
             clazz.setModifiers(PUBLIC_FINAL_MODIFIERS);

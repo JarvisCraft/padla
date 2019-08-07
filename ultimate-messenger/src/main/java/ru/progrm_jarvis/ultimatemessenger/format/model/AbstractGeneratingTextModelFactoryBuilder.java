@@ -49,7 +49,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
     @NonFinal @Nullable transient Element<T> lastAppendedElement;
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+    @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
         if (!staticText.isEmpty()) {
             val tail = lastAppendedElement;
 
@@ -67,7 +67,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
     }
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+    @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
         elements.add(lastAppendedElement = new DynamicElement<>(dynamicText));
         // increment the amount of dynamic elements
         dynamicElementCount++;
@@ -78,7 +78,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
     }
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> clear() {
+    @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
         if (!elements.isEmpty()) {
             elements.clear();
             lastAppendedElement = null;
@@ -100,7 +100,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
      * @apiNote gets called by {@link #createTextModel(boolean)}
      * whenever it cannot create a fast universal implementation
      */
-    protected abstract TextModel<T> performTextModelCreation(final boolean release);
+    @NotNull protected abstract TextModel<T> performTextModelCreation(boolean release);
 
     /**
      * {@inheritDoc}
@@ -111,7 +111,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
      * @return {@inheritDoc}
      */
     @Override
-    protected TextModel<T> createTextModel(final boolean release) {
+    @NotNull protected TextModel<T> createTextModel(final boolean release) {
         if (elements.isEmpty()) return TextModel.empty();
         if (dynamicElementCount == 0) { // no dynamic elements
             val tail = lastAppendedElement;
