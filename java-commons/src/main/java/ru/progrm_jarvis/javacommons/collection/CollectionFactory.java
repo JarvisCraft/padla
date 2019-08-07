@@ -34,8 +34,8 @@ public class CollectionFactory {
     /**
      * Class naming strategy used to allocate names for generated classes
      */
-    @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy
-            .createPaginated(THIS_CANONICAL_CLASS_NAME + "$$generated$$");
+    @NonNull private static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
+            .createPaginated(THIS_CANONICAL_CLASS_NAME + "Generated Immutable Enum Set$$#");
 
     /**
      * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
@@ -168,7 +168,7 @@ public class CollectionFactory {
                 // class pool instance
                 val classPool = CLASS_POOL.get();
                 // generated class
-                val clazz = classPool.makeClass(CLASS_NAMING_STRATEGY.get());
+                val clazz = classPool.makeClass(IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY.get());
                 clazz.setSuperclass(ABSTRACT_IMMUTABLE_SET_CT_CLASS.get());
                 addEmptyConstructor(clazz);
 
@@ -281,7 +281,7 @@ public class CollectionFactory {
              */
                 final CtClass iteratorClazz;
                 {
-                    iteratorClazz = clazz.makeNestedClass(CLASS_NAMING_STRATEGY.get(), true);
+                    iteratorClazz = clazz.makeNestedClass(IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY.get(), true);
                     iteratorClazz.setInterfaces(ITERATOR_CT_CLASS_ARRAY.get());
                     addEmptyConstructor(iteratorClazz);
 

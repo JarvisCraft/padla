@@ -36,12 +36,6 @@ public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
         return INSTANCE.get();
     }
 
-    /**
-     * Class naming strategy used to allocate names for generated classes
-     */
-    @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy
-            .createPaginated(AsmGeneratingTextModelFactory.class.getCanonicalName() + "$$generated$$");
-
     @Override
     public TextModelFactory.TextModelTemplate<T> newTemplate() {
         return new TextModelTemplate<>();
@@ -59,6 +53,13 @@ public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     protected static class TextModelTemplate<T> extends AbstractGeneratingTextModelFactoryTemplate<T> {
+
+        /**
+         * Class naming strategy used to allocate names for generated classes
+         */
+        @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+                AsmGeneratingTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
+        );
 
         //<editor-fold desc="Bytecode generation constants" defaultstate="collapsed">
 

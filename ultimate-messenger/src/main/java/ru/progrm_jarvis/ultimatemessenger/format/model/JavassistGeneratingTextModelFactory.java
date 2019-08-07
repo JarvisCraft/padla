@@ -19,40 +19,6 @@ import java.util.stream.Collectors;
  */
 public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<T> {
 
-    /**
-     * Lazy singleton of this text model factory
-     */
-    private static final Lazy<JavassistGeneratingTextModelFactory> INSTANCE
-            = Lazy.createThreadSafe(JavassistGeneratingTextModelFactory::new);
-
-    /**
-     * Returns this {@link TextModelFactory text model factory} singleton.
-     *
-     * @param <T> generic type of got {@link TextModelFactory text model factory}
-     * @return shared instance of this {@link TextModelFactory text model factory}
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> JavassistGeneratingTextModelFactory<T> get() {
-        return INSTANCE.get();
-    }
-
-    private static Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
-    private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
-        val className = TextModel.class.getCanonicalName();
-        try {
-            return CLASS_POOL.get().getCtClass(className);
-        } catch (final NotFoundException e) {
-            throw new IllegalStateException("Unable to get CtClass by name " + className);
-        }
-    });
-    private static final int PUBLIC_FINAL_MODIFIERS = Modifier.PUBLIC | Modifier.FINAL;
-
-    /**
-     * Class naming strategy used to allocate names for generated classes
-     */
-    @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy
-            .createPaginated(JavassistGeneratingTextModelFactory.class.getCanonicalName() + "$$generated$$");
-
     @Override
     public TextModelFactory.TextModelTemplate<T> newTemplate() {
         return new TextModelTemplate<>();
@@ -70,6 +36,41 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     protected static class TextModelTemplate<T> extends AbstractGeneratingTextModelFactoryTemplate<T> {
+
+        /**
+         * Lazy singleton of this text model factory
+         */
+        private static final Lazy<JavassistGeneratingTextModelFactory> INSTANCE
+                = Lazy.createThreadSafe(JavassistGeneratingTextModelFactory::new);
+
+        /**
+         * Returns this {@link TextModelFactory text model factory} singleton.
+         *
+         * @param <T> generic type of got {@link TextModelFactory text model factory}
+         * @return shared instance of this {@link TextModelFactory text model factory}
+         */
+        @SuppressWarnings("unchecked")
+        public static <T> JavassistGeneratingTextModelFactory<T> get() {
+            return INSTANCE.get();
+        }
+
+        private static Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+        private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
+            val className = TextModel.class.getCanonicalName();
+            try {
+                return CLASS_POOL.get().getCtClass(className);
+            } catch (final NotFoundException e) {
+                throw new IllegalStateException("Unable to get CtClass by name " + className);
+            }
+        });
+        private static final int PUBLIC_FINAL_MODIFIERS = Modifier.PUBLIC | Modifier.FINAL;
+
+        /**
+         * Class naming strategy used to allocate names for generated classes
+         */
+        @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+                JavassistGeneratingTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
+        );
 
         @Override
         public TextModel<T> performTextModelCreation(final boolean release) {
