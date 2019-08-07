@@ -93,6 +93,7 @@
                     <configuration>
                         <forkCount>0</forkCount>
                         <reuseForks>true</reuseForks>
+                        <useSystemClassLoader>false</useSystemClassLoader>
                     </configuration>
                 </plugin>
 
