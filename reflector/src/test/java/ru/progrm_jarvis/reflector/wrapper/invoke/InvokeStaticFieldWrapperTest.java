@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -26,7 +27,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo(icq), equalTo(instance.icq)));
         // set
         val newIcq = icq + random.nextInt(1, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(newIcq));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(newIcq));
         assertThat(field.get(), allOf(equalTo(newIcq), equalTo(instance.icq)));
     }
 
@@ -42,7 +44,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo(nut), equalTo(instance.nut)));
         // set
         val newNut = nut + random.nextInt();
-        assertDoesNotThrow(() -> field.set(newNut));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newNut));
         assertThat(field.get(), allOf(equalTo(newNut), equalTo(instance.nut)));
     }
 
@@ -57,7 +60,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo(127), equalTo(instance.id)));
         // set
         val newId = random.nextInt(128, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(newId));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newId));
         // value gets cached (?)
         assertThat(field.get(), /*allOf(*/equalTo(newId)/*, equalTo(instance.id))*/);
     }
@@ -73,7 +77,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo("Mr Areshek"), equalTo(instance.name)));
         // set
         val newName = "Mr. " + random.nextInt();
-        assertDoesNotThrow(() -> field.set(newName));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newName));
         // value gets cached (?)
         assertThat(field.get(), /*allOf(*/equalTo(newName)/*, equalTo(instance.name))*/);
     }
@@ -90,7 +95,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo(icq), equalTo(StaticAreg.icq)));
         // set
         val newIcq = icq + random.nextInt(1, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(newIcq));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newIcq));
         assertThat(field.get(), allOf(equalTo(newIcq), equalTo(StaticAreg.icq)));
     }
 
@@ -106,7 +112,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo(nut), equalTo(StaticAreg.nut)));
         // set
         val newNut = nut + random.nextInt();
-        assertDoesNotThrow(() -> field.set(newNut));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newNut));
         assertThat(field.get(), allOf(equalTo(newNut), equalTo(StaticAreg.nut)));
     }
 
@@ -120,7 +127,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo(127), equalTo(StaticAreg.id)));
         // set
         val newId = random.nextInt(128, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(newId));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newId));
         // value gets cached (?)
         assertThat(field.get(), /*allOf(*/equalTo(newId)/*, equalTo(StaticAreg.id))*/);
     }
@@ -135,7 +143,8 @@ class InvokeStaticFieldWrapperTest {
         assertThat(field.get(), allOf(equalTo("Mr Areshek"), equalTo(StaticAreg.name)));
         // set
         val newName = "Mr. " + random.nextInt();
-        assertDoesNotThrow(() -> field.set(newName));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () ->field.set(newName));
         // value gets cached (?)
         assertThat(field.get(), /*allOf(*/equalTo(newName)/*, equalTo(StaticAreg.name))*/);
     }
