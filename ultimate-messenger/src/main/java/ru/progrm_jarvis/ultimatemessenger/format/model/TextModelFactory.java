@@ -62,29 +62,29 @@ public interface TextModelFactory<T> {
         @NotNull TextModelBuilder<T> append(@NonNull TextModel<T> dynamicText);
 
         /**
-         * Clears this template allowing its reuse.
+         * Clears this text model builder allowing its reuse.
          *
          * @return this text model cleared from any contents
          */
         @NotNull TextModelBuilder<T> clear();
 
         /**
-         * Creates a new {@link TextModel text model} from this template.
+         * Creates a new {@link TextModel text model} from this text model builder.
          *
-         * @return text model created from this template
+         * @return text model created from this text model builder
          *
-         * @apiNote calls to this method allow reuse of this template;
+         * @apiNote calls to this method allow reuse of this text model builder;
          * if not planning to reuse it better use {@link #createAndRelease()} instead
          */
         @NotNull TextModel<T> create();
 
         /**
-         * Creates a new {@link TextModel text model} from this template releasing itself.
+         * Creates a new {@link TextModel text model} from this text model builder releasing itself.
          *
-         * @return text model created from this template
+         * @return text model created from this text model builder
          *
          * @apiNote this method differs from {@link #create()} as call to it guarantees
-         * that this template won't be used anymore
+         * that this text model builder won't be used anymore
          */
         @NotNull TextModel<T> createAndRelease();
     }

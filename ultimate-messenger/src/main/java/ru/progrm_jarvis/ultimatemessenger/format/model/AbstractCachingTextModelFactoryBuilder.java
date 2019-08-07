@@ -21,10 +21,10 @@ public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextM
     @Nullable transient TextModel<T> cachedTextModel;
 
     /**
-     * Method called whenever an update to template's content happens.
+     * Method called whenever an update to text model builder's content happens.
      *
      * @apiNote all {@code append(}<i>...</i>{@code )} methods should invoke this method
-     * whenever the template gets updated
+     * whenever the text model builder gets updated
      */
     @OverridingMethodsMustInvokeSuper
     protected void markAsChanged() {
@@ -32,10 +32,10 @@ public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextM
     }
 
     /**
-     * Creates new {@link TextModel} according to this template's state.
+     * Creates new {@link TextModel} according to this text model builder's state.
      * This should not handle caching to {@link #cachedTextModel} as this will be done by the calling method.
      *
-     * @param release {@code true} if this template will be released after the call and {@code false} otherwise
+     * @param release {@code true} if this text model builder will be released after the call and {@code false} otherwise
      * @return created text model
      */
     @NotNull protected abstract TextModel<T> createTextModel(boolean release);

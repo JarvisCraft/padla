@@ -184,7 +184,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                               @NonNull final String text) {
         if (text.isEmpty()) return factory.empty();
 
-        val template = factory.newBuilder();
+        val builder = factory.newBuilder();
         {
             val characters = StringMicroOptimizationUtil.getStringChars(text);
             boolean escaping = false, inPlaceholder = false;
@@ -236,11 +236,11 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                 // 1.) as it was an actual placeholder, close the previous text element (if it hasn't
                                 // been yet)
                                 if (placeholderStartIndex - 1 != lastFlushIndex) {
-                                    if (lastRawText == null) template.append(
+                                    if (lastRawText == null) builder.append(
                                             text.substring(lastFlushIndex + 1, placeholderStartIndex)
                                     );
                                     else {
-                                        template.append(
+                                        builder.append(
                                                 lastRawText.append(text, lastFlushIndex + 1, placeholderStartIndex)
                                                         .toString()
                                         );
@@ -254,7 +254,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                 {
                                     val finalKey = placeholder;
                                     val finalValue = value;
-                                    template.append(target -> {
+                                    builder.append(target -> {
                                         val formatter = handlers.get(finalKey);
 
                                         return formatter == null
@@ -293,11 +293,11 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
 
             // add the end og the text if it was not
             if (lastRawText == null) {
-                if (lastFlushIndex != length) template.append(text.substring(lastFlushIndex + 1));
-            } else template.append(lastRawText.append(text.substring(lastFlushIndex + 1)).toString());
+                if (lastFlushIndex != length) builder.append(text.substring(lastFlushIndex + 1));
+            } else builder.append(lastRawText.append(text.substring(lastFlushIndex + 1)).toString());
         }
 
-        return template.createAndRelease();
+        return builder.createAndRelease();
     }
 
     @Override

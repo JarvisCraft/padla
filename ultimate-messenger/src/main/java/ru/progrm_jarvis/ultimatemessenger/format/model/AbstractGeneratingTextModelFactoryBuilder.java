@@ -91,10 +91,10 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
     }
 
     /**
-     * Creates new {@link TextModel} according to this template's state.
+     * Creates new {@link TextModel} according to this text model builder's state.
      * This should not handle caching to {@link #cachedTextModel} as this will be done by the calling method.
      *
-     * @param release {@code true} if this template will be released after the call and {@code false} otherwise
+     * @param release {@code true} if this text model builder will be released after the call and {@code false} otherwise
      * @return created text model
      *
      * @apiNote gets called by {@link #createTextModel(boolean)}
@@ -105,7 +105,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
     /**
      * {@inheritDoc}
      * <p>
-     * Attempts to create a fast implementation if there is no dynamic content in this template.
+     * Attempts to create a fast implementation if there is no dynamic content in this text model builder.
      *
      * @param release {@inheritDoc}
      * @return {@inheritDoc}
