@@ -17,11 +17,11 @@ public class TextModelFactories {
      */
     protected <T> TextModelFactory<T> getAvailable() {
         if (BytecodeLibrary.ASM.isAvailable()) try {
-            return AsmGeneratingTextModelFactory.get();
+            return AsmTextModelFactory.get();
         } catch (final Throwable ignored) {}
 
         if (BytecodeLibrary.JAVASSIST.isAvailable()) try {
-            return AsmGeneratingTextModelFactory.get();
+            return AsmTextModelFactory.get();
         } catch (final Throwable ignored) {}
 
         return SimpleTextModelFactory.get();

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
-public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<T> {
+public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
     @Override
     public TextModelFactory.TextModelTemplate<T> newTemplate() {
@@ -40,8 +40,8 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
         /**
          * Lazy singleton of this text model factory
          */
-        private static final Lazy<JavassistGeneratingTextModelFactory> INSTANCE
-                = Lazy.createThreadSafe(JavassistGeneratingTextModelFactory::new);
+        private static final Lazy<JavassistTextModelFactory> INSTANCE
+                = Lazy.createThreadSafe(JavassistTextModelFactory::new);
 
         /**
          * Returns this {@link TextModelFactory text model factory} singleton.
@@ -50,7 +50,7 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
          * @return shared instance of this {@link TextModelFactory text model factory}
          */
         @SuppressWarnings("unchecked")
-        public static <T> JavassistGeneratingTextModelFactory<T> get() {
+        public static <T> JavassistTextModelFactory<T> get() {
             return INSTANCE.get();
         }
 
@@ -80,7 +80,7 @@ public class JavassistGeneratingTextModelFactory<T> implements TextModelFactory<
          * Class naming strategy used to allocate names for generated classes
          */
         @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                JavassistGeneratingTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
+                JavassistTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
         );
 
         @Override

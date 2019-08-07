@@ -17,13 +17,13 @@ import static org.objectweb.asm.Opcodes.*;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
-public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
+public class AsmTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<AsmGeneratingTextModelFactory> INSTANCE
-            = Lazy.createThreadSafe(AsmGeneratingTextModelFactory::new);
+    private static final Lazy<AsmTextModelFactory> INSTANCE
+            = Lazy.createThreadSafe(AsmTextModelFactory::new);
 
     /**
      * Returns this {@link TextModelFactory text model factory} singleton.
@@ -32,7 +32,7 @@ public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> AsmGeneratingTextModelFactory<T> get() {
+    public static <T> AsmTextModelFactory<T> get() {
         return INSTANCE.get();
     }
 
@@ -58,7 +58,7 @@ public class AsmGeneratingTextModelFactory<T> implements TextModelFactory<T> {
          * Class naming strategy used to allocate names for generated classes
          */
         @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                AsmGeneratingTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
+                AsmTextModelFactory.class.getCanonicalName() + "$$Generated Text Model$$#"
         );
 
         //<editor-fold desc="Bytecode generation constants" defaultstate="collapsed">
