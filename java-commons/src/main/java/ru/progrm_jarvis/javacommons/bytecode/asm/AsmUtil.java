@@ -328,7 +328,7 @@ public class AsmUtil {
                 break;
             }
             default: {
-                if (value <= 255) method.visitIntInsn(BIPUSH, (byte) value);
+                if (value <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, (byte) value);
                 else method.visitIntInsn(SIPUSH, (short) value);
             }
         }
