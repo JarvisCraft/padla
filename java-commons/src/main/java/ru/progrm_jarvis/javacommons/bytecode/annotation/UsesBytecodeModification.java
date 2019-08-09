@@ -26,5 +26,5 @@ public @interface UsesBytecodeModification {
      * @return {@code true} if the target is able to do its jub without bytecode libraries (using alternative APIs)
      * and {@code false} otherwise
      */
-    boolean optional() default true;
+    boolean optional() default false;
 }
