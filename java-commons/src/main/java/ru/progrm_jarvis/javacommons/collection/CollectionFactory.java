@@ -10,6 +10,7 @@ import lombok.val;
 import lombok.var;
 import org.intellij.lang.annotations.Language;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
@@ -140,6 +141,7 @@ public class CollectionFactory {
     @SafeVarargs
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
+    @UsesBytecodeModification(value = BytecodeLibrary.JAVASSIST, optional = true)
     public <E extends Enum<E>> Set<E> createImmutableEnumSet(@NonNull final E... values) {
         if (values.length == 0) return Collections.emptySet();
 

@@ -7,6 +7,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
@@ -20,6 +22,7 @@ import static org.objectweb.asm.Type.*;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
+@UsesBytecodeModification(BytecodeLibrary.ASM)
 public class AsmTextModelFactory<T> implements TextModelFactory<T> {
 
     /**

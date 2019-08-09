@@ -4,6 +4,8 @@ import javassist.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
+@UsesBytecodeModification(BytecodeLibrary.JAVASSIST)
 public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
