@@ -19,6 +19,10 @@
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
