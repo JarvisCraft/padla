@@ -5,7 +5,6 @@ import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
@@ -18,18 +17,17 @@ import java.util.Arrays;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
+import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
 
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
 @UsesBytecodeModification(BytecodeLibrary.ASM)
 public class AsmTextModelFactory<T> implements TextModelFactory<T> {
-
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<AsmTextModelFactory> INSTANCE
-            = Lazy.createThreadSafe(AsmTextModelFactory::new);
+    private static final Lazy<AsmTextModelFactory> INSTANCE = Lazy.createThreadSafe(AsmTextModelFactory::new);
 
     /**
      * Returns this {@link TextModelFactory text model factory} singleton.
@@ -74,17 +72,9 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         ///////////////////////////////////////////////////////////////////////////
         /* ******************************************** ASM Type objects ******************************************** */
         /**
-         * ASM type of {@link Object}
-         */
-        protected static final Type OBJECT_TYPE = getType(Object.class),
-        /**
-         * ASM type of {@link String}
-         */
-        STRING_TYPE = getType(String.class),
-        /**
          * ASM type of {@link StringBuilder}
          */
-        STRING_BUILDER_TYPE = getType(StringBuilder.class),
+        protected static final Type STRING_BUILDER_TYPE = getType(StringBuilder.class),
         /**
          * ASM type of {@link TextModel}
          */
@@ -103,10 +93,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         PARENT_T_GENERIC_DESCRIPTOR = "TT;",
         /* ********************************************** Method names ********************************************** */
         /**
-         * Name of constructor-method
-         */
-        CONSTRUCTOR_METHOD_NAME = "<init>",
-        /**
          * Name of {@link TextModel#getText(Object)} method
          */
         GET_TEXT_METHOD_NAME = "getText",
@@ -114,15 +100,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          * Name of {@link StringBuilder}{@code .append(}<i>?</i>i{@code )} method
          */
         APPEND_METHOD_NAME = "append",
-        /**
-         * Name of {@link Object#toString()} method
-         */
-        TO_STRING_METHOD_NAME = "toString",
         /* ********************************************* Internal names ********************************************* */
-        /**
-         * Internal name of {@link Object}
-         */
-        OBJECT_INTERNAL_NAME = OBJECT_TYPE.getInternalName(),
         /**
          * Internal name of {@link StringBuilder}
          */
@@ -132,14 +110,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         TEXT_MODEL_INTERNAL_NAME = TEXT_MODEL_TYPE.getInternalName(),
         /* ********************************************** Descriptors ********************************************** */
-        /**
-         * Descriptor of {@link Object}
-         */
-        OBJECT_DESCRIPTOR = OBJECT_TYPE.getDescriptor(),
-        /**
-         * Descriptor of {@link String}
-         */
-        STRING_DESCRIPTOR = STRING_TYPE.getDescriptor(),
         /**
          * Descriptor of {@link StringBuilder}
          */
@@ -215,18 +185,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Array whose only value is {@link #TEXT_MODEL_INTERNAL_NAME}.
          */
-        protected static final String[] TEXT_MODEL_JVM_CLASS_NAME_ARRAY = new String[]{TEXT_MODEL_INTERNAL_NAME};
-
-        /* ****************************************** Stored multi-opcodes ****************************************** */
-        /**
-         * Result of {@link Opcodes#ACC_PUBLIC} and {@link Opcodes#ACC_FINAL} flags disjunction
-         */
-        private static final int OPCODES_ACC_PUBLIC_FINAL = ACC_PUBLIC | ACC_FINAL;
-        /**
-         * Result of {@link Opcodes#ACC_PUBLIC}, {@link Opcodes#ACC_FINAL}
-         * and {@link Opcodes#ACC_SUPER} flags disjunction
-         */
-        private static final int OPCODES_ACC_PUBLIC_FINAL_SUPER = OPCODES_ACC_PUBLIC_FINAL | ACC_SUPER;
+        protected static final String[] TEXT_MODEL_INTERNAL_NAME_ARRAY = new String[]{TEXT_MODEL_INTERNAL_NAME};
 
         //</editor-fold>
 
@@ -245,7 +204,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
             clazz.visit(
                     V1_8 /* generate bytecode for JVM1.8 */, OPCODES_ACC_PUBLIC_FINAL_SUPER,
                     internalClassName, GENERIC_CLASS_SIGNATURE, OBJECT_INTERNAL_NAME /* inherit Object */,
-                    TEXT_MODEL_JVM_CLASS_NAME_ARRAY /* implement TextModel interface */
+                    TEXT_MODEL_INTERNAL_NAME_ARRAY /* implement TextModel interface */
             );
             { // Add fields to store passed dynamic text models
                 for (var i = 0; i < dynamicElements; i++) clazz
@@ -348,7 +307,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                     method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
                     method.visitInsn(DUP);
                     // Specify initial length of StringBuilder via its constructor
-                    asm$pushPositiveInt(method, staticLength);
+                    pushInt(method, staticLength);
                     // Call constructor `StringBuilder(int)`
                     method.visitMethodInsn(
                             INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
@@ -368,7 +327,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                         } else {
                             val staticContent = element.getStaticContent();
                             if (staticContent.length() == 1) {
-                                asm$pushCharacter(method, staticContent.charAt(0));
+                                pushCharUnsafely(method, staticContent.charAt(0));
                                 asm$invokeStringBuilderAppendChar(method);
                             } else {
                                 method.visitLdcInsn(element.getStaticContent()); // get constant String value
@@ -405,91 +364,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
             } catch (final NoSuchMethodException | InstantiationException
                     | IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException("Could not compile and instantiate TextModel from the given elements");
-            }
-        }
-
-        /**
-         * Adds code to the method so that it pushes a positive int onto the stack head.
-         *
-         * @param method method visitor through which the code should be updated
-         * @param value value which should be updated
-         */
-        protected static void asm$pushPositiveInt(@NotNull final MethodVisitor method, final int value) {
-            switch (value) {
-                case 0: {
-                    method.visitInsn(ICONST_0);
-                    break;
-                }
-                case 1: {
-                    method.visitInsn(ICONST_1);
-                    break;
-                }
-                case 2: {
-                    method.visitInsn(ICONST_2);
-                    break;
-                }
-                case 3: {
-                    method.visitInsn(ICONST_3);
-                    break;
-                }
-                case 4: {
-                   method.visitInsn(ICONST_4);
-                    break;
-                }
-                case 5: {
-                    method.visitInsn(ICONST_5);
-                    break;
-                } default: {
-                    if (value <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, value);
-                    else if (value <= Short.MAX_VALUE) method.visitIntInsn(SIPUSH, value);
-                    else method.visitLdcInsn(value);
-                }
-            }
-        }
-
-        /**
-         * Adds code to the method so that it pushes a character onto the stack head.
-         *
-         * @param method method visitor through which the code should be updated
-         * @param value value which should be updated
-         */
-        protected static void asm$pushCharacter(@NotNull final MethodVisitor method, final char value) {
-            // characters are all positive integers from 0 to 65535
-            switch (value) {
-                case Character.MAX_VALUE: { // also -1, also 65536
-                    method.visitInsn(ICONST_M1);
-                    break;
-                }
-                case 0: {
-                    method.visitInsn(ICONST_0);
-                    break;
-                }
-                case 1: {
-                    method.visitInsn(ICONST_1);
-                    break;
-                }
-                case 2: {
-                    method.visitInsn(ICONST_2);
-                    break;
-                }
-                case 3: {
-                    method.visitInsn(ICONST_3);
-                    break;
-                }
-                case 4: {
-                    method.visitInsn(ICONST_4);
-                    break;
-                }
-                case 5: {
-                    method.visitInsn(ICONST_5);
-                    break;
-                }
-                default: {
-                    if (value <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, value);
-                        // theory: this should work for all characters
-                        // UPD: it works!
-                    else method.visitIntInsn(SIPUSH, (short) value);
-                }
             }
         }
 
