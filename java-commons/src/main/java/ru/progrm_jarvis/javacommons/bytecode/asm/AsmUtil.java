@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
@@ -200,5 +201,136 @@ public class AsmUtil {
      */
     public void addEmptyConstructor(@NonNull final ClassVisitor classVisitor) {
         addEmptyConstructor(classVisitor, OBJECT_INTERNAL_NAME);
+    }
+
+    /**
+     * Adds code to the method which pushes the given {@code int} value onto the stack.
+     *
+     * @param method method visitor used for appending code to the method
+     * @param value value to get pushed onto the stack
+     */
+    public void pushInt(@NonNull final MethodVisitor method, final int value) {
+        switch (value) {
+            case -1: {
+                method.visitInsn(ICONST_M1);
+                break;
+            }
+            case 0: {
+                method.visitInsn(ICONST_0);
+                break;
+            }
+            case 1: {
+                method.visitInsn(ICONST_1);
+                break;
+            }
+            case 2: {
+                method.visitInsn(ICONST_2);
+                break;
+            }
+            case 3: {
+                method.visitInsn(ICONST_3);
+                break;
+            }
+            case 4: {
+                method.visitInsn(ICONST_4);
+                break;
+            }
+            case 5: {
+                method.visitInsn(ICONST_5);
+                break;
+            }
+            default: {
+                if (Byte.MIN_VALUE <= value && value <= Byte.MAX_VALUE) method.visitIntInsn(BIPUSH, value);
+                else if (Short.MIN_VALUE <= value && value <= Short.MAX_VALUE) method.visitIntInsn(SIPUSH, value);
+                else method.visitLdcInsn(value);
+            }
+        }
+    }
+
+    /**
+     * Adds code to the method which pushes the given {@code long} value onto the stack.
+     *
+     * @param method method visitor used for appending code to the method
+     * @param value value to get pushed onto the stack
+     */
+    public void pushLong(@NonNull final MethodVisitor method, final long value) {
+        if (value == 0) method.visitInsn(LCONST_0);
+        else if (value == 1) method.visitInsn(LCONST_1);
+        else method.visitLdcInsn(value);
+    }
+
+    /**
+     * Adds code to the method which pushes the given {@code float} value onto the stack.
+     *
+     * @param method method visitor used for appending code to the method
+     * @param value value to get pushed onto the stack
+     */
+    public void pushFloat(@NonNull final MethodVisitor method, final float value) {
+        if (value == 0) method.visitInsn(FCONST_0);
+        else if (value == 1) method.visitInsn(FCONST_1);
+        else if (value == 2) method.visitInsn(FCONST_2);
+        else method.visitLdcInsn(value);
+    }
+
+    /**
+     * Adds code to the method which pushes the given {@code double} value onto the stack.
+     *
+     * @param method method visitor used for appending code to the method
+     * @param value value to get pushed onto the stack
+     */
+    public void pushDouble(@NonNull final MethodVisitor method, final double value) {
+        if (value == 0) method.visitInsn(DCONST_0);
+        else if (value == 1) method.visitInsn(DCONST_1);
+        else method.visitLdcInsn(value);
+    }
+
+    /**
+     * Adds code to the method which <b>unsafely</b> pushes the given {@code char} value onto the stack.
+     * The unsafety of this operation is in the fact that for some chars
+     * (<i>[(char) 128; (char) 255]</i> and <i>[(char) 32768; (char) 65535</i>) negative {@code int}s will be
+     * pushed onto the stack thus resulting incorrect values when casting those to signed numeric types.
+     * This yet might be a micro-optimization in some cases when there is a guarantee that the pushed value
+     * will only be treated as {@code char} (such as passing it to {@link StringBuilder#append(char)}.
+     *
+     * @param method method visitor used for appending code to the method
+     * @param value value to get pushed onto the stack
+     *
+     * @see #pushInt(MethodVisitor, int) can be used as a safe alternative
+     */
+    public void pushCharUnsafely(@NonNull final MethodVisitor method, final char value) {
+        switch (value) {
+            case 0: {
+                method.visitInsn(ICONST_0);
+                break;
+            }
+            case 1: {
+                method.visitInsn(ICONST_1);
+                break;
+            }
+            case 2: {
+                method.visitInsn(ICONST_2);
+                break;
+            }
+            case 3: {
+                method.visitInsn(ICONST_3);
+                break;
+            }
+            case 4: {
+                method.visitInsn(ICONST_4);
+                break;
+            }
+            case 5: {
+                method.visitInsn(ICONST_5);
+                break;
+            }
+            case 65535: {
+                method.visitInsn(ICONST_M1);
+                break;
+            }
+            default: {
+                if (value <= 255) method.visitIntInsn(BIPUSH, (byte) value);
+                else method.visitIntInsn(SIPUSH, (short) value);
+            }
+        }
     }
 }
