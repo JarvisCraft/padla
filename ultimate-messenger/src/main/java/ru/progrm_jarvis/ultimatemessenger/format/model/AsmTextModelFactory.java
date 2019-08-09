@@ -229,7 +229,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
 
         @Override
         @NotNull protected TextModel<T> performTextModelCreation(final boolean release) {
-            boolean w = false;
             val clazz = new ClassWriter(0); // MAXs are already computed 😎
 
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
@@ -355,7 +354,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                     /* ************************************ Append all elements ************************************ */
                     int dynamicIndex = -1;
                     // Lists are commonly faster with random access
-                    val elementsCount = elements.size();
                     for (val element : elements) {
                         // Load static text value from dynamic constant
                         if (element.isDynamic()) {
