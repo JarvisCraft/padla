@@ -540,6 +540,7 @@ public class InvokeUtil {
      *
      * @param <F> type of functional interface implemented
      * @param <T> type of target value
+     * @return created invoke factory
      */
     public <F, T> InvokeFactory<F, T> invokeFactory() {
         return SimpleInvokeFactory
