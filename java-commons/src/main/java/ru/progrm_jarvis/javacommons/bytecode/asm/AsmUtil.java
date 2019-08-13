@@ -158,6 +158,11 @@ public class AsmUtil {
      */
     public final int OPCODES_ACC_PUBLIC_FINAL = ACC_PUBLIC | ACC_FINAL,
     /**
+     * Result of {@link Opcodes#ACC_PUBLIC}, {@link Opcodes#ACC_STATIC}
+     * and {@link Opcodes#ACC_FINAL} flags disjunction
+     */
+    OPCODES_ACC_PUBLIC_STATIC_FINAL = OPCODES_ACC_PUBLIC_FINAL | ACC_STATIC,
+    /**
      * Result of {@link Opcodes#ACC_PUBLIC}, {@link Opcodes#ACC_FINAL}
      * and {@link Opcodes#ACC_SUPER} flags disjunction
      */
