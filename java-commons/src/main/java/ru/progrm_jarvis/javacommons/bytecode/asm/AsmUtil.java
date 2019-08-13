@@ -169,6 +169,16 @@ public class AsmUtil {
     OPCODES_ACC_PUBLIC_FINAL_SUPER = OPCODES_ACC_PUBLIC_FINAL | ACC_SUPER;
 
     /**
+     * Visits the class's static initializer method.
+     *
+     * @param clazz visitor of the class
+     * @return static initializer block of the class
+     */
+    public MethodVisitor visitStaticInitializer(@NonNull final ClassVisitor clazz) {
+        return clazz.visitMethod(ACC_STATIC, STATIC_INITIALIZER_METHOD_NAME, VOID_METHOD_DESCRIPTOR, null, null);
+    }
+
+    /**
      * Adds an empty constructor to the class via its visitor.
      *
      * @param classVisitor visitor of the class modified
