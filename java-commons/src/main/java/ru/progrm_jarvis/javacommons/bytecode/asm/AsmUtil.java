@@ -38,7 +38,7 @@ public class AsmUtil {
     /**
      * Prefix of generated fields after which the index will go
      */
-   public final String STATIC_INITIALIZER_METHOD_NAME = "<clinit>",
+    public final String STATIC_INITIALIZER_METHOD_NAME = "<clinit>",
     /**
      * Name of constructor-method
      */
@@ -175,7 +175,7 @@ public class AsmUtil {
      * @param superClassInternalName internal name of the super-class whose constructor should be invoked
      */
     public void addEmptyConstructor(@NonNull final ClassVisitor classVisitor,
-                                          @NonNull final String superClassInternalName) {
+                                    @NonNull final String superClassInternalName) {
         // visit (create) empty constructor method
         val constructor = classVisitor.visitMethod(
                 ACC_PUBLIC, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_DESCRIPTOR,
