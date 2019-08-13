@@ -162,8 +162,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          *
          * @see #PARENT_T_GENERIC_DESCRIPTOR name of the parent generic type
          */
-        GENERIC_CLASS_SIGNATURE
-                = "<T:" + OBJECT_DESCRIPTOR + '>' + OBJECT_DESCRIPTOR + TEXT_MODEL_SIGNATURE;
+        GENERIC_CLASS_SIGNATURE = "<T:" + OBJECT_DESCRIPTOR + '>' + OBJECT_DESCRIPTOR + TEXT_MODEL_SIGNATURE;
 
         ///////////////////////////////////////////////////////////////////////////
         // Ints
