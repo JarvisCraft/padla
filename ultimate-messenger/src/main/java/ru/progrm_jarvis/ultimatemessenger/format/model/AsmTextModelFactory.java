@@ -3,17 +3,21 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
+import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
+import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
@@ -41,7 +45,8 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    @NotNull public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    @NotNull
+    public TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>();
     }
 
@@ -59,6 +64,11 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
     protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<T> {
 
         /**
+         * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
+         */
+        protected static final ValueStorage<String, TextModel<?>> DYNAMIC_MODELS = new SimpleValueStorage<>();
+
+        /**
          * Class naming strategy used to allocate names for generated classes
          */
         @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
@@ -72,9 +82,13 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         ///////////////////////////////////////////////////////////////////////////
         /* ******************************************** ASM Type objects ******************************************** */
         /**
+         * ASM type of {@link TextModelBuilder}
+         */
+        protected static final Type TEXT_MODEL_BUILDER_TYPE = getType(TextModelBuilder.class),
+        /**
          * ASM type of {@link StringBuilder}
          */
-        protected static final Type STRING_BUILDER_TYPE = getType(StringBuilder.class),
+        STRING_BUILDER_TYPE = getType(StringBuilder.class),
         /**
          * ASM type of {@link TextModel}
          */
@@ -86,7 +100,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Prefix of generated fields after which the index will go
          */
-        protected static final String GENERATED_FIELD_NAME_PREFIX = "d",
+        protected static final String GENERATED_FIELD_NAME_PREFIX = "D",
         /**
          * Name of parent generic in current context
          */
@@ -100,7 +114,15 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          * Name of {@link StringBuilder}{@code .append(}<i>?</i>i{@code )} method
          */
         APPEND_METHOD_NAME = "append",
+        /**
+         * Name of {@link TextModelBuilder#internal$getDynamicTextModel(String)} method
+         */
+        INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME = "internal$getDynamicTextModel",
         /* ********************************************* Internal names ********************************************* */
+        /**
+         * Internal name of {@link TextModel}
+         */
+        TEXT_MODEL_BUILDER_INTERNAL_NAME = TEXT_MODEL_BUILDER_TYPE.getInternalName(),
         /**
          * Internal name of {@link StringBuilder}
          */
@@ -110,6 +132,10 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         TEXT_MODEL_INTERNAL_NAME = TEXT_MODEL_TYPE.getInternalName(),
         /* ********************************************** Descriptors ********************************************** */
+        /**
+         * Descriptor of {@link TextModel}
+         */
+        TEXT_MODEL_BUILDER_DESCRIPTOR = TEXT_MODEL_BUILDER_TYPE.getDescriptor(),
         /**
          * Descriptor of {@link StringBuilder}
          */
@@ -144,6 +170,10 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         STRING_BUILDER_STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_BUILDER_TYPE, STRING_TYPE),
         /**
+         * Signature of {@code TextModel(String)} method
+         */
+        TEXT_MODEL_STRING_METHOD_SIGNATURE = getMethodDescriptor(TEXT_MODEL_TYPE, STRING_TYPE),
+        /**
          * Signature of {@code StringBuilder(char)} method
          */
         STRING_BUILDER_CHAR_METHOD_SIGNATURE = getMethodDescriptor(STRING_BUILDER_TYPE, CHAR_TYPE),
@@ -155,8 +185,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Generic descriptor of {@link TextModel}
          */
-        TEXT_MODEL_SIGNATURE
-                = 'L' + TEXT_MODEL_INTERNAL_NAME + '<' + PARENT_T_GENERIC_DESCRIPTOR + ">;",
+        TEXT_MODEL_SIGNATURE = 'L' + TEXT_MODEL_INTERNAL_NAME + '<' + PARENT_T_GENERIC_DESCRIPTOR + ">;",
         /**
          * Generic signature of the generated class
          *
@@ -188,8 +217,23 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
 
         //</editor-fold>
 
+        /**
+         * Retrieves (gets and removes) {@link TextModel dynamic text model}
+         * stored in {@link #DYNAMIC_MODELS} by the given key.
+         *
+         * @param uniqueKey unique key by which the value should be retrieved
+         * @return dynamic text model stored by the given unique key
+         * @deprecated this method is internal
+         */
+        @Deprecated
+        @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
+        public static TextModel<?> internal$getDynamicTextModel(@NotNull final String uniqueKey) {
+            return DYNAMIC_MODELS.retrieveValue(uniqueKey);
+        }
+
         @Override
-        @NotNull protected TextModel<T> performTextModelCreation(final boolean release) {
+        @NotNull
+        protected TextModel<T> performTextModelCreation(final boolean release) {
             val clazz = new ClassWriter(0); // MAXs are already computed 😎
 
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
@@ -205,136 +249,96 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                     internalClassName, GENERIC_CLASS_SIGNATURE, OBJECT_INTERNAL_NAME /* inherit Object */,
                     TEXT_MODEL_INTERNAL_NAME_ARRAY /* implement TextModel interface */
             );
-            { // Add fields to store passed dynamic text models
-                for (var i = 0; i < dynamicElements; i++) clazz
-                        .visitField(
-                                OPCODES_ACC_PUBLIC_FINAL, GENERATED_FIELD_NAME_PREFIX + i /* name prefix + index */,
-                                TEXT_MODEL_DESCRIPTOR /* field type is TextModel<T> */,
-                                TEXT_MODEL_SIGNATURE, null /* no default value [*] */
-                        )
-                        .visitEnd();
-                // [*] Default value could have been anything what can be stored in const pool :(
-                // It would be much easier if our values could have been passed there instead of constructor injection
-            }
+            // add an empty constructor
+            AsmUtil.addEmptyConstructor(clazz);
 
-            MethodVisitor method; // reused method visitor field
-            { // Add constructor through which all field get set
-                final StringBuilder descriptor = new StringBuilder(
-                        3 + TEXT_MODEL_DESCRIPTOR_LENGTH * dynamicElements
-                ).append('('),
-                        signature = new StringBuilder(
-                                3 + TEXT_MODEL_GENERIC_DESCRIPTOR_LENGTH * dynamicElements
-                        ).append('(');
-                for (var i = 0; i < dynamicElements; i++) {
-                    descriptor.append(TEXT_MODEL_DESCRIPTOR);
-                    signature.append(TEXT_MODEL_SIGNATURE);
-                }
-                // Add constructor `void <init>(TextModel[...TextModel])`
-                method = clazz.visitMethod(
-                        ACC_PUBLIC, CONSTRUCTOR_METHOD_NAME,
-                        descriptor.append(')').append('V').toString(),
-                        signature.append(')').append('V').toString(), null
-                );
-
-                method.visitCode();
-                //<editor-fold desc="Constructor code generation" defaultstate="collapsed">
-                // Get `this`
-                method.visitVarInsn(ALOAD, 0);
-                // Invoke Object constructor
-                method.visitMethodInsn(
-                        INVOKESPECIAL, OBJECT_INTERNAL_NAME, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_DESCRIPTOR, false
-                );
-                // Set each field's value to constructor's parameter at the corresponding index
-                for (var i = 0; i < dynamicElements; i++) {
-                    method.visitVarInsn(ALOAD, 0);
-                    method.visitVarInsn(ALOAD, i + 1);
-                    method.visitFieldInsn(
-                            PUTFIELD, internalClassName, GENERATED_FIELD_NAME_PREFIX + i,
-                            TEXT_MODEL_DESCRIPTOR
-                    );
-                }
-                // Return from method
-                method.visitInsn(RETURN);
-                //</editor-fold>
-
-                method.visitMaxs(
-                        2 /* Always 2 for simple field-settings constructors */,
-                        dynamicElements + 1 /* {parameters} + [this] */
-                );
-                method.visitEnd();
-            }
-
-            val dynamicModels = new TextModel[dynamicElements];
-            { // Implement `TextModel#getText(T)` method
-                method = clazz.visitMethod(
+            { // Implement `TextModel#getText(T)` method and add fields
+                val method = clazz.visitMethod(
                         ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
                         STRING_GENERIC_T_METHOD_SIGNATURE, null
                 );
+
                 method.visitCode();
 
                 //<editor-fold desc="Method code generation" defaultstate="collapsed">
-                val staticLength = this.staticLength;
-                if (staticLength == 0) { // there are no static elements (and at least 2 dynamic)
-                    /* ************************** Invoke `StringBuilder(int)` constructor ************************** */
-                    method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
-                    method.visitInsn(DUP);
-                    // Specify first `StringBuilder` element
-                    asm$pushDynamicModelGetTextInvocationResult(
-                            method, internalClassName, GENERATED_FIELD_NAME_PREFIX + 0
-                    );
-                    // Call constructor `StringBuilder(int)`
-                    method.visitMethodInsn(
-                            INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
-                            CONSTRUCTOR_METHOD_NAME, VOID_STRING_METHOD_DESCRIPTOR, false
-                    );
-
-                    val iterator = elements.iterator();
-                    dynamicModels[0] = iterator.next().getDynamicContent();
-                    // dynamic elements count is at least 2
-                    var dynamicIndex = 0;
-                    while (iterator.hasNext()) {
-                        dynamicModels[++dynamicIndex] = iterator.next().getDynamicContent();
-                        asm$pushDynamicModelGetTextInvocationResult(
-                                method, internalClassName, GENERATED_FIELD_NAME_PREFIX + dynamicIndex
+                {
+                    val staticInitializer = AsmUtil.visitStaticInitializer(clazz);
+                    staticInitializer.visitCode();
+                    val staticLength = this.staticLength;
+                    if (staticLength == 0) { // there are no static elements (and at least 2 dynamic)
+                        /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
+                        method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
+                        method.visitInsn(DUP);
+                        String fieldName = GENERATED_FIELD_NAME_PREFIX + 0;
+                        // Specify first `StringBuilder` element
+                        asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
+                        // Call constructor `StringBuilder(int)`
+                        method.visitMethodInsn(
+                                INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
+                                CONSTRUCTOR_METHOD_NAME, VOID_STRING_METHOD_DESCRIPTOR, false
                         );
-                        asm$invokeStringBuilderAppendString(method);
-                    }
 
-                    method.visitMaxs(4, 2 /* [StringBuilder instance ] + [this | appended value]*/);
-                } else { // there are static elements
-                    /* ************************** Invoke `StringBuilder(int)` constructor ************************** */
-                    method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
-                    method.visitInsn(DUP);
-                    // Specify initial length of StringBuilder via its constructor
-                    pushInt(method, staticLength);
-                    // Call constructor `StringBuilder(int)`
-                    method.visitMethodInsn(
-                            INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
-                            CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_DESCRIPTOR, false
-                    );
-                    /* ************************************ Append all elements ************************************ */
-                    int dynamicIndex = -1;
-                    // Lists are commonly faster with random access
-                    for (val element : elements) {
-                        // Load static text value from dynamic constant
-                        if (element.isDynamic()) {
-                            dynamicModels[++dynamicIndex] = element.getDynamicContent();
-                            asm$pushDynamicModelGetTextInvocationResult(
-                                    method, internalClassName, GENERATED_FIELD_NAME_PREFIX + dynamicIndex
+                        val iterator = elements.iterator();
+                        asm$addStaticFieldWithInitializer(
+                                clazz, internalClassName, staticInitializer,
+                                fieldName, iterator.next().getDynamicContent()
+                        );
+                        // dynamic elements count is at least 2
+                        var dynamicIndex = 0;
+                        while (iterator.hasNext()) {
+                            fieldName = (GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex));
+
+                            asm$addStaticFieldWithInitializer(
+                                    clazz, internalClassName, staticInitializer,
+                                    fieldName, iterator.next().getDynamicContent()
                             );
+                            asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
                             asm$invokeStringBuilderAppendString(method);
-                        } else {
-                            val staticContent = element.getStaticContent();
-                            if (staticContent.length() == 1) {
-                                pushCharUnsafely(method, staticContent.charAt(0));
-                                asm$invokeStringBuilderAppendChar(method);
-                            } else {
-                                method.visitLdcInsn(element.getStaticContent()); // get constant String value
+                        }
+
+                        method.visitMaxs(4, 2 /* [StringBuilder instance ] + [this | appended value]*/);
+                    } else { // there are static elements
+                        /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
+                        method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
+                        method.visitInsn(DUP);
+                        // Specify initial length of StringBuilder via its constructor
+                        pushInt(method, staticLength);
+                        // Call constructor `StringBuilder(int)`
+                        method.visitMethodInsn(
+                                INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
+                                CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_DESCRIPTOR, false
+                        );
+                        /* ********************************** Append all elements ********************************** */
+                        int dynamicIndex = -1;
+                        // Lists are commonly faster with random access
+                        for (val element : elements) {
+                            // Load static text value from dynamic constant
+                            if (element.isDynamic()) {
+                                val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                                asm$addStaticFieldWithInitializer(
+                                        clazz, internalClassName, staticInitializer,
+                                        fieldName, element.getDynamicContent()
+                                );
+                                asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                        method, internalClassName, fieldName
+                                );
                                 asm$invokeStringBuilderAppendString(method);
+                            } else {
+                                val staticContent = element.getStaticContent();
+                                if (staticContent.length() == 1) {
+                                    pushCharUnsafely(method, staticContent.charAt(0));
+                                    asm$invokeStringBuilderAppendChar(method);
+                                } else {
+                                    method.visitLdcInsn(element.getStaticContent()); // get constant String value
+                                    asm$invokeStringBuilderAppendString(method);
+                                }
                             }
                         }
+                        method.visitMaxs(3, 2 /* [StringBuilder instance] + [this|appended value] */);
                     }
-                    method.visitMaxs(3, 2 /* [StringBuilder instance] + [this|appended value] */);
+                    staticInitializer.visitInsn(RETURN);
+                    staticInitializer.visitMaxs(2, 0);
+                    staticInitializer.visitEnd();
                 }
 
                 // invoke `StringBuilder#toString()`
@@ -349,17 +353,15 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                 // Note: visitMaxs() happens above
                 method.visitEnd();
             }
+
             clazz.visitEnd();
             //</editor-fold>
 
-            val constructorSignature = new Class<?>[dynamicElements];
-            Arrays.fill(constructorSignature, TextModel.class);
             try {
-                val constructor = ClassFactory.defineGCClass(className, clazz.toByteArray())
-                        .getDeclaredConstructor(constructorSignature);
+                val constructor = ClassFactory.defineGCClass(className, clazz.toByteArray()).getDeclaredConstructor();
                 constructor.setAccessible(true);
-                //noinspection unchecked,RedundantCast
-                return (TextModel<T>) constructor.newInstance((Object[]) dynamicModels);
+                //noinspection unchecked
+                return (TextModel<T>) constructor.newInstance();
             } catch (final NoSuchMethodException | InstantiationException
                     | IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException("Could not compile and instantiate TextModel from the given elements");
@@ -374,17 +376,13 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          * @param internalClassName internal name of this class
          * @param fieldName name of the field of type {@link TextModel}
          */
-        protected static void asm$pushDynamicModelGetTextInvocationResult(@NotNull final MethodVisitor method,
-                                                                          @NotNull final String internalClassName,
-                                                                          @NotNull final String fieldName) {
-            // Get `this`
-            method.visitVarInsn(ALOAD, 0);
+        protected static void asm$pushStaticTextModelFieldGetTextInvocationResult(
+                @NotNull final MethodVisitor method,
+                @NotNull final String internalClassName,
+                @NotNull final String fieldName) {
             // Get value of field storing dynamic value
-            method.visitFieldInsn(
-                    GETFIELD, internalClassName, fieldName,
-                    TEXT_MODEL_DESCRIPTOR
-            );
-            // Get value of the field
+            method.visitFieldInsn(GETSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
+            // Push target
             method.visitVarInsn(ALOAD, 1);
             // Invoke `TextModel.getText(T)` on field's value
             method.visitMethodInsn(
@@ -417,6 +415,40 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
                     APPEND_METHOD_NAME, STRING_BUILDER_CHAR_METHOD_SIGNATURE, false
             );
+        }
+
+        /**
+         * Adds a {@code static final} field of type {@link TextModel} initialized via static-initializer block
+         * invoking {@link #internal$getDynamicTextModel(String)} to the class.
+         *
+         * @param clazz class to which the field should be added
+         * @param internalClassName internal name of this class
+         * @param staticInitializer static initializer block
+         * @param fieldName name of the field to store value
+         * @param value value of the field (dynamic text model)
+         */
+        protected static void asm$addStaticFieldWithInitializer(@NotNull final ClassVisitor clazz,
+                                                                @NotNull final String internalClassName,
+                                                                @NotNull final MethodVisitor staticInitializer,
+                                                                @NotNull final String fieldName,
+                                                                @NotNull final TextModel value) {
+            // add field
+            clazz.visitField(
+                    OPCODES_ACC_PUBLIC_STATIC_FINAL /* less access checks & possible JIT folding */,
+                    fieldName, TEXT_MODEL_DESCRIPTOR /* field type is TextModel<T> */,
+                    TEXT_MODEL_SIGNATURE, null /* no default value [*] */
+            ).visitEnd();
+
+            // push unique key
+            staticInitializer.visitLdcInsn(DYNAMIC_MODELS.storeValue(value));
+            // invoke `TextModel internal$getDynamicTextModel(String)`
+            staticInitializer.visitMethodInsn(
+                    INVOKESTATIC, TEXT_MODEL_BUILDER_INTERNAL_NAME,
+                    INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME, TEXT_MODEL_STRING_METHOD_SIGNATURE, false
+            );
+
+            // set the field to the computed value
+            staticInitializer.visitFieldInsn(PUTSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
         }
     }
 }
