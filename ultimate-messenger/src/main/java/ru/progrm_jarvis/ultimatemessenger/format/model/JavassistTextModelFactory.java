@@ -4,17 +4,19 @@ import javassist.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.classload.ClassFactory;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
+import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
 import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUtil;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
@@ -56,6 +58,20 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<T> {
+        /**
+         * Full name (including canonical class name) of {@link #internal$getDynamicTextModel(String)} method
+         */
+        protected static final String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME
+                = TextModelBuilder.class.getCanonicalName() + ".internal$getDynamicTextModel",
+        /**
+         * Prefix of generated fields after which the index will go
+         */
+        GENERATED_FIELD_NAME_PREFIX = "D";
+
+        /**
+         * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
+         */
+        protected static final ValueStorage<String, TextModel<?>> DYNAMIC_MODELS = new SimpleValueStorage<>();
 
         /**
          * Lazily initialized {@link ClassPool Javassist class pool}
@@ -75,9 +91,10 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         });
 
         /**
-         * Result of {@link Modifier#PUBLIC} and {@link Modifier#FINAL} flags disjunction
+         * Result of {@link Modifier#PUBLIC}, {@link Modifier#STATIC} and {@link Modifier#FINAL} flags disjunction
          */
-        private static final int PUBLIC_FINAL_MODIFIERS = Modifier.PUBLIC | Modifier.FINAL;
+        private static final int PUBLIC_FINAL_MODIFIERS = Modifier.PUBLIC | Modifier.FINAL,
+                PUBLIC_STATIC_FINAL_MODIFIERS = PUBLIC_FINAL_MODIFIERS | Modifier.STATIC;
 
         /**
          * Class naming strategy used to allocate names for generated classes
@@ -86,6 +103,20 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 TextModelBuilder.class.getCanonicalName() + "$$Generated$$TextModel$$"
         );
 
+        /**
+         * Retrieves (gets and removes) {@link TextModel dynamic text model}
+         * stored in {@link #DYNAMIC_MODELS} by the given key.
+         *
+         * @param uniqueKey unique key by which the value should be retrieved
+         * @return dynamic text model stored by the given unique key
+         * @deprecated this method is internal
+         */
+        @Deprecated
+        @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
+        public static TextModel<?> internal$getDynamicTextModel(@NotNull final String uniqueKey) {
+            return DYNAMIC_MODELS.retrieveValue(uniqueKey);
+        }
+
         @Override
         @NotNull public TextModel<T> performTextModelCreation(final boolean release) {
             val clazz = CLASS_POOL.get().makeClass(CLASS_NAMING_STRATEGY.get());
@@ -93,49 +124,41 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             clazz.setModifiers(PUBLIC_FINAL_MODIFIERS);
             clazz.setInterfaces(new CtClass[]{textModelCtClass});
 
-            val dynamicModels = new TextModel[dynamicElementCount];
-
-            { // Constructor (initializing fields)
-                val constructorSignature = new CtClass[dynamicElementCount];
-                Arrays.fill(constructorSignature, textModelCtClass);
-                try {
-                    clazz.addConstructor(CtNewConstructor.skeleton(constructorSignature, null, clazz));
-                } catch (final CannotCompileException e) {
-                    throw new IllegalStateException("Could not add constructor to generated TextModel");
-                }
-            }
-            { // Fields (holding dynamic text models)
-                for (var i = 0; i < dynamicElementCount; i++) {
-                    try {
-                        val field = new CtField(textModelCtClass, "d" + i, clazz);
-                        field.setModifiers(PUBLIC_FINAL_MODIFIERS);
-                        clazz.addField(field, CtField.Initializer.byParameter(i));
-                    } catch (final CannotCompileException e) {
-                        throw new IllegalStateException("Could not add field to generated TextModel");
-                    }
-                }
+            // Default constructor
+            try {
+                clazz.addConstructor(CtNewConstructor.defaultConstructor(clazz));
+            } catch (final CannotCompileException e) {
+                throw new IllegalStateException("Could not add defaul constructor to generated TextModel");
             }
 
             { // Method (#getText(T))
                 StringBuilder src;
                 if (staticLength == 0) { // constructor StringBuilder from the first object
                     // only dynamic elements (yet, there are multiple of those)
-                    src = new StringBuilder("public String getText(Object t){return new StringBuilder(d0.getText(t))");
-                    dynamicModels[0] = elements.get(0).getDynamicContent();
+                    String fieldName = GENERATED_FIELD_NAME_PREFIX + 0;
+                    src = new StringBuilder("public String getText(Object t){return new StringBuilder(")
+                            .append(fieldName).append(".getText(t))");
+
+                    val iterator = elements.iterator();
+
+                    javassist$addStaticFieldWithInitializer(clazz, fieldName, iterator.next().getDynamicContent());
                     // dynamic elements count is at least 2
-                    for (var index = 1; index < dynamicElementCount; index++) {
-                        dynamicModels[index] = elements.get(index).getDynamicContent();
-                        src.append(".append(d").append(index).append(".getText(t))"); // .append(d#.getText(t))
+                    var index = 0;
+                    while (iterator.hasNext()) {
+                        fieldName = GENERATED_FIELD_NAME_PREFIX + (++index);
+                        javassist$addStaticFieldWithInitializer(clazz, fieldName, iterator.next().getDynamicContent());
+                        src.append(".append(").append(fieldName).append(".getText(t))"); // .append(d#.getText(t))
                     }
                 } else {
                     src = new StringBuilder(
                             "public String getText(Object t){return new StringBuilder("
                     ).append(staticLength).append(')');
                     // there are static elements
-                    int dynamicIndex = 0;
+                    int dynamicIndex = -1;
                     for (val element : elements) if (element.isDynamic()) {
-                        dynamicModels[dynamicIndex] = element.getDynamicContent();
-                        src.append(".append(d").append(dynamicIndex++).append(".getText(t))"); // .append(d#.getText(t))
+                        val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                        javassist$addStaticFieldWithInitializer(clazz, fieldName, element.getDynamicContent());
+                        src.append(".append(").append(fieldName).append(".getText(t))"); // .append(d#.getText(t))
                     } else {
                         val staticContent = element.getStaticContent();
                         if (staticContent.length() == 1) src.append(".append(\'").append(
@@ -154,16 +177,43 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 }
             }
 
-            val constructorSignature = new Class<?>[dynamicElementCount];
-            Arrays.fill(constructorSignature, TextModel.class);
             try {
-                val constructor = ClassFactory.defineGCClass(clazz).getDeclaredConstructor(constructorSignature);
+                val constructor = ClassFactory.defineGCClass(clazz).getDeclaredConstructor();
                 constructor.setAccessible(true);
-                //noinspection unchecked,RedundantCast
-                return (TextModel<T>) constructor.newInstance((Object[]) dynamicModels);
+                // noinspection unchecked
+                return (TextModel<T>) constructor.newInstance();
             } catch (final IOException | CannotCompileException | NoSuchMethodException
                     | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
                 throw new IllegalStateException("Could not compile and instantiate TextModel from the given elements");
+            }
+        }
+
+        /**
+         * Adds a {@code static final} field of type {@link TextModel} initialized via static-initializer block
+         * invoking {@link #internal$getDynamicTextModel(String)} to the class.
+         *
+         * @param clazz class to which the field should be added
+         * @param fieldName name of the field to store value
+         * @param value value of the field (dynamic text model)
+         */
+        protected static void javassist$addStaticFieldWithInitializer(@NotNull final CtClass clazz,
+                                                                      @NotNull final String fieldName,
+                                                                      @NotNull final TextModel value) {
+            try {
+                val field = new CtField(TEXT_MODEL_CT_CLASS.get(), fieldName, clazz);
+                field.setModifiers(PUBLIC_STATIC_FINAL_MODIFIERS);
+                clazz.addField(
+                        field,
+                        INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME + "(\""
+                                + StringMicroOptimizationUtil.escapeJavaStringLiteral(DYNAMIC_MODELS.storeValue(value))
+                                + "\")"
+                );
+            } catch (final CannotCompileException e) {
+                throw new IllegalStateException(
+                        "Could not add public static final field \"" + fieldName + " \" to generated TextModel "
+                                + "to" + clazz + "to store dynamic TextModel element", e
+                );
             }
         }
     }
