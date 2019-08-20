@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.reflector.invoke.InvokeUtil;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Field;
 
 /**
  * This is a mostly internal utility (although useful externally) for specific {@link String string} operations.
@@ -31,18 +30,18 @@ public class StringMicroOptimizationUtil {
     private final boolean STRING_VALUE_FIELD_AVAILABLE;
 
     static {
-        fastStringToCharArray: {
-            final Field stringValueField;
-            try {
-                stringValueField = String.class.getDeclaredField(STRING_VALUE_FIELD_NAME);
-            } catch (final NoSuchFieldException e) {
-                STRING_VALUE_FIELD_GETTER_METHOD_HANDLE = null;
-                STRING_VALUE_FIELD_AVAILABLE = false;
-                break fastStringToCharArray;
-            } // field can't be found and so slower #toCharArray() is used
-            STRING_VALUE_FIELD_GETTER_METHOD_HANDLE = InvokeUtil.toGetterMethodHandle(stringValueField);
-            STRING_VALUE_FIELD_AVAILABLE = true;
-        }
+        MethodHandle stringValueFieldGetterMethodHandle = null;
+        boolean stringValueFieldAvailable = false;
+        try {
+            val stringValueField = String.class.getDeclaredField(STRING_VALUE_FIELD_NAME);
+            if (stringValueField.getType() == char[].class) {
+                stringValueFieldGetterMethodHandle = InvokeUtil.toGetterMethodHandle(stringValueField);
+                stringValueFieldAvailable = true;
+            }
+        } catch (final Throwable ignored) {} // use default String's implementation
+
+        STRING_VALUE_FIELD_GETTER_METHOD_HANDLE = stringValueFieldGetterMethodHandle;
+        STRING_VALUE_FIELD_AVAILABLE = stringValueFieldAvailable;
     }
 
     /**
