@@ -3,6 +3,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -18,6 +19,7 @@ import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.BooleanSupplier;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
@@ -68,6 +70,35 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         protected static final ValueStorage<String, TextModel<?>> DYNAMIC_MODELS = new SimpleValueStorage<>();
 
+        protected static final String ENABLE_INDY_STRING_CONCATENATION_SYSTEM_PROPERTY_NAME
+                = TextModelBuilder.class.getCanonicalName() + ".enable-indy-string-concatenation";
+
+        protected static boolean STRING_CONCAT_FACTORY_AVAILABLE, ENABLE_INDY_STRING_CONCATENATION;
+
+        @Nullable protected static Class<?> STRING_CONCAT_FACTORY_CLASS;
+
+        static {
+            boolean stringConcatFactoryAvailable = false;
+            { // StringConcatFactory class lookup attempt
+                Class<?> stringConcatFactoryClass;
+                try {
+                    stringConcatFactoryClass = Class.forName("java.lang.invoke.StringConcatFactory");
+                    stringConcatFactoryAvailable = true;
+                } catch (ClassNotFoundException ignored) {
+                    stringConcatFactoryClass = null;
+                } // StringConcatFactory is unavailable
+                STRING_CONCAT_FACTORY_CLASS = stringConcatFactoryClass;
+            }
+            STRING_CONCAT_FACTORY_AVAILABLE = stringConcatFactoryAvailable;
+
+            ENABLE_INDY_STRING_CONCATENATION
+                    = stringConcatFactoryAvailable && ((BooleanSupplier) () -> {
+                val property = System.getProperty(ENABLE_INDY_STRING_CONCATENATION_SYSTEM_PROPERTY_NAME);
+                if (property == null) return true;
+                return Boolean.parseBoolean(property);
+            }).getAsBoolean();
+        }
+
         /**
          * Class naming strategy used to allocate names for generated classes
          */
@@ -84,7 +115,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * ASM type of {@link TextModelBuilder}
          */
-        protected static final Type TEXT_MODEL_BUILDER_TYPE = getType(TextModelBuilder.class),
+        @NonNull protected static final Type TEXT_MODEL_BUILDER_TYPE = getType(TextModelBuilder.class),
         /**
          * ASM type of {@link StringBuilder}
          */
@@ -100,7 +131,7 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Prefix of generated fields after which the index will go
          */
-        protected static final String GENERATED_FIELD_NAME_PREFIX = "D",
+        @NonNull protected static final String GENERATED_FIELD_NAME_PREFIX = "D",
         /**
          * Name of parent generic in current context
          */
@@ -206,6 +237,46 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
          */
         TEXT_MODEL_GENERIC_DESCRIPTOR_LENGTH = TEXT_MODEL_SIGNATURE.length();
 
+        /*  *******************************************************************************************************  */
+        /* ************************** java.lang.invoke.StringConcatFactory specific stuff ************************** */
+        /*  *******************************************************************************************************  */
+
+        /**
+         * ASM type of {@code java.lang.invoke.StringConcatFactory}
+         */
+        @Nullable private static final Type STRING_CONCAT_FACTORY_TYPE;
+        /**
+         * Name of {@code java.lang.invoke.StringConcatFactory.concat(Lookup, String, MethodType)}
+         */
+        @NonNull private final String MAKE_CONCAT_METHOD_NAME = "makeConcat",
+        /**
+         * Name of {@code java.lang.invoke.StringConcatFactory
+         * .makeConcatWithConstants(Lookup, String, MethodType, String, Object[])}
+         */
+        MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME = "makeConcatWithConstants";
+        /**
+         * Internal name of {@link TextModel}
+         */
+        @Nullable private static final String STRING_CONCAT_FACTORY_INTERNAL_NAME,
+        /**
+         * Descriptor of {@link TextModel}
+         */
+        STRING_CONCAT_FACTORY_DESCRIPTOR;
+
+        static {
+            if (STRING_CONCAT_FACTORY_AVAILABLE) {
+                assert STRING_CONCAT_FACTORY_CLASS != null; // should never happen as there is direct relation
+
+                STRING_CONCAT_FACTORY_TYPE = getType(STRING_CONCAT_FACTORY_CLASS);
+                STRING_CONCAT_FACTORY_INTERNAL_NAME = STRING_CONCAT_FACTORY_TYPE.getInternalName();
+                STRING_CONCAT_FACTORY_DESCRIPTOR = STRING_CONCAT_FACTORY_TYPE.getDescriptor();
+            } else {
+                 STRING_CONCAT_FACTORY_TYPE = null;
+                STRING_CONCAT_FACTORY_INTERNAL_NAME = null;
+                STRING_CONCAT_FACTORY_DESCRIPTOR = null;
+            }
+        }
+
         ///////////////////////////////////////////////////////////////////////////
         // Constant String arrays
         ///////////////////////////////////////////////////////////////////////////
@@ -239,8 +310,6 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
             val className = CLASS_NAMING_STRATEGY.get();
 
-            val dynamicElements = dynamicElementCount; // at least 1
-
             // ASM does not provide any comfortable method fot this :(
             // PS yet ASM is <3
             val internalClassName = className.replace('.', '/');
@@ -252,107 +321,8 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
             // add an empty constructor
             AsmUtil.addEmptyConstructor(clazz);
 
-            { // Implement `TextModel#getText(T)` method and add fields
-                val method = clazz.visitMethod(
-                        ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
-                        STRING_GENERIC_T_METHOD_SIGNATURE, null
-                );
-
-                method.visitCode();
-
-                //<editor-fold desc="Method code generation" defaultstate="collapsed">
-                {
-                    val staticInitializer = AsmUtil.visitStaticInitializer(clazz);
-                    staticInitializer.visitCode();
-                    val staticLength = this.staticLength;
-                    if (staticLength == 0) { // there are no static elements (and at least 2 dynamic)
-                        /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
-                        method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
-                        method.visitInsn(DUP);
-                        String fieldName = GENERATED_FIELD_NAME_PREFIX + 0;
-                        // Specify first `StringBuilder` element
-                        asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
-                        // Call constructor `StringBuilder(int)`
-                        method.visitMethodInsn(
-                                INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
-                                CONSTRUCTOR_METHOD_NAME, VOID_STRING_METHOD_DESCRIPTOR, false
-                        );
-
-                        val iterator = elements.iterator();
-                        asm$addStaticFieldWithInitializer(
-                                clazz, internalClassName, staticInitializer,
-                                fieldName, iterator.next().getDynamicContent()
-                        );
-                        // dynamic elements count is at least 2
-                        var dynamicIndex = 0;
-                        while (iterator.hasNext()) {
-                            fieldName = (GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex));
-
-                            asm$addStaticFieldWithInitializer(
-                                    clazz, internalClassName, staticInitializer,
-                                    fieldName, iterator.next().getDynamicContent()
-                            );
-                            asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
-                            asm$invokeStringBuilderAppendString(method);
-                        }
-
-                        method.visitMaxs(4, 2 /* [StringBuilder instance ] + [this | appended value]*/);
-                    } else { // there are static elements
-                        /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
-                        method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
-                        method.visitInsn(DUP);
-                        // Specify initial length of StringBuilder via its constructor
-                        pushInt(method, staticLength);
-                        // Call constructor `StringBuilder(int)`
-                        method.visitMethodInsn(
-                                INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
-                                CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_DESCRIPTOR, false
-                        );
-                        /* ********************************** Append all elements ********************************** */
-                        int dynamicIndex = -1;
-                        // Lists are commonly faster with random access
-                        for (val element : elements) {
-                            // Load static text value from dynamic constant
-                            if (element.isDynamic()) {
-                                val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                                asm$addStaticFieldWithInitializer(
-                                        clazz, internalClassName, staticInitializer,
-                                        fieldName, element.getDynamicContent()
-                                );
-                                asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                        method, internalClassName, fieldName
-                                );
-                                asm$invokeStringBuilderAppendString(method);
-                            } else {
-                                val staticContent = element.getStaticContent();
-                                if (staticContent.length() == 1) {
-                                    pushCharUnsafely(method, staticContent.charAt(0));
-                                    asm$invokeStringBuilderAppendChar(method);
-                                } else {
-                                    method.visitLdcInsn(element.getStaticContent()); // get constant String value
-                                    asm$invokeStringBuilderAppendString(method);
-                                }
-                            }
-                        }
-                        method.visitMaxs(3, 2 /* [StringBuilder instance] + [this|appended value] */);
-                    }
-                    staticInitializer.visitInsn(RETURN);
-                    staticInitializer.visitMaxs(2, 0);
-                    staticInitializer.visitEnd();
-                }
-
-                // invoke `StringBuilder#toString()`
-                method.visitMethodInsn(
-                        INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
-                        TO_STRING_METHOD_NAME, STRING_METHOD_SIGNATURE, false
-                );
-                // Return String from method
-                method.visitInsn(ARETURN);
-                //</editor-fold>
-
-                // Note: visitMaxs() happens above
-                method.visitEnd();
-            }
+            if (ENABLE_INDY_STRING_CONCATENATION) asm$implementGetTextMethodViaStringBuilder(clazz, internalClassName);
+            else asm$implementGetTextMethodViaStringConcatFactory(clazz, internalClassName);
 
             clazz.visitEnd();
             //</editor-fold>
@@ -366,6 +336,208 @@ public class AsmTextModelFactory<T> implements TextModelFactory<T> {
                     | IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException("Could not compile and instantiate TextModel from the given elements");
             }
+        }
+
+        protected void asm$implementGetTextMethodViaStringBuilder(@NotNull final ClassWriter clazz,
+                                                                  @NotNull final String internalClassName) {
+            // Implement `TextModel#getText(T)` method and add fields
+            val method = clazz.visitMethod(
+                    ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
+                    STRING_GENERIC_T_METHOD_SIGNATURE, null
+            );
+
+            method.visitCode();
+
+            //<editor-fold desc="Method code generation" defaultstate="collapsed">
+            {
+                val staticInitializer = AsmUtil.visitStaticInitializer(clazz);
+                staticInitializer.visitCode();
+                val staticLength = this.staticLength;
+                if (staticLength == 0) { // there are no static elements (and at least 2 dynamic)
+                    /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
+                    method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
+                    method.visitInsn(DUP);
+                    String fieldName = GENERATED_FIELD_NAME_PREFIX + 0;
+                    // Specify first `StringBuilder` element
+                    asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
+                    // Call constructor `StringBuilder(int)`
+                    method.visitMethodInsn(
+                            INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
+                            CONSTRUCTOR_METHOD_NAME, VOID_STRING_METHOD_DESCRIPTOR, false
+                    );
+
+                    val iterator = elements.iterator();
+                    asm$addStaticFieldWithInitializer(
+                            clazz, internalClassName, staticInitializer,
+                            fieldName, iterator.next().getDynamicContent()
+                    );
+                    // dynamic elements count is at least 2
+                    var dynamicIndex = 0;
+                    while (iterator.hasNext()) {
+                        fieldName = (GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex));
+
+                        asm$addStaticFieldWithInitializer(
+                                clazz, internalClassName, staticInitializer,
+                                fieldName, iterator.next().getDynamicContent()
+                        );
+                        asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
+                        asm$invokeStringBuilderAppendString(method);
+                    }
+
+                    method.visitMaxs(4, 2 /* [StringBuilder instance ] + [this | appended value]*/);
+                } else { // there are static elements
+                    /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
+                    method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
+                    method.visitInsn(DUP);
+                    // Specify initial length of StringBuilder via its constructor
+                    pushInt(method, staticLength);
+                    // Call constructor `StringBuilder(int)`
+                    method.visitMethodInsn(
+                            INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
+                            CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_DESCRIPTOR, false
+                    );
+                    /* ********************************** Append all elements ********************************** */
+                    int dynamicIndex = -1;
+                    // Lists are commonly faster with random access
+                    for (val element : elements) {
+                        // Load static text value from dynamic constant
+                        if (element.isDynamic()) {
+                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                            asm$addStaticFieldWithInitializer(
+                                    clazz, internalClassName, staticInitializer,
+                                    fieldName, element.getDynamicContent()
+                            );
+                            asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                    method, internalClassName, fieldName
+                            );
+                            asm$invokeStringBuilderAppendString(method);
+                        } else {
+                            val staticContent = element.getStaticContent();
+                            if (staticContent.length() == 1) {
+                                pushCharUnsafely(method, staticContent.charAt(0));
+                                asm$invokeStringBuilderAppendChar(method);
+                            } else {
+                                method.visitLdcInsn(element.getStaticContent()); // get constant String value
+                                asm$invokeStringBuilderAppendString(method);
+                            }
+                        }
+                    }
+                    method.visitMaxs(3, 2 /* [StringBuilder instance] + [appended value] */);
+                }
+                staticInitializer.visitInsn(RETURN);
+                staticInitializer.visitMaxs(2, 0);
+                staticInitializer.visitEnd();
+            }
+
+            // invoke `StringBuilder#toString()`
+            method.visitMethodInsn(
+                    INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
+                    TO_STRING_METHOD_NAME, STRING_METHOD_SIGNATURE, false
+            );
+            // Return String from method
+            method.visitInsn(ARETURN);
+            //</editor-fold>
+
+            // Note: visitMaxs() happens above
+            method.visitEnd();
+        }
+
+        protected void asm$implementGetTextMethodViaStringConcatFactory(@NotNull final ClassWriter clazz,
+                                                                        @NotNull final String internalClassName) {            // Implement `TextModel#getText(T)` method and add fields
+            val method = clazz.visitMethod(
+                    ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
+                    STRING_GENERIC_T_METHOD_SIGNATURE, null
+            );
+
+            method.visitCode();
+
+            //<editor-fold desc="Method code generation" defaultstate="collapsed">
+            {
+                val staticInitializer = AsmUtil.visitStaticInitializer(clazz);
+                staticInitializer.visitCode();
+                val staticLength = this.staticLength;
+                if (staticLength == 0) {
+
+                    final String pattern;
+                    val dynamicElements = dynamicElementCount; // at least 2
+                    {
+                        val patternBuilder = new StringBuilder(dynamicElements);
+                        for (var i = 0; i < dynamicElements; i++) patternBuilder.append('\1');
+                        pattern = patternBuilder.toString();
+                    }
+
+                    // dynamic elements count is at least 2
+                    var dynamicIndex = -1;
+                    // add fields containing dynamic elements and their invocation
+                    for (val element : elements) {
+                        val fieldName = (GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex));
+                        asm$addStaticFieldWithInitializer(
+                                clazz, internalClassName, staticInitializer,
+                                fieldName, element.getDynamicContent()
+                        );
+                        asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
+                    }
+
+                    method.visitInvokeDynamicInsn(
+                            MAKE_CONCAT_METHOD_NAME,
+                    );
+
+                    method.visitMaxs(dynamicElementCount, 1 /* [method argument]*/);
+                } else { // there are static elements
+                    /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
+                    method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
+                    method.visitInsn(DUP);
+                    // Specify initial length of StringBuilder via its constructor
+                    pushInt(method, staticLength);
+                    // Call constructor `StringBuilder(int)`
+                    method.visitMethodInsn(
+                            INVOKESPECIAL, STRING_BUILDER_INTERNAL_NAME,
+                            CONSTRUCTOR_METHOD_NAME, VOID_INT_METHOD_DESCRIPTOR, false
+                    );
+                    /* ********************************** Append all elements ********************************** */
+                    int dynamicIndex = -1;
+                    // Lists are commonly faster with random access
+                    for (val element : elements) {
+                        // Load static text value from dynamic constant
+                        if (element.isDynamic()) {
+                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                            asm$addStaticFieldWithInitializer(
+                                    clazz, internalClassName, staticInitializer,
+                                    fieldName, element.getDynamicContent()
+                            );
+                            asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                    method, internalClassName, fieldName
+                            );
+                            asm$invokeStringBuilderAppendString(method);
+                        } else {
+                            val staticContent = element.getStaticContent();
+                            if (staticContent.length() == 1) {
+                                pushCharUnsafely(method, staticContent.charAt(0));
+                                asm$invokeStringBuilderAppendChar(method);
+                            } else {
+                                method.visitLdcInsn(element.getStaticContent()); // get constant String value
+                                asm$invokeStringBuilderAppendString(method);
+                            }
+                        }
+                    }
+                    method.visitMaxs(3, 2 /* [StringBuilder instance] + [this|appended value] */);
+                }
+                staticInitializer.visitInsn(RETURN);
+                staticInitializer.visitMaxs(2, 0);
+                staticInitializer.visitEnd();
+            }
+
+            // invoke `StringBuilder#toString()`
+            method.visitMethodInsn(
+                    INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
+                    TO_STRING_METHOD_NAME, STRING_METHOD_SIGNATURE, false
+            );
+            // Return String from method
+            method.visitInsn(ARETURN);
+            //</editor-fold>
+
+            // Note: visitMaxs() happens above
+            method.visitEnd();
         }
 
         /**

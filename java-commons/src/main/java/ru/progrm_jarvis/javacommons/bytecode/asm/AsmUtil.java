@@ -10,6 +10,9 @@ import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 
@@ -30,7 +33,15 @@ public class AsmUtil {
     /**
      * ASM type of {@link String}
      */
-    STRING_TYPE = getType(String.class);
+    STRING_TYPE = getType(String.class),
+    /**
+     * ASM type of {@link MethodHandles}
+     */
+    METHOD_HANDLES_TYPE = getType(MethodHandles.class),
+    /**
+     * ASM type of {@link Lookup}
+     */
+    LOOKUP_TYPE = getType(Lookup.class);
     ///////////////////////////////////////////////////////////////////////////
     // Strings
     ///////////////////////////////////////////////////////////////////////////
@@ -43,6 +54,11 @@ public class AsmUtil {
      * Name of constructor-method
      */
     CONSTRUCTOR_METHOD_NAME = "<init>",
+    /* ************************************ Very special names (read INDY magic) ************************************ */
+    /**
+     * Name of inner lookup class.
+     */
+    LOOKUP_INNER_CLASS_NAME = "Lookup",
     /* ******************************************** Common method names ******************************************** */
     /**
      * Name of {@link Object#hashCode()} method
@@ -65,6 +81,14 @@ public class AsmUtil {
      * Internal name of {@link String}
      */
     STRING_INTERNAL_NAME = STRING_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link MethodHandles}
+     */
+    METHOD_HANDLES_INTERNAL_NAME = METHOD_HANDLES_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link Lookup}
+     */
+    LOOKUP_INTERNAL_NAME = LOOKUP_TYPE.getInternalName(),
     /* ********************************************* Class descriptors ********************************************* */
     /**
      * Descriptor of {@link Object}
@@ -74,6 +98,14 @@ public class AsmUtil {
      * Descriptor of {@link String}
      */
     STRING_DESCRIPTOR = STRING_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link MethodHandles}
+     */
+    METHOD_HANDLES_DESCRIPTOR = METHOD_HANDLES_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link Lookup}
+     */
+    LOOKUP_DESCRIPTOR = LOOKUP_TYPE.getDescriptor(),
     /* ************************************ Method descriptors (aka signatures) ************************************ */
     /**
      * Signature of {@code void()} method
@@ -176,6 +208,18 @@ public class AsmUtil {
      */
     public MethodVisitor visitStaticInitializer(@NonNull final ClassVisitor clazz) {
         return clazz.visitMethod(ACC_STATIC, STATIC_INITIALIZER_METHOD_NAME, VOID_METHOD_DESCRIPTOR, null, null);
+    }
+
+    /**
+     * Adds {@link Lookup the inner lookup class} to the class needed by the JVM via its visitor.
+     *
+     * @param clazz visitor of the class
+     */
+    public void addLookup(@NonNull final ClassVisitor clazz) {
+        clazz.visitInnerClass(
+                LOOKUP_INTERNAL_NAME, METHOD_HANDLES_INTERNAL_NAME,
+                LOOKUP_INNER_CLASS_NAME, OPCODES_ACC_PUBLIC_STATIC_FINAL
+        );
     }
 
     /**
