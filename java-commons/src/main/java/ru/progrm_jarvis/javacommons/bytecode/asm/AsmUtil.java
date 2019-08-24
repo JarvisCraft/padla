@@ -10,6 +10,7 @@ import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 
+import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 
@@ -41,7 +42,11 @@ public class AsmUtil {
     /**
      * ASM type of {@link Lookup}
      */
-    LOOKUP_TYPE = getType(Lookup.class);
+    LOOKUP_TYPE = getType(Lookup.class),
+    /**
+     * ASM type of {@link CallSite}
+     */
+    CALL_SITE_TYPE = getType(CallSite.class);
     ///////////////////////////////////////////////////////////////////////////
     // Strings
     ///////////////////////////////////////////////////////////////////////////
@@ -89,6 +94,10 @@ public class AsmUtil {
      * Internal name of {@link Lookup}
      */
     LOOKUP_INTERNAL_NAME = LOOKUP_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link CallSite}
+     */
+    CALL_SITE_INTERNAL_NAME = CALL_SITE_TYPE.getInternalName(),
     /* ********************************************* Class descriptors ********************************************* */
     /**
      * Descriptor of {@link Object}
@@ -106,6 +115,10 @@ public class AsmUtil {
      * Descriptor of {@link Lookup}
      */
     LOOKUP_DESCRIPTOR = LOOKUP_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link CallSite}
+     */
+    CALL_SITE_DESCRIPTOR = CALL_SITE_TYPE.getDescriptor(),
     /* ************************************ Method descriptors (aka signatures) ************************************ */
     /**
      * Signature of {@code void()} method
