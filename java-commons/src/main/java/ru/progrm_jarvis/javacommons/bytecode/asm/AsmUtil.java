@@ -13,6 +13,7 @@ import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodType;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
@@ -46,7 +47,11 @@ public class AsmUtil {
     /**
      * ASM type of {@link CallSite}
      */
-    CALL_SITE_TYPE = getType(CallSite.class);
+    CALL_SITE_TYPE = getType(CallSite.class),
+    /**
+     * ASM type of {@link MethodType}
+     */
+    METHOD_TYPE_TYPE = getType(MethodType.class);
     ///////////////////////////////////////////////////////////////////////////
     // Strings
     ///////////////////////////////////////////////////////////////////////////
@@ -98,6 +103,10 @@ public class AsmUtil {
      * Internal name of {@link CallSite}
      */
     CALL_SITE_INTERNAL_NAME = CALL_SITE_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link MethodType}
+     */
+    METHOD_TYPE_INTERNAL_NAME = METHOD_TYPE_TYPE.getInternalName(),
     /* ********************************************* Class descriptors ********************************************* */
     /**
      * Descriptor of {@link Object}
@@ -119,6 +128,10 @@ public class AsmUtil {
      * Descriptor of {@link CallSite}
      */
     CALL_SITE_DESCRIPTOR = CALL_SITE_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link MethodType}
+     */
+    METHOD_TYPE_DESCRIPTOR = METHOD_TYPE_TYPE.getDescriptor(),
     /* ************************************ Method descriptors (aka signatures) ************************************ */
     /**
      * Signature of {@code void()} method
