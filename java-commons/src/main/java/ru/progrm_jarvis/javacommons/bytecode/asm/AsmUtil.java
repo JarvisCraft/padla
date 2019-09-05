@@ -33,6 +33,10 @@ public class AsmUtil {
      */
     public final Type OBJECT_TYPE = getType(Object.class),
     /**
+     * ASM type of {@link Object} array
+     */
+    OBJECT_ARRAY_TYPE = getType(Object[].class),
+    /**
      * ASM type of {@link String}
      */
     STRING_TYPE = getType(String.class),
@@ -88,6 +92,10 @@ public class AsmUtil {
      */
     OBJECT_INTERNAL_NAME = OBJECT_TYPE.getInternalName(),
     /**
+     * Internal name of {@link Object} array
+     */
+    OBJECT_ARRAY_INTERNAL_NAME = OBJECT_ARRAY_TYPE.getInternalName(),
+    /**
      * Internal name of {@link String}
      */
     STRING_INTERNAL_NAME = STRING_TYPE.getInternalName(),
@@ -112,6 +120,10 @@ public class AsmUtil {
      * Descriptor of {@link Object}
      */
     OBJECT_DESCRIPTOR = OBJECT_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link Object} array
+     */
+    OBJECT_ARRAY_DESCRIPTOR = OBJECT_ARRAY_TYPE.getDescriptor(),
     /**
      * Descriptor of {@link String}
      */
