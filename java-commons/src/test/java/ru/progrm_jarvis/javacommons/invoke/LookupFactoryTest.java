@@ -1,6 +1,7 @@
-package ru.progrm_jarvis.reflector.invoke;
+package ru.progrm_jarvis.javacommons.invoke;
 
 import org.junit.jupiter.api.Test;
+import ru.progrm_jarvis.javacommons.invoke.LookupFactory;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;

@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
-import ru.progrm_jarvis.reflector.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.DynamicMethodWrapper;
 

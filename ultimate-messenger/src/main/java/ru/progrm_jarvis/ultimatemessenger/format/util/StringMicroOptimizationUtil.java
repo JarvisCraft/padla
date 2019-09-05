@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.reflector.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 
 import java.lang.invoke.MethodHandle;
 

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package ru.progrm_jarvis.reflector.invoke;
+package ru.progrm_jarvis.javacommons.invoke;
 
 import lombok.EqualsAndHashCode;
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;

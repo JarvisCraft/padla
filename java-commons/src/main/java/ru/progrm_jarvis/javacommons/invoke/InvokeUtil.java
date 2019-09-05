@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.progrm_jarvis.reflector.invoke;
+package ru.progrm_jarvis.javacommons.invoke;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
