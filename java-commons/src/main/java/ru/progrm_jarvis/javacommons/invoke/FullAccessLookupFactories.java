@@ -95,17 +95,17 @@ public class FullAccessLookupFactories {
     /**
      * Default lookup factory to use
      */
-    private final Lazy<@Nullable LookupFactory> DEFAULT_LOOKUP_FACTORY = Lazy.createThreadSafe(() -> ObjectUtil.nonNull(
-            TRUSTED_LOOKUP_FACTORY, INSTANTIATING_LOOKUP_FACTORY
+    private final Lazy<Optional<LookupFactory>> DEFAULT_LOOKUP_FACTORY = Lazy.createThreadSafe(() -> Optional.ofNullable(
+            ObjectUtil.nonNull(TRUSTED_LOOKUP_FACTORY, INSTANTIATING_LOOKUP_FACTORY)
     ));
 
     /**
      * Gets the default {@link LookupFactory lookup factory}.
      *
-     * @return the default {@link LookupFactory lookup factory}.
+     * @return the default optional {@link LookupFactory lookup factory}.
      */
     public Optional<LookupFactory> getDefault() {
-        return Optional.ofNullable(DEFAULT_LOOKUP_FACTORY.get());
+        return DEFAULT_LOOKUP_FACTORY.get();
     }
 
     // TODO: 06.09.2019 find a way to use it with LambdaMetafactory
