@@ -2,7 +2,9 @@ package ru.progrm_jarvis.javacommons.invoke;
 
 import lombok.NonNull;
 import lombok.val;
+import lombok.var;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.annotation.DontOverrideEqualsAndHashCode;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 
@@ -41,23 +43,29 @@ public interface LookupFactory extends Function<Class<?>, Lookup> {
      * <p>
      * <b>Nullable</b> if this JVM's lookup class doesn't have an internal field named {@code "IMPL_LOOKUP"}
      */
-    Lazy<LookupFactory> TRUSTED_LOOKUP_FACTORY = Lazy.createThreadSafe(
-            () -> Arrays.stream(Lookup.class.getDeclaredFields())
-                    .filter(field -> field.getName().equals("IMPL_LOOKUP"))
-                    .findAny()
-                    .map(field -> {
-                        val accessible = field.isAccessible();
-                        field.setAccessible(true);
-                        try {
-                            return (Lookup) field.get(null);
-                        } catch (final IllegalAccessException e) {
-                            throw new IllegalStateException("Unable to create a strusted lookup factory", e);
-                        } finally {
-                            field.setAccessible(accessible);
-                        }
-                    })
-                    .map(lookup -> (LookupFactory) lookup::in)
-                    .orElse(null)
+    Lazy<@Nullable LookupFactory> TRUSTED_LOOKUP_FACTORY = Lazy.createThreadSafe(
+            () -> {
+                try {
+                    return Arrays.stream(Lookup.class.getDeclaredFields())
+                            .filter(field -> field.getName().equals("IMPL_LOOKUP"))
+                            .findAny()
+                            .map(field -> {
+                                @SuppressWarnings("deprecation") val accessible = field.isAccessible();
+                                field.setAccessible(true);
+                                try {
+                                    return (Lookup) field.get(null);
+                                } catch (final IllegalAccessException e) {
+                                    throw new IllegalStateException("Unable to create a trusted lookup factory", e);
+                                } finally {
+                                    field.setAccessible(accessible);
+                                }
+                            })
+                            .map(lookup -> (LookupFactory) lookup::in)
+                            .orElse(null);
+                } catch (final Throwable x) {
+                    return null;
+                }
+            }
     );
 
     /**
@@ -65,7 +73,7 @@ public interface LookupFactory extends Function<Class<?>, Lookup> {
      * <p>
      * <b>Nullable</b> if this JVM's lookup class doesn't have a private constructor of signature {@code Class, int}
      */
-    Lazy<LookupFactory> INSTANTIATING_LOOKUP_FACTORY = Lazy.createThreadSafe(() -> {
+    Lazy<@Nullable LookupFactory> INSTANTIATING_LOOKUP_FACTORY = Lazy.createThreadSafe(() -> {
         @SuppressWarnings("unchecked") val lookupConstructor = (Constructor<Lookup>) Arrays
                 .stream(Lookup.class.getDeclaredConstructors())
                 .filter(constructor -> constructor.getParameterCount() == 2)
@@ -76,7 +84,7 @@ public interface LookupFactory extends Function<Class<?>, Lookup> {
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("Unable to create an instantiating lookup factory"));
 
-        val accessible = lookupConstructor.isAccessible();
+        @SuppressWarnings("deprecation") val accessible = lookupConstructor.isAccessible();
         lookupConstructor.setAccessible(true);
         try {
             // allocate new root lookup
@@ -93,7 +101,7 @@ public interface LookupFactory extends Function<Class<?>, Lookup> {
 
             return clazz -> biFunction.apply(clazz, ALL_LOOKUP_MODES);
         } catch (final Throwable e) {
-            throw new IllegalStateException("Unable to create an instantiating lookup factory", e);
+            return null;
         } finally {
             lookupConstructor.setAccessible(accessible);
         }
@@ -102,13 +110,12 @@ public interface LookupFactory extends Function<Class<?>, Lookup> {
     /**
      * Default lookup factory to use
      */
-    Lazy<LookupFactory> COMMON_FACTORY = Lazy.createThreadSafe(() -> {
-        try {
-            return TRUSTED_LOOKUP_FACTORY.get();
-        } catch (final Throwable ignored) {}
-        try {
-            return INSTANTIATING_LOOKUP_FACTORY.get();
-        } catch (final Throwable ignored) {}
+    Lazy<@NotNull LookupFactory> COMMON_FACTORY = Lazy.createThreadSafe(() -> {
+        var lookup = TRUSTED_LOOKUP_FACTORY.get();
+        if (lookup != null) return lookup;
+
+        lookup = INSTANTIATING_LOOKUP_FACTORY.get();
+        if (lookup != null) return lookup;
 
         throw new IllegalStateException("Unable to create any lookup factory");
     });
