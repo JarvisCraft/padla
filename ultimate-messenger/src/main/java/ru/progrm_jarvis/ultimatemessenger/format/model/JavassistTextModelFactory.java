@@ -7,14 +7,16 @@ import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
-import ru.progrm_jarvis.javacommons.classload.ClassFactory;
+import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
+import ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.*;
 import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUtil;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
@@ -57,7 +59,24 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<T> {
+    protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder
+            <T, Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T>, DynamicNode<T>> {
+
+        /**
+         * Lookup of this class.
+         */
+        protected static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+
+        @Override
+        @NotNull protected Node<T, StaticNode<T>, DynamicNode<T>> newStaticNode(@NotNull final String text) {
+            return new SimpleStaticNode<>(text);
+        }
+
+        @Override
+        @NotNull protected Node<T, StaticNode<T>, DynamicNode<T>> newDynamicNode(@NotNull final TextModel<T> content) {
+            return new SimpleDynamicNode<>(content);
+        }
+
         /**
          * Full name (including canonical class name) of {@link #internal$getDynamicTextModel(String)} method
          */
@@ -141,12 +160,14 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
                     val iterator = elements.iterator();
 
-                    javassist$addStaticFieldWithInitializer(clazz, fieldName, iterator.next().getDynamicContent());
+                    javassist$addStaticFieldWithInitializer(clazz, fieldName, iterator.next().asDynamic().getContent());
                     // dynamic elements count is at least 2
                     var index = 0;
                     while (iterator.hasNext()) {
                         fieldName = GENERATED_FIELD_NAME_PREFIX + (++index);
-                        javassist$addStaticFieldWithInitializer(clazz, fieldName, iterator.next().getDynamicContent());
+                        javassist$addStaticFieldWithInitializer(
+                                clazz, fieldName, iterator.next().asDynamic().getContent()
+                        );
                         src.append(".append(").append(fieldName).append(".getText(t))"); // .append(d#.getText(t))
                     }
                 } else {
@@ -157,15 +178,15 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                     int dynamicIndex = -1;
                     for (val element : elements) if (element.isDynamic()) {
                         val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                        javassist$addStaticFieldWithInitializer(clazz, fieldName, element.getDynamicContent());
+                        javassist$addStaticFieldWithInitializer(clazz, fieldName, element.asDynamic().getContent());
                         src.append(".append(").append(fieldName).append(".getText(t))"); // .append(d#.getText(t))
                     } else {
-                        val staticContent = element.getStaticContent();
-                        if (staticContent.length() == 1) src.append(".append(\'").append(
-                                StringMicroOptimizationUtil.escapeJavaCharacterLiteral(staticContent.charAt(0))
+                        val staticText = element.asStatic().getText();
+                        if (staticText.length() == 1) src.append(".append(\'").append(
+                                StringMicroOptimizationUtil.escapeJavaCharacterLiteral(staticText.charAt(0))
                         ).append('\'').append(')');
                         else src.append(".append(\"").append(
-                                StringMicroOptimizationUtil.escapeJavaStringLiteral(staticContent)
+                                StringMicroOptimizationUtil.escapeJavaStringLiteral(staticText)
                         ).append('"').append(')');
                     }
                 }
@@ -178,7 +199,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             }
 
             try {
-                val constructor = ClassFactory.defineGCClass(clazz).getDeclaredConstructor();
+                val constructor = GcClassDefiners.getDefault()
+                        .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                        .defineClass(LOOKUP, clazz.getName(), clazz.toBytecode()).getDeclaredConstructor();
                 constructor.setAccessible(true);
                 // noinspection unchecked
                 return (TextModel<T>) constructor.newInstance();
