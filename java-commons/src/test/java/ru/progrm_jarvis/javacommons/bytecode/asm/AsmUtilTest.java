@@ -6,9 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import ru.progrm_jarvis.javacommons.classload.ClassFactory;
+import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,8 +43,9 @@ class AsmUtilTest {
             AsmUtil.addEmptyConstructor(clazz, superClass);
             clazz.visitEnd();
 
-            val constructor = ((Class<? extends TestSubject>) ClassFactory
-                    .defineGCClass(name, clazz.toByteArray())).getDeclaredConstructor();
+            val constructor = ((Class<? extends TestSubject>) GcClassDefiners.getDefault()
+                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                    .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
 
             assertThat(constructor.getParameterCount(), is(0));
 
@@ -61,8 +63,10 @@ class AsmUtilTest {
             AsmUtil.addEmptyConstructor(clazz, superClass);
             clazz.visitEnd();
 
-            val constructor = ((Class<? extends StatusSubject>) ClassFactory
-                    .defineGCClass(name, clazz.toByteArray())).getDeclaredConstructor();
+            // FIXME: 06.09.2019
+            val constructor = ((Class<? extends StatusSubject>) GcClassDefiners.getDefault()
+                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                    .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
 
             assertThat(constructor.getParameterCount(), is(0));
 
@@ -91,7 +95,9 @@ class AsmUtilTest {
         AsmUtil.addEmptyConstructor(clazz);
         clazz.visitEnd();
 
-        val constructor = ClassFactory.defineGCClass(name, clazz.toByteArray()).getDeclaredConstructor();
+        val constructor = GcClassDefiners.getDefault()
+                .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                .defineClass(MethodHandles.lookup(), name, clazz.toByteArray()).getDeclaredConstructor();
 
         assertThat(constructor.getParameterCount(), is(0));
 

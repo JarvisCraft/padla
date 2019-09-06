@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 
@@ -29,11 +30,13 @@ class ClassFactoryTest {
 
         final WeakReference<Class<?>> classRef;
         {
-            var newClass = ClassFactory.defineGCClass(className, clazz.toBytecode());
+            var newClass = GcClassDefiners.getDefault()
+                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                    .defineClass(MethodHandles.lookup(), className, clazz.toBytecode());
             classRef = new WeakReference<>(newClass);
             final WeakReference<?> instanceRef;
             {
-                var instance = newClass.newInstance();
+                var instance = newClass.getDeclaredConstructor().newInstance();
                 instanceRef = new WeakReference<>(instance);
                 assertThat(instance.getClass().getDeclaredMethod("foo").invoke(instance), equalTo(123));
                 //noinspection UnusedAssignment GC magic :)

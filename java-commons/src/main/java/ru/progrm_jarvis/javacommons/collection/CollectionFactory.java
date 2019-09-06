@@ -11,10 +11,13 @@ import lombok.var;
 import org.intellij.lang.annotations.Language;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
-import ru.progrm_jarvis.javacommons.classload.ClassFactory;
+import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
+import ru.progrm_jarvis.javacommons.pair.SimplePair;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -26,6 +29,11 @@ import static java.util.Collections.unmodifiableSet;
  */
 @UtilityClass
 public class CollectionFactory {
+
+    /**
+     * {@link Lookup lookup} of this class.
+     */
+    private static Lookup LOOKUP = MethodHandles.lookup();
 
     /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
@@ -309,7 +317,13 @@ public class CollectionFactory {
                     }
                 }
 
-                return (Set<Enum<?>>) ClassFactory.defineGCClasses(iteratorClazz, clazz)[1].newInstance();
+                return (Set<Enum<?>>) GcClassDefiners.getDefault()
+                        .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                        .defineClasses(
+                                LOOKUP,
+                                SimplePair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
+                                SimplePair.of(clazz.getName(), clazz.toBytecode())
+                        )[1].getDeclaredConstructor().newInstance();
                 //</editor-fold>
             });
         } else {
