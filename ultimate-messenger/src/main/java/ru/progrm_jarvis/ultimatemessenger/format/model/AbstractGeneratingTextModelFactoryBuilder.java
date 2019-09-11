@@ -36,14 +36,14 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     }
 
     /**
-     * Elements of the text model
+     * Nodes of the text model
      */
-    List<N> elements;
+    List<N> nodes;
 
     /**
-     * Amount of dynamic text model elements
+     * Amount of dynamic nodes
      */
-    @NonFinal transient int dynamicElementCount = 0,
+    @NonFinal transient int dynamicNodeCount = 0,
 
     /**
      * Length of static text part (minimal length of resulting text)
@@ -51,7 +51,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     staticLength = 0;
 
     /**
-     * Last appended element
+     * Last appended node
      */
     @NonFinal transient N lastNode;
 
@@ -70,7 +70,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     @OverridingMethodsMustInvokeSuper
     protected void endLastDynamicNodeModification() {
         // increment the amount of dynamic elements
-        dynamicElementCount++;
+        dynamicNodeCount++;
     }
 
     /**
@@ -108,12 +108,12 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
 
             if (tail == null) {
                 val node = newStaticNode(staticText); // add new static element
-                elements.add(lastNode = node);
+                nodes.add(lastNode = node);
             } else if (tail.isDynamic()) {
                 endLastDynamicNodeModification();
 
                 val node = newStaticNode(staticText); // add new static element
-                elements.add(lastNode = node);
+                nodes.add(lastNode = node);
             } else tail.asStatic().appendText(staticText); //  join nearby static elements
 
             markAsChanged();
@@ -127,7 +127,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         endLastNodeModification();
 
         val node = newDynamicNode(dynamicText);
-        elements.add(lastNode = node);
+        nodes.add(lastNode = node);
 
         markAsChanged();
 
@@ -136,10 +136,10 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
 
     @Override
     @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
-        if (!elements.isEmpty()) {
-            elements.clear();
+        if (!nodes.isEmpty()) {
+            nodes.clear();
             lastNode = null;
-            staticLength = dynamicElementCount = 0;
+            staticLength = dynamicNodeCount = 0;
 
             markAsChanged();
         }
@@ -169,18 +169,18 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      */
     @Override
     @NotNull protected TextModel<T> createTextModel(final boolean release) {
-        if (elements.isEmpty()) return TextModel.empty();
+        if (nodes.isEmpty()) return TextModel.empty();
 
         // make sure that the last node modification is ended properly
         endLastNodeModification();
 
-        if (dynamicElementCount == 0) { // no dynamic elements
+        if (dynamicNodeCount == 0) { // no dynamic elements
             val tail = lastNode;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;
             return StaticTextModel.of(tail.asStatic().getText());
         }
-        if (staticLength == 0 && dynamicElementCount == 1) { // only 1 dynamic element without static ones
+        if (staticLength == 0 && dynamicNodeCount == 1) { // only 1 dynamic element without static ones
             val tail = lastNode;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;

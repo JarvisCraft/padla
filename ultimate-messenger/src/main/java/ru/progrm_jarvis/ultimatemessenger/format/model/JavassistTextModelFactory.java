@@ -158,7 +158,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                     src = new StringBuilder("public String getText(Object t){return new StringBuilder(")
                             .append(fieldName).append(".getText(t))");
 
-                    val iterator = elements.iterator();
+                    val iterator = nodes.iterator();
 
                     javassist$addStaticFieldWithInitializer(clazz, fieldName, iterator.next().asDynamic().getContent());
                     // dynamic elements count is at least 2
@@ -176,7 +176,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                     ).append(staticLength).append(')');
                     // there are static elements
                     int dynamicIndex = -1;
-                    for (val element : elements) if (element.isDynamic()) {
+                    for (val element : nodes) if (element.isDynamic()) {
                         val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
                         javassist$addStaticFieldWithInitializer(clazz, fieldName, element.asDynamic().getContent());
                         src.append(".append(").append(fieldName).append(".getText(t))"); // .append(d#.getText(t))
