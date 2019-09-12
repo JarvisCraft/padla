@@ -214,7 +214,6 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 return (TextModel<T>) constructor.newInstance();
             } catch (final IOException | CannotCompileException | NoSuchMethodException
                     | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
                 throw new IllegalStateException("Could not compile and instantiate TextModel from the given elements");
             }
         }
