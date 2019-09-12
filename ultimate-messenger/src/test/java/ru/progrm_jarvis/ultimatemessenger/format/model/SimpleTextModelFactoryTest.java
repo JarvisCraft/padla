@@ -1,10 +1,10 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import java.util.Collections;
+import java.util.stream.Stream;
 
 class SimpleTextModelFactoryTest extends AbstractTextModelFactoryTest {
 
-    static Iterable<TextModelFactory<User>> provideTestSubjects() {
-        return Collections.singletonList(new SimpleTextModelFactory<>());
+    static Stream<TextModelFactory<User>> provideTestSubjects() {
+        return Stream.of(new SimpleTextModelFactory<>());
     }
 }

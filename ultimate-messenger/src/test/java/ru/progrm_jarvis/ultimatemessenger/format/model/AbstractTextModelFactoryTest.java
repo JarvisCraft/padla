@@ -7,34 +7,16 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 abstract class AbstractTextModelFactoryTest {
 
-    static Iterable<TextModelFactory<User>> provideTestSubjects() {
-        return Arrays.asList(
-                AsmTextModelFactory.create(
-                        AsmTextModelFactory.configuration()
-                                .enableStringConcatFactory(true)
-                                .stringConcatFactoryAlgorithm(
-                                        AsmTextModelFactory.Configuration.StringConcatFactoryAlgorithm.TREE)
-                                .build()
-                ),
-                AsmTextModelFactory.create(
-                        AsmTextModelFactory.configuration()
-                                .enableStringConcatFactory(true)
-                                .stringConcatFactoryAlgorithm(
-                                        AsmTextModelFactory.Configuration.StringConcatFactoryAlgorithm.VECTOR)
-                                .build()
-                ),
-                AsmTextModelFactory.create(
-                        AsmTextModelFactory.configuration()
-                                .enableStringConcatFactory(false)
-                                .build()
-                )
+    static Stream<TextModelFactory<User>> provideTestSubjects() {
+        throw new RuntimeException(
+                "`static Stream<TextModelFactory<User>> provideTestSubjects()` method should be present in test class"
         );
     }
 
