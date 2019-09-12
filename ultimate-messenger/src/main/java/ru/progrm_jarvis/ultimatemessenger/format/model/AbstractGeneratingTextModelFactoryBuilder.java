@@ -154,10 +154,10 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param release {@code true} if this text model builder will be released after the call and {@code false} otherwise
      * @return created text model
      *
-     * @apiNote gets called by {@link #createTextModel(boolean)}
+     * @apiNote gets called by {@link #buildTextModel(boolean)}
      * whenever it cannot create a fast universal implementation
      */
-    @NotNull protected abstract TextModel<T> performTextModelCreation(boolean release);
+    @NotNull protected abstract TextModel<T> performTextModelBuild(boolean release);
 
     /**
      * {@inheritDoc}
@@ -168,7 +168,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @return {@inheritDoc}
      */
     @Override
-    @NotNull protected TextModel<T> createTextModel(final boolean release) {
+    @NotNull protected TextModel<T> buildTextModel(final boolean release) {
         if (nodes.isEmpty()) return TextModel.empty();
 
         // make sure that the last node modification is ended properly
@@ -187,7 +187,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
             return tail.asDynamic().getContent();
         }
 
-        return performTextModelCreation(release);
+        return performTextModelBuild(release);
     }
 
     /**

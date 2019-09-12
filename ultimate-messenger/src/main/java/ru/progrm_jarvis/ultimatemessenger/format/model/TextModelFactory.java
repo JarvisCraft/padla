@@ -74,18 +74,18 @@ public interface TextModelFactory<T> {
          * @return text model created from this text model builder
          *
          * @apiNote calls to this method allow reuse of this text model builder;
-         * if not planning to reuse it better use {@link #createAndRelease()} instead
+         * if not planning to reuse it better use {@link #buildAndRelease()} instead
          */
-        @NotNull TextModel<T> create();
+        @NotNull TextModel<T> build();
 
         /**
          * Creates a new {@link TextModel text model} from this text model builder releasing itself.
          *
          * @return text model created from this text model builder
          *
-         * @apiNote this method differs from {@link #create()} as call to it guarantees
+         * @apiNote this method differs from {@link #build()} as call to it guarantees
          * that this text model builder won't be used anymore
          */
-        @NotNull TextModel<T> createAndRelease();
+        @NotNull TextModel<T> buildAndRelease();
     }
 }

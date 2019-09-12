@@ -52,7 +52,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      * Implementation of
      * {@link TextModelFactory.TextModelBuilder text model builder}
      * which uses runtime class generation
-     * and is capable of joining nearby static text blocks and optimizing {@link #createAndRelease()}.
+     * and is capable of joining nearby static text blocks and optimizing {@link #buildAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
      */
@@ -137,7 +137,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull public TextModel<T> performTextModelCreation(final boolean release) {
+        @NotNull public TextModel<T> performTextModelBuild(final boolean release) {
             val clazz = CLASS_POOL.get().makeClass(CLASS_NAMING_STRATEGY.get());
             val textModelCtClass = TEXT_MODEL_CT_CLASS.get();
             clazz.setModifiers(PUBLIC_FINAL_MODIFIERS);

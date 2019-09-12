@@ -297,7 +297,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
             } else builder.append(lastRawText.append(text.substring(lastFlushIndex + 1)).toString());
         }
 
-        return builder.createAndRelease();
+        return builder.buildAndRelease();
     }
 
     @Override
