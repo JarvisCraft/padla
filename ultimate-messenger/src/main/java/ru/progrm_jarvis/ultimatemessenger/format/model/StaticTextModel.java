@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +28,11 @@ public class StaticTextModel<T> implements TextModel<T> {
      * Length of ths text model's {@link #text text} wrapped in {@link OptionalInt}
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull OptionalInt length;
+    /**
+     * {@link Object#hashCode() Hash-code} of this static text model
+     * (effectively {@link String#hashCode()} of {@link #text})
+     */
+    int hashCode;
 
     /**
      * Instantiates a new static text model of the given text.
@@ -34,24 +40,28 @@ public class StaticTextModel<T> implements TextModel<T> {
      * @param text text of this text model
      *
      * @implNote this is not generated via Lombok because there is field dependency
-     * ({@code length} is based on {@code text})
+     * ({@link #length} and {@link #hashCode}are based on {@link #text})
      */
     public StaticTextModel(@NotNull final String text) {
         this.text = text;
-        this.length = OptionalInt.of(text.length());
+        length = OptionalInt.of(text.length());
+        hashCode = text.hashCode();
     }
 
     @Override
+    @Contract(pure = true)
     public boolean isDynamic() {
         return false;
     }
 
     @Override
+    @Contract(pure = true)
     @NotNull public OptionalInt getMinLength() {
         return length;
     }
 
     @Override
+    @Contract(pure = true)
     @NotNull public OptionalInt getMaxLength() {
         return length;
     }
@@ -60,6 +70,23 @@ public class StaticTextModel<T> implements TextModel<T> {
     @Contract(pure = true)
     @NotNull public String getText(@Nullable final T target) {
         return text;
+    }
+
+    @Override
+    @Contract(pure = true)
+    public boolean equals(@Nullable final Object object) {
+        if (object == this) return true;
+        if (object instanceof TextModel) {
+            val textModel = (TextModel<?>) object;
+            return !textModel.isDynamic() && textModel.hashCode() == hashCode && textModel.getText(null).equals(text);
+        }
+        return false;
+    }
+
+    @Override
+    @Contract(pure = true)
+    public int hashCode() {
+        return hashCode;
     }
 
     /**

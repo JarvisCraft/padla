@@ -1,5 +1,6 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
+import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -82,23 +83,51 @@ public interface TextModel<T> {
         private static EmptyTextModel INSTANCE = new EmptyTextModel();
 
         @Override
+        @Contract(pure = true)
         @NotNull public String getText(@Nullable final Object target) {
             return ""; // thanks to JVM magic this is always the same object (got using LDC)
         }
 
         @Override
+        @Contract(pure = true)
         @NotNull public OptionalInt getMinLength() {
             return OPTIONAL_ZERO;
         }
 
         @Override
+        @Contract(pure = true)
         @NotNull public OptionalInt getMaxLength() {
             return OPTIONAL_ZERO;
         }
 
         @Override
+        @Contract(pure = true)
         public boolean isDynamic() {
             return false;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public boolean equals(@Nullable final Object object) {
+            if (object == this) return true;
+            if (object instanceof TextModel) {
+                val textModel = (TextModel<?>) object;
+                return !textModel.isDynamic() && textModel.hashCode() == 0 && textModel.getText(null).isEmpty();
+            }
+            return false;
+        }
+
+        @Override
+        @Contract(pure = true)
+        // usual hashcode for empty values
+        public int hashCode() {
+            return 0;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public String toString() {
+            return "Empty TextModel";
         }
     }
 }
