@@ -152,6 +152,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
             { // Method (#getText(T))
                 StringBuilder src;
+                val staticLength = this.staticLength;
                 if (staticLength == 0) { // constructor StringBuilder from the first object
                     // only dynamic elements (yet, there are multiple of those)
                     String fieldName = GENERATED_FIELD_NAME_PREFIX + 0;
@@ -173,7 +174,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 } else {
                     src = new StringBuilder(
                             "public String getText(Object t){return new StringBuilder("
-                    ).append(staticLength).append(')');
+                    ).append(staticLength + minDynamicLength).append(')');
                     // there are static elements
                     int dynamicIndex = -1;
                     for (val element : nodes) if (element.isDynamic()) {

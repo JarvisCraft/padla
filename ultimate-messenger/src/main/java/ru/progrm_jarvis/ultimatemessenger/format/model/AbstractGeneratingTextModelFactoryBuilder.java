@@ -44,11 +44,14 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * Amount of dynamic nodes
      */
     @NonFinal transient int dynamicNodeCount = 0,
-
     /**
      * Length of static text part (minimal length of resulting text)
      */
-    staticLength = 0;
+    staticLength = 0,
+    /**
+     * Length of static text part (minimal length of resulting text)
+     */
+    minDynamicLength = 0;
 
     /**
      * Last appended node
@@ -56,32 +59,37 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     @NonFinal transient N lastNode;
 
     /**
-     * Ends the modification of the last node being a static one.
+     * Ends the modification of ta static node.
+     *
+     * @param staticNode node whose modification should be ended
      */
     @OverridingMethodsMustInvokeSuper
-    protected void endLastStaticNodeModification() {
+    protected void endModification(@NotNull final SN staticNode) {
         // increase the length of static text part
-        staticLength += lastNode.asStatic().getTextLength();
+        staticLength += staticNode.getTextLength();
     }
 
     /**
-     * Ends the modification of the last node being a dynamic one.
+     * Ends the modification of a dynamic one.
+     *
+     * @param dynamicNode node whose modification should be ended
      */
     @OverridingMethodsMustInvokeSuper
-    protected void endLastDynamicNodeModification() {
+    protected void endModification(@NotNull final DN dynamicNode) {
         // increment the amount of dynamic elements
         dynamicNodeCount++;
+        dynamicNode.getContent().getMinLength().ifPresent(length -> minDynamicLength += length);
     }
 
     /**
-     * Ends the modification of the last node delegating to {@link #endLastDynamicNodeModification()}
-     * if the {@link #lastNode last node} {@link Node#isDynamic() is dynamic}
-     * or {@link #endLastDynamicNodeModification()} otherwise.
+     * Ends the modification of the last node delegating
+     * to {@link #endModification(DynamicNode)} if the {@link #lastNode last node} {@link Node#isDynamic() is dynamic}
+     * or {@link #endModification(StaticNode)} otherwise.
      */
     protected void endLastNodeModification() {
         if (lastNode != null) {
-            if (lastNode.isDynamic()) endLastDynamicNodeModification();
-            else endLastStaticNodeModification();
+            if (lastNode.isDynamic()) endModification(lastNode.asDynamic());
+            else endModification(lastNode.asStatic());
         }
     }
 
@@ -110,7 +118,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
                 val node = newStaticNode(staticText); // add new static element
                 nodes.add(lastNode = node);
             } else if (tail.isDynamic()) {
-                endLastDynamicNodeModification();
+                endModification(lastNode.asDynamic());
 
                 val node = newStaticNode(staticText); // add new static element
                 nodes.add(lastNode = node);
@@ -124,12 +132,14 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
 
     @Override
     @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
-        endLastNodeModification();
+        if (dynamicText.isDynamic()) {
+            endLastNodeModification();
 
-        val node = newDynamicNode(dynamicText);
-        nodes.add(lastNode = node);
+            val node = newDynamicNode(dynamicText);
+            nodes.add(lastNode = node);
 
-        markAsChanged();
+            markAsChanged();
+        } else append(dynamicText.getText(null));
 
         return this;
     }
