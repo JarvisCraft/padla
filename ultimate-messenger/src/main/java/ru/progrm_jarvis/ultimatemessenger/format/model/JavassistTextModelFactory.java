@@ -12,7 +12,9 @@ import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
-import ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.*;
+import ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.DynamicNode;
+import ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.Node;
+import ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.StaticNode;
 import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUtil;
 
 import java.io.IOException;
@@ -119,7 +121,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          * Class naming strategy used to allocate names for generated classes
          */
         @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                TextModelBuilder.class.getCanonicalName() + "$$Generated$$TextModel$$"
+                TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
         /**
@@ -183,10 +185,14 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                         src.append(".append(").append(fieldName).append(".getText(t))"); // .append(d#.getText(t))
                     } else {
                         val staticText = element.asStatic().getText();
-                        if (staticText.length() == 1) src.append(".append(\'").append(
-                                StringMicroOptimizationUtil.escapeJavaCharacterLiteral(staticText.charAt(0))
-                        ).append('\'').append(')');
-                        else src.append(".append(\"").append(
+                        if (staticText.length() == 1) { // handle single char String as a char
+                            val character = staticText.charAt(0);
+                            if (character < 32) {/* There seems to be a Javassist bug with characters less than \32 */
+                                src.append(".append((char)").append((int) character).append(')');
+                            } else src.append(".append('").append(
+                                    StringMicroOptimizationUtil.escapeJavaCharacterLiteral(character)
+                            ).append('\'').append(')');
+                        } else src.append(".append(\"").append(
                                 StringMicroOptimizationUtil.escapeJavaStringLiteral(staticText)
                         ).append('"').append(')');
                     }
