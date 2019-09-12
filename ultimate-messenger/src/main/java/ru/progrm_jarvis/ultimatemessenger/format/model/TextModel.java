@@ -2,6 +2,9 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.OptionalInt;
 
 /**
  * Parsed model of a dynamic text.
@@ -12,12 +15,21 @@ import org.jetbrains.annotations.NotNull;
 public interface TextModel<T> {
 
     /**
+     * {@code 0} wrapped in {@link OptionalInt}
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
+
+    /**
      * Gets the text formatted for the given target.
      *
-     * @param target object according to which the text models gets formatted
+     * @param target object according to which the text models gets formatted,
+     * if the model is not {@link #isDynamic() dynamic} then it should return the same result for any {@code target}
+     * including {@code null}
      * @return text formatted for the given target
+     *
+     * @throws NullPointerException if the target is {@code null} but this text model is {@link #isDynamic() dynamic}
      */
-    @NotNull String getText(@NotNull T target);
+    @NotNull String getText(T target);
 
     /**
      * Retrieves whether this {@link TextModel text model} is dynamic.
@@ -28,6 +40,24 @@ public interface TextModel<T> {
     @Contract(pure = true)
     default boolean isDynamic() {
         return true;
+    }
+
+    /**
+     * Gets the minimal length of the value returned by {@link #getText(Object)}.
+     *
+     * @return minimal possible length of the value returned by {@link #getText(Object)} being empty if it is undefined
+     */
+    @NotNull default OptionalInt getMinLength() {
+        return OptionalInt.empty();
+    }
+
+    /**
+     * Gets the maximal length of the value returned by {@link #getText(Object)}.
+     *
+     * @return maximal possible length of the value returned by {@link #getText(Object)} being empty if it is undefined
+     */
+    @NotNull default OptionalInt getMaxLength() {
+        return OptionalInt.empty();
     }
 
     /**
@@ -52,8 +82,18 @@ public interface TextModel<T> {
         private static EmptyTextModel INSTANCE = new EmptyTextModel();
 
         @Override
-        @NotNull public String getText(@NotNull final Object target) {
-            return "";
+        @NotNull public String getText(@Nullable final Object target) {
+            return ""; // thanks to JVM magic this is always the same object (got using LDC)
+        }
+
+        @Override
+        @NotNull public OptionalInt getMinLength() {
+            return OPTIONAL_ZERO;
+        }
+
+        @Override
+        @NotNull public OptionalInt getMaxLength() {
+            return OPTIONAL_ZERO;
         }
 
         @Override
