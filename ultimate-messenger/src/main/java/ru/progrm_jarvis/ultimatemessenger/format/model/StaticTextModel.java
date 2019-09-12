@@ -90,7 +90,7 @@ public class StaticTextModel<T> implements TextModel<T> {
     }
 
     /**
-     * Gets a static text model of the gicen text.
+     * Gets a static text model of the given text.
      *
      * @param text text of the static text model
      * @param <T> type of object according to which the text model is formatted (actually, not used)
