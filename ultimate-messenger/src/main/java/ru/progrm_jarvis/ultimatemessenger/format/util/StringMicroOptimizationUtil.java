@@ -145,13 +145,14 @@ public class StringMicroOptimizationUtil {
      */
     public String escapeJavaCharacterLiteral(final char source) {
         switch (source) {
-            case '\t': return "\\t";
-            case '\b': return "\\b";
+            /* Commented branches are those of characters which may but are not obliged to be represented via escapes */
+            // case '\t': return "\\t";
+            // case '\b': return "\\b";
             case '\n': return "\\n";
             case '\r': return "\\r";
-            case '\f': return "\\f";
+            // case '\f': return "\\f";
             case '\'': return "\\'";
-            case '"': return "\\\"";
+            // case '"': return "\\\"";
             case '\\': return "\\\\";
             default: return Character.toString(source);
         }
