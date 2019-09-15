@@ -13,13 +13,14 @@ echo 'Deploying artifacts'
 # Generate source and javadocs, sign binaries, deploy to Sonatype using credentials from env.
 
 echo 'Deploying to Sonatype OSSRH (also used for Central integration)'
-mvn deploy -P build-extras,sign,code-signing-credentials,sonatype-ossrh-deploy \
+mvn deploy -P build-extras,sign,code-signing-credentials,sonatype-ossrh-deployment \
 --settings .travis/.mvn/sonatype-ossrh-settings.xml
 echo 'Deployed to Sonatype OSSRH'
 
 echo 'Deploying to GitHub Package Registry'
 mvn deploy -P build-extras,sign,code-signing-credentials \
---settings .travis/.mvn/github-package-registry-settings.xml
+--settings .travis/.mvn/github-package-registry-settings.xml \
+-DaltDeploymentRepository=github-package-registry::default::https://maven.pkg.github.com/JarvisCraft/padla
 echo 'Deployed to GiHub Package Registry'
 
 echo 'Deployed artifacts'

@@ -12,6 +12,18 @@
     </modules>
     <packaging>pom</packaging>
 
+    <!-- Primary repository -->
+    <distributionManagement>
+        <repository>
+            <id>maven-central</id>
+            <url>http://repo1.maven.org/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -230,18 +242,7 @@
     </dependencyManagement>
 
     <profiles>
-        <!-- Maven-central deployment-related profiles -->
-        <profile>
-            <id>sonatype-ossrh-deploy</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+        <!-- Deployment-related profiles -->
         <profile>
             <id>sign</id>
             <build>
@@ -295,27 +296,15 @@
         </profile>
 
         <profile>
-            <id>sonatype-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <id>maven-central</id>
-                    <url>http://repo1.maven.org/maven2/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-
-        <profile>
-            <id>github-package-registry-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <id>github-package-registry</id>
-                    <url>https://maven.pkg.github.com/JarvisCraft/padla</url>
-                </repository>
-            </distributionManagement>
+            <id>sonatype-ossrh-deployment</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
