@@ -298,11 +298,11 @@
             <id>sonatype-deployment</id>
             <distributionManagement>
                 <repository>
-                    <id>maven-central-repo</id>
+                    <id>maven-central</id>
                     <url>http://repo1.maven.org/maven2/</url>
                 </repository>
                 <snapshotRepository>
-                    <id>sonatype-ossrh-repo</id>
+                    <id>sonatype-ossrh</id>
                     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
                 </snapshotRepository>
             </distributionManagement>
@@ -312,7 +312,7 @@
             <id>github-package-registry-deployment</id>
             <distributionManagement>
                 <repository>
-                    <id>github-package-registry-repo</id>
+                    <id>github-package-registry</id>
                     <url>https://maven.pkg.github.com/JarvisCraft/padla</url>
                 </repository>
             </distributionManagement>
