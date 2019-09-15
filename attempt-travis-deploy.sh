@@ -22,7 +22,7 @@ if [[ ${project_version} == *-SNAPSHOT ]]; then # Try to deploy snapshot if vers
     # Snapshots deployment happens only for `development` branch excluding pull requests to it (but including merges)
     if [[ "${TRAVIS_BRANCH}" = "${SNAPSHOTS_BRANCH}" ]]; then
         echo "Deploying ${project_version} to Sonatype repository"
-        .travis/ossrh-deploy.sh
+        .travis/deploy-to-maven-repositories.sh
     else
         echo "Not deploying snapshot as branch is not ${SNAPSHOTS_BRANCH}"
     fi
@@ -31,7 +31,7 @@ else # Try to deploy release if version doesn't end with '-SNAPSHOT'
     # Release deployment happens only for `release` branch excluding pull requests to it (but including merges)
     if [[ "${TRAVIS_BRANCH}" = "${RELEASES_BRANCH}" ]]; then
         echo "Deploying ${project_version} to Maven Central"
-        .travis/ossrh-deploy.sh
+        .travis/deploy-to-maven-repositories.sh
     else
         echo "Not deploying release as branch is not \`${SNAPSHOTS_BRANCH}\`"
     fi
