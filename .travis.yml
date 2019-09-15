@@ -1,6 +1,10 @@
 # Programming language
 language: java
 
+before_script:
+  # Install the tool to switch between JDK versions
+  - wget https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh
+
 ### Maven basic build ###
 # Build project, installing to local repo (skip testing and javadoc generation (if those exist))
 install:
@@ -8,20 +12,45 @@ install:
   - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
-    # 1. Test project against OpenJDK8
-    - stage: test
+    # 1. Test project against various JDKs
+    - stage: Test against various JDKs
+      # Current stable version whatever it is
+      env: JDK=ea
+      script:
+        - source ./install-jdk.sh --verbose --feature ea
+        - mvn -q verify
+    - # Java 14 (very experimental)
+      env: JDK=14
+      script:
+        - source ./install-jdk.sh --verbose --feature 14
+        - mvn -q verify
+    - # Java 13 (upcoming stable (experimental))
+      env: JDK=13
+      script:
+        - source ./install-jdk.sh --verbose --feature 13
+        - mvn -q verify
+    - # Java 12 (latest stable)
+      env: JDK=12
+      script:
+        - source ./install-jdk.sh --verbose --feature 12
+        - mvn -q verify
+    - # Java 11 (LTS)
+      env: JDK=11
+      script:
+        - source ./install-jdk.sh --verbose --feature 11
+        - mvn -q verify
+    - # Java 8 (good == old == stable)
+      env: JDK=8
       jdk: openjdk8
       script: mvn -q verify
-
     # 2. Deploy
     - stage: deploy
+      jdk: openjdk8 # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
       if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
-      jdk: openjdk8
       script:
-        # Enable access to bash-scripts
         - chmod +x ./attempt-travis-deploy.sh
         - chmod +x ./project-version.sh
-        - chmod +x ./.travis/ossrh-deploy.sh
+        - chmod +x ./.travis/deploy-to-maven-repositories.sh
         - ./attempt-travis-deploy.sh
 
 # Cached directories

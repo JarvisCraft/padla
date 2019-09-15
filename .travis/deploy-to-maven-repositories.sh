@@ -11,5 +11,15 @@ echo 'Imported encryption key'
 
 echo 'Deploying artifacts'
 # Generate source and javadocs, sign binaries, deploy to Sonatype using credentials from env.
-mvn deploy -P build-extras,sign,ossrh-env-credentials,ossrh-deploy --settings .travis/.mvn/settings.xml
+
+echo 'Deploying to Sonatype OSSRH (also used for Central integration)'
+mvn deploy -P build-extras,sign,code-signing-credentials,sonatype-ossrh-deploy \
+--settings .travis/.mvn/sonatype-ossrh-settings.xml
+echo 'Deployed to Sonatype OSSRH'
+
+echo 'Deploying to GitHub Package Registry'
+mvn deploy -P build-extras,sign,code-signing-credentials \
+--settings .travis/.mvn/github-package-registry-settings.xml
+echo 'Deployed to GiHub Package Registry'
+
 echo 'Deployed artifacts'
