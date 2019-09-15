@@ -133,7 +133,7 @@ public class ClassFactory {
     /**
      * Temporary classloader which should be instantiated for groups of related classes which may be unloaded.
      */
-    private class TmpClassLoader extends ClassLoader {
+    private static class TmpClassLoader extends ClassLoader {
 
         /**
          * Defines a class by the given bytecode.
