@@ -2,21 +2,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <artifactId>padla</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>java-commons</artifactId>
 
-    <name>Java Commons</name>
-    <description>Common utilities for Java</description>
+    <artifactId>ultimate-messenger</artifactId>
+
+    <name>Ultimate Messenger</name>
+    <description>API for messaging with support of placeholders and custom message-types</description>
 
     <dependencies>
+        <!-- padla -->
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>java-commons</artifactId>
+        </dependency>
+        <!-- reflector -->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>reflector</artifactId>
+        </dependency>
+        <!-- Basic dependencies -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
@@ -26,7 +37,7 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-
+        <!-- Annotations -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -35,18 +46,15 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
-
+        <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
         </dependency>
     </dependencies>
 </project>
