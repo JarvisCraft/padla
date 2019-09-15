@@ -41,17 +41,6 @@
         <developerConnection>scm:git:git@github.com:JarvisCraft/padla.git</developerConnection>
     </scm>
 
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <developers>
         <developer>
             <id>progrm-jarvis</id>
@@ -243,7 +232,7 @@
     <profiles>
         <!-- Maven-central deployment-related profiles -->
         <profile>
-            <id>ossrh-deploy</id>
+            <id>sonatype-ossrh-deploy</id>
             <build>
                 <plugins>
                     <plugin>
@@ -303,6 +292,30 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>sonatype-deployment</id>
+            <distributionManagement>
+                <repository>
+                    <id>maven-central-repo</id>
+                    <url>http://repo1.maven.org/maven2/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>sonatype-ossrh-repo</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+
+        <profile>
+            <id>github-package-registry-deployment</id>
+            <distributionManagement>
+                <repository>
+                    <id>github-package-registry-repo</id>
+                    <url>https://maven.pkg.github.com/JarvisCraft/padla</url>
+                </repository>
+            </distributionManagement>
         </profile>
     </profiles>
 </project>

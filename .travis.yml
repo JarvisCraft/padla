@@ -21,7 +21,7 @@ jobs:
         # Enable access to bash-scripts
         - chmod +x ./attempt-travis-deploy.sh
         - chmod +x ./project-version.sh
-        - chmod +x ./.travis/ossrh-deploy.sh
+        - chmod +x ./.travis/deploy-to-maven-repositories.sh
         - ./attempt-travis-deploy.sh
 
 # Cached directories
