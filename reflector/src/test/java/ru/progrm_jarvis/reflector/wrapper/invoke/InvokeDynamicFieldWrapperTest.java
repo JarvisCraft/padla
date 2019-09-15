@@ -3,6 +3,7 @@ package ru.progrm_jarvis.reflector.wrapper.invoke;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -25,7 +26,8 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo(icq), equalTo(instance.icq)));
         // set
         val newIcq = icq + random.nextInt(1, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(instance, newIcq));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newIcq));
         assertThat(field.get(instance), allOf(equalTo(newIcq), equalTo(instance.icq)));
     }
 
@@ -41,7 +43,8 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo(nut), equalTo(instance.nut)));
         // set
         val newNut = nut + random.nextInt();
-        assertDoesNotThrow(() -> field.set(instance, newNut));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newNut));
         assertThat(field.get(instance), allOf(equalTo(newNut), equalTo(instance.nut)));
     }
 
@@ -56,7 +59,8 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo(127), equalTo(instance.id)));
         // set
         val newId = random.nextInt(128, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(instance, newId));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newId));
         // value gets cached (?)
         assertThat(field.get(instance), /*allOf(*/equalTo(newId)/*, equalTo(instance.id))*/);
     }
@@ -72,7 +76,8 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo("Mr Areshek"), equalTo(instance.name)));
         // set
         val newName = "Mr. " + random.nextInt();
-        assertDoesNotThrow(() -> field.set(instance, newName));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newName));
         // value gets cached (?)
         assertThat(field.get(instance), /*allOf(*/equalTo(newName)/*, equalTo(instance.name))*/);
     }

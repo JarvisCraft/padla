@@ -33,7 +33,7 @@ public interface ClassNamingStrategy extends Supplier<String> {
     static boolean classExists(@NonNull final String className) {
         try {
             // use null check instead of simple `return true` in case the method contract changes
-            return Class.forName(className) != null;
+            return Class.forName(className, false, Thread.currentThread().getContextClassLoader()) != null;
         } catch (final ClassNotFoundException e) {
             return false;
         }
