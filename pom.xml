@@ -13,18 +13,6 @@
     </modules>
     <packaging>pom</packaging>
 
-    <!-- Primary repository -->
-    <distributionManagement>
-        <repository>
-            <id>maven-central</id>
-            <url>http://repo1.maven.org/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>sonatype-ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -104,7 +92,7 @@
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <version>1.6.8</version>
                     <configuration>
-                        <serverId>ossrh</serverId>
+                        <serverId>sonatype-ossrh</serverId>
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
@@ -260,26 +248,6 @@
     <profiles>
         <!-- Deployment-related profiles -->
         <profile>
-            <id>sign</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>build-extras</id>
             <build>
                 <plugins>
@@ -310,9 +278,41 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>sign-binaries</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- Repository profiles -->
 
         <profile>
             <id>sonatype-ossrh-deployment</id>
+            <distributionManagement>
+                <repository>
+                    <id>maven-central</id>
+                    <url>http://repo1.maven.org/maven2/</url>
+                </repository>
+                <snapshotRepository>
+                    <id>sonatype-ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
             <build>
                 <plugins>
                     <plugin>
@@ -321,6 +321,16 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>github-package-registry-deployment</id>
+            <distributionManagement>
+                <repository>
+                    <id>github-package-registry</id>
+                    <url>https://maven.pkg.github.com/JarvisCraft/padla</url>
+                </repository>
+            </distributionManagement>
         </profile>
     </profiles>
 </project>
