@@ -72,7 +72,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    static <T> Lazy<T> createWeak(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> createWeak(@NonNull final Supplier<@NotNull T> valueSupplier) {
         return new SimpleWeakLazy<>(valueSupplier);
     }
 
@@ -104,7 +104,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @Nullable Supplier<T> valueSupplier;
 
-        protected SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected SimpleLazy(@SuppressWarnings("NullableProblems") @NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
         }
 
@@ -115,9 +115,10 @@ public interface Lazy<T> extends Supplier<T> {
 
         @Override
         public T get() {
+            val valueSupplier = this.valueSupplier;
             if (valueSupplier != null) {
                 value = valueSupplier.get();
-                valueSupplier = null;
+                this.valueSupplier = null;
             }
 
             return value;
@@ -153,7 +154,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         volatile T value;
 
-        protected DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected DoubleCheckedLazy(@SuppressWarnings("NullableProblems") @NonNull final Supplier<T> valueSupplier) {
             mutex = new Object[0];
             this.valueSupplier = valueSupplier;
         }
@@ -161,9 +162,13 @@ public interface Lazy<T> extends Supplier<T> {
         @Override
         public T get() {
             if (valueSupplier != null) synchronized (mutex) {
+                val valueSupplier = this.valueSupplier;
                 if (valueSupplier != null) {
-                    value = valueSupplier.get();
-                    valueSupplier = null;
+                    val value = this.value = valueSupplier.get();
+                    this.valueSupplier = null;
+
+                    // make sure no race is possible in theory
+                    return value;
                 }
             }
 
