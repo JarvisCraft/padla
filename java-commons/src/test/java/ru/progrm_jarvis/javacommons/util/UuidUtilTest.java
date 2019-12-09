@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class UuidUtilTest {
 
     @Test
-    void testBytesToUuidFailSafe() {
+    void testBytesToUuidFailSafety() {
         val random = ThreadLocalRandom.current();
         var iterations = 32 + random.nextInt(33);
         for (int i = 0; i < iterations; i++) {
@@ -25,7 +25,7 @@ class UuidUtilTest {
 
         iterations = 32 + random.nextInt(33);
         for (int i = 0; i < iterations; i++) {
-            val bytes = new byte[17 + random.nextInt(Integer.MAX_VALUE - 16)];
+            val bytes = new byte[17 + random.nextInt(Byte.MAX_VALUE - 16)];
             assertThrows(IllegalArgumentException.class, () -> UuidUtil.uuidFromBytes(bytes));
         }
     }
