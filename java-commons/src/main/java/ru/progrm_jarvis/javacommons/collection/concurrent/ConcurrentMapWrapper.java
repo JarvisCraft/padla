@@ -92,6 +92,16 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
+    public boolean remove(final Object key, final Object value) {
+        writeLock.lock();
+        try {
+            return wrapped.remove(key, value);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    @Override
     public void putAll(@NonNull final Map<? extends K, ? extends V> m) {
         writeLock.lock();
         try {
@@ -177,16 +187,6 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
         writeLock.lock();
         try {
             return wrapped.putIfAbsent(key, value);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public boolean remove(final Object key, final Object value) {
-        writeLock.lock();
-        try {
-            return wrapped.remove(key, value);
         } finally {
             writeLock.unlock();
         }
