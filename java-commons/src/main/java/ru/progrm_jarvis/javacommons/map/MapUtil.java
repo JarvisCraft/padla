@@ -19,6 +19,22 @@ import java.util.stream.Stream;
 public class MapUtil {
 
     /**
+     * Fills the map not performing any checks.
+     *
+     * @param map map to fill
+     * @param keyValuePairs key-value pairs to put to the map ordered as <i>key1, value1, key2, value2...</i>
+     */
+    @SuppressWarnings("unchecked")
+    private void fillMapNoChecks(@SuppressWarnings("rawtypes") @NonNull final Map map,
+                                 @NonNull final Object... keyValuePairs) {
+        var value = true; // will get reverted for the first value
+
+        Object key = null; // requires to be initialized for some reason :)
+        for (final Object keyValuePair : keyValuePairs) if (value = !value) map.put(key, keyValuePair);
+        else key = keyValuePair;
+    }
+
+    /**
      * Fills the map specified with the values specified.
      *
      * @param map map to fill with the values
@@ -63,21 +79,6 @@ public class MapUtil {
         fillMapNoChecks(map, keyValuePairs);
 
         return map;
-    }
-
-    /**
-     * Fills the map not performing any checks.
-     *
-     * @param map map to fill
-     * @param keyValuePairs key-value pairs to put to the map ordered as <i>key1, value1, key2, value2...</i>
-     */
-    @SuppressWarnings("unchecked")
-    private void fillMapNoChecks(@NonNull final Map map, @NonNull final Object... keyValuePairs) {
-        var value = true; // will get reverted for the first value
-
-        Object key = null; // requires to be initialized for some reason :)
-        for (final Object keyValuePair : keyValuePairs) if (value = !value) map.put(key, keyValuePair);
-        else key = keyValuePair;
     }
 
     /**

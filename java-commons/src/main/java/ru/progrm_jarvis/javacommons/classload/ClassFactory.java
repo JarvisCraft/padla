@@ -27,61 +27,12 @@ public class ClassFactory {
      * @return defined class
      *
      * @see #defineGCClass(String, byte[])
-     * @see #defineGCClasses(Map)
      * @see #defineGCClass(CtClass)
+     * @see #defineGCClasses(Map)
      * @see #defineGCClasses(CtClass...)
      */
     public Class<?> defineGCClass(@NonNull final String name, @NonNull final byte[] bytecode) {
         return new TmpClassLoader().define(name, bytecode);
-    }
-
-    /**
-     * Defines multiple classes which may be garbage-collected.
-     *
-     * @param bytecodes pairs whose first values are canonical class names
-     * and the second values are those classes' bytecodes
-     * @return defined class in the order their data was passed
-     *
-     * @see #defineGCClass(String, byte[])
-     * @see #defineGCClasses(Map)
-     * @see #defineGCClass(CtClass)
-     * @see #defineGCClasses(CtClass...)
-     */
-    @SafeVarargs
-    public Class<?>[] defineGCClasses(@NonNull final Pair<String, byte[]>... bytecodes) {
-        val classLoader = new TmpClassLoader();
-
-        val length = bytecodes.length;
-        val classes = new Class<?>[length];
-        for (var i = 0; i < length; i++) {
-            val namedClass = bytecodes[i];
-            classes[i] = classLoader.define(namedClass.getFirst(), namedClass.getSecond());
-        }
-
-        return classes;
-    }
-
-    /**
-     * Defines multiple classes which may be garbage-collected.
-     *
-     * @param namedBytecode map containing bytecodes by their classes' canonical names
-     * @return defined classes by their names
-     *
-     * @see #defineGCClass(String, byte[])
-     * @see #defineGCClasses(Pair[])
-     * @see #defineGCClass(CtClass)
-     * @see #defineGCClasses(CtClass...)
-     */
-    public Map<String, Class<?>> defineGCClasses(@NonNull final Map<String, byte[]> namedBytecode) {
-        val classLoader = new TmpClassLoader();
-
-        val classes = new HashMap<String, Class<?>>();
-        for (val entry : namedBytecode.entrySet()) {
-            val name = entry.getKey();
-            classes.put(name, classLoader.define(name, entry.getValue()));
-        }
-
-        return classes;
     }
 
     /**
@@ -106,6 +57,55 @@ public class ClassFactory {
     /**
      * Defines multiple classes which may be garbage-collected.
      *
+     * @param bytecodes pairs whose first values are canonical class names
+     * and the second values are those classes' bytecodes
+     * @return defined class in the order their data was passed
+     *
+     * @see #defineGCClass(String, byte[])
+     * @see #defineGCClass(CtClass)
+     * @see #defineGCClasses(Map)
+     * @see #defineGCClasses(CtClass...)
+     */
+    @SafeVarargs
+    public Class<?>[] defineGCClasses(@NonNull final Pair<String, byte[]>... bytecodes) {
+        val classLoader = new TmpClassLoader();
+
+        val length = bytecodes.length;
+        val classes = new Class<?>[length];
+        for (var i = 0; i < length; i++) {
+            val namedClass = bytecodes[i];
+            classes[i] = classLoader.define(namedClass.getFirst(), namedClass.getSecond());
+        }
+
+        return classes;
+    }
+
+    /**
+     * Defines multiple classes which may be garbage-collected.
+     *
+     * @param namedBytecode map containing bytecodes by their classes' canonical names
+     * @return defined classes by their names
+     *
+     * @see #defineGCClass(String, byte[])
+     * @see #defineGCClass(CtClass)
+     * @see #defineGCClasses(Pair[])
+     * @see #defineGCClasses(CtClass...)
+     */
+    public Map<String, Class<?>> defineGCClasses(@NonNull final Map<String, byte[]> namedBytecode) {
+        val classLoader = new TmpClassLoader();
+
+        val classes = new HashMap<String, Class<?>>();
+        for (val entry : namedBytecode.entrySet()) {
+            val name = entry.getKey();
+            classes.put(name, classLoader.define(name, entry.getValue()));
+        }
+
+        return classes;
+    }
+
+    /**
+     * Defines multiple classes which may be garbage-collected.
+     *
      * @param classes javassist's compile-time classes
      * @return defined classes in the order their data was passed
      *
@@ -113,9 +113,9 @@ public class ClassFactory {
      * @throws CannotCompileException if one of the compile-time classes cannot be compiled
      *
      * @see #defineGCClass(String, byte[])
+     * @see #defineGCClass(CtClass)
      * @see #defineGCClasses(CtClass...)
      * @see #defineGCClasses(Map)
-     * @see #defineGCClass(CtClass)
      */
     public Class<?>[] defineGCClasses(@NonNull final CtClass... classes) throws IOException, CannotCompileException {
         val classLoader = new TmpClassLoader();
