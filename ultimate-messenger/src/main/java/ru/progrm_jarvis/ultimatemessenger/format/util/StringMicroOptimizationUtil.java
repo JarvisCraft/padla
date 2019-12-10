@@ -21,11 +21,11 @@ public class StringMicroOptimizationUtil {
      */
     private final String STRING_VALUE_FIELD_NAME = "value";
     /**
-     * Method handle for accessing {@link String}{@code .}{@value STRING_VALUE_FIELD_NAME} if it is possible
+     * Method handle for accessing {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} if it is possible
      */
     @Nullable private final MethodHandle STRING_VALUE_FIELD_GETTER_METHOD_HANDLE;
     /**
-     * Marker indicating whether access to {@link String}{@code .}{@value STRING_VALUE_FIELD_NAME} is available
+     * Marker indicating whether access to {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} is available
      */
     private final boolean STRING_VALUE_FIELD_AVAILABLE;
 
