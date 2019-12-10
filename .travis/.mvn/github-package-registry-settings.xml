@@ -7,15 +7,15 @@
 
     <servers>
         <server>
-            <id>ossrh</id>
-            <username>${env.OSSRH_JIRA_USERNAME}</username>
-            <password>${env.OSSRH_JIRA_PASSWORD}</password>
+            <id>github-package-registry</id>
+            <username>${env.GITHUB_PACKAGE_REGISTRY_DEPLOYER}</username>
+            <password>${env.GITHUB_PACKAGE_REGISTRY_TOKEN}</password>
         </server>
     </servers>
 
     <profiles>
         <profile>
-            <id>ossrh-env-credentials</id>
+            <id>code-signing-credentials</id>
             <properties>
                 <gpg.executable>gpg</gpg.executable>
                 <gpg.keyname>${env.GPG_KEY_NAME}</gpg.keyname>
