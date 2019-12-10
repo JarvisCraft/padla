@@ -1161,7 +1161,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     public interface Configuration {
 
         /**
-         * Marker indicating whether the configured {@link TextModelBuilder text model builder}
+         * Tests whether the configured {@link TextModelBuilder text model builder}
          * should attempt to use {@code java.lang.invoke.StringConcatFactory} for {@link String string}-concatenation.
          *
          * @return {@code true} if {@code StringConcatFactory} should be used (if available) for string concatenation
@@ -1170,7 +1170,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         @Contract(pure = true)
         boolean enableStringConcatFactory();
 
-        // TODO: 09.09.2019 docs
+        /**
+         * Gets the algorithm which should be used used for producing string concatenation logic
+         * via {@code java.lang.invoke.StringConcatFactory} when it is {@link #enableStringConcatFactory() enabled}.
+         *
+         * @return algorithm which should be used for producing string concatenation logic
+         */
         @Contract(pure = true)
         StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
 
@@ -1221,6 +1226,10 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          */
         @Builder.Default boolean enableStringConcatFactory = true;
 
+        /**
+         * Algorithm which should be used used for producing string concatenation logic
+         * via {@code java.lang.invoke.StringConcatFactory}
+         */
         @Builder.Default StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm = StringConcatFactoryAlgorithm.TREE;
     }
 }
