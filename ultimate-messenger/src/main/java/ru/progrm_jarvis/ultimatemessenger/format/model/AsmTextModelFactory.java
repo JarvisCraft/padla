@@ -22,10 +22,8 @@ import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
 
 import javax.annotation.Nonnegative;
-import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -499,10 +497,6 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             //</editor-fold>
 
             try {
-                // FIXME: 09.09.2019 REMOVE ME PLS
-                try {
-                    Files.write(new File("C:\\Users\\YULIA\\Desktop\\Generated.class").toPath(), clazz.toByteArray());
-                } catch (final Throwable x) {}
                 val constructor = GcClassDefiners.getDefault()
                         .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                         .defineClass(LOOKUP, className, clazz.toByteArray()).getDeclaredConstructor();
