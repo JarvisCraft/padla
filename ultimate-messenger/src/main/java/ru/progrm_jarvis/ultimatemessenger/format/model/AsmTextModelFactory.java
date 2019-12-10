@@ -294,7 +294,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         ///////////////////////////////////////////////////////////////////////////
         /* ******************************************* Specific constants ******************************************* */
         /**
-         * Maximal amount of dynamic arguments passed to {@code java.lang.StringConcatFactory} concatenation methods
+         * Maximal amount of dynamic arguments passed
+         * to {@code java.lang.invoke.StringConcatFactory} concatenation methods
          */
         private static final int STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS = 200, // according to Javadocs
         /* *************************************** Precomputed string lengths *************************************** */
