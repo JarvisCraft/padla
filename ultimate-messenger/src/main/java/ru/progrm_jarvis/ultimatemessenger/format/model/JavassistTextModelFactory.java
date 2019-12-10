@@ -31,7 +31,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<JavassistTextModelFactory> INSTANCE
+    private static final Lazy<JavassistTextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(JavassistTextModelFactory::new);
 
     /**
@@ -42,7 +42,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      */
     @SuppressWarnings("unchecked")
     @NotNull public static <T> JavassistTextModelFactory<T> get() {
-        return INSTANCE.get();
+        return (JavassistTextModelFactory<T>) INSTANCE.get();
     }
 
     @Override

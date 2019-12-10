@@ -20,7 +20,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<SimpleTextModelFactory> INSTANCE
+    private static final Lazy<SimpleTextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(SimpleTextModelFactory::new);
 
     /**
@@ -31,7 +31,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      */
     @SuppressWarnings("unchecked")
     @NotNull public static <T> SimpleTextModelFactory<T> get() {
-        return INSTANCE.get();
+        return (SimpleTextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
