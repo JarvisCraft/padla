@@ -964,6 +964,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
 
                             break;
                         }
+                        default: throw new IllegalStateException("Unknown StringConcatFactory algorithm");
                     }
                     //</editor-fold>
                 }
