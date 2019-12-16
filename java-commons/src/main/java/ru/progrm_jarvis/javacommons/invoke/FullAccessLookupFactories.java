@@ -76,7 +76,7 @@ public class FullAccessLookupFactories {
             val rootLookup = lookupConstructor.newInstance(MethodHandles.Lookup.class, LookupFactory.ALL_LOOKUP_MODES);
             // implement a functional interface using this lookup
             // use JDK functional interface not to have problems with NoClassDefFoundError
-            @SuppressWarnings("unchecked") val biFunction = ((BiFunction<Class, Integer, MethodHandles.Lookup>)
+            @SuppressWarnings("unchecked") val biFunction = ((BiFunction<Class<?>, Integer, MethodHandles.Lookup>)
                     LambdaMetafactory
                             .metafactory(rootLookup, "apply", methodType(BiFunction.class),
                                     methodType(Object.class, Object.class, Object.class),
