@@ -1,12 +1,14 @@
 package ru.progrm_jarvis.javacommons.classload;
 
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 import java.util.Optional;
 
 /**
  * General purpose utility for {@link Class}-related operations.
  */
+@UtilityClass
 public class ClassUtil {
 
     /**
