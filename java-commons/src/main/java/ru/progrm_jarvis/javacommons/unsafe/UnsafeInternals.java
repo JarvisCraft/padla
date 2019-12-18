@@ -11,30 +11,55 @@ import ru.progrm_jarvis.javacommons.classload.ClassUtil;
 public class UnsafeInternals {
 
     /**
-     * Name of {@code Unsafe} class
+     * {@code Unsafe} Class object
      */
-    public static final String UNSAFE_CLASS_NAME = "sun.misc.Unsafe",
+    @Nullable public Class<?> UNSAFE_CLASS,
+    /**
+     * {@code MagicAccessorImpl} Class object
+     */
+    MAGIC_ACCESSOR_IMPL_CLASS;
 
     /**
-     * Name of {@code MagicAccessorImpl} class
+     * Name of {@link #UNSAFE_CLASS} class
      */
-    MAGIC_ACCESSOR_IMPL_CLASS_NAME = "sun.reflect.MagicAccessorImpl";
+    public static final String UNSAFE_CLASS_NAME,
+    /**
+     * Name of {@link #MAGIC_ACCESSOR_IMPL_CLASS} class
+     */
+    MAGIC_ACCESSOR_IMPL_CLASS_NAME;
 
     /**
-     * {@value #UNSAFE_CLASS_NAME} Class object
+     * Flag indicating whether or not {@link #UNSAFE_CLASS} class is available
      */
-    @Nullable public Class<?> UNSAFE_CLASS = ClassUtil.getNullableClass(UNSAFE_CLASS_NAME),
+    public static final boolean UNSAFE_AVAILABLE,
     /**
-     * {@value #MAGIC_ACCESSOR_IMPL_CLASS_NAME} Class object
+     * Flag indicating whether or not {@link #MAGIC_ACCESSOR_IMPL_CLASS} class is available
      */
-    MAGIC_ACCESSOR_IMPL_CLASS = ClassUtil.getNullableClass(MAGIC_ACCESSOR_IMPL_CLASS_NAME);
+    MAGIC_ACCESSOR_IMPL_AVAILABLE;
 
-    /**
-     * Flag indicating whether or not {@value #UNSAFE_CLASS_NAME} class is available
-     */
-    public static final boolean UNSAFE_AVAILABLE = UNSAFE_CLASS != null,
-    /**
-     * Flag indicating whether or not {@value #MAGIC_ACCESSOR_IMPL_CLASS_NAME} class is available
-     */
-    MAGIC_ACCESSOR_IMPL_AVAILABLE = MAGIC_ACCESSOR_IMPL_CLASS != null;
+    static {
+        {
+            UNSAFE_CLASS = ClassUtil.getClass("jdk.internal.misc.Unsafe")
+                    .orElseGet(() -> ClassUtil.getNullableClass("sun.misc.Unsafe"));
+            if (UNSAFE_CLASS == null) {
+                UNSAFE_CLASS_NAME = null;
+                UNSAFE_AVAILABLE = false;
+            } else  {
+                UNSAFE_CLASS_NAME = UNSAFE_CLASS.getCanonicalName();
+                UNSAFE_AVAILABLE = true;
+            }
+        }
+        {
+
+            MAGIC_ACCESSOR_IMPL_CLASS = ClassUtil.getClass("jdk.internal.reflect.MagicAccessorImpl")
+                    .orElseGet(() -> ClassUtil.getNullableClass("sun.reflect.MagicAccessorImpl"));
+            if (MAGIC_ACCESSOR_IMPL_CLASS == null) {
+                MAGIC_ACCESSOR_IMPL_CLASS_NAME = null;
+                MAGIC_ACCESSOR_IMPL_AVAILABLE = false;
+            } else  {
+                MAGIC_ACCESSOR_IMPL_CLASS_NAME = MAGIC_ACCESSOR_IMPL_CLASS.getCanonicalName();
+                MAGIC_ACCESSOR_IMPL_AVAILABLE = true;
+            }
+        }
+    }
 }
