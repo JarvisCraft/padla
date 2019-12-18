@@ -45,7 +45,7 @@ public class UnsafeInternals {
                 UNSAFE_CLASS_NAME = null;
                 UNSAFE_AVAILABLE = false;
             } else  {
-                UNSAFE_CLASS_NAME = UNSAFE_CLASS.getCanonicalName();
+                UNSAFE_CLASS_NAME = UNSAFE_CLASS.getName();
                 UNSAFE_AVAILABLE = true;
             }
         }
@@ -57,7 +57,7 @@ public class UnsafeInternals {
                 MAGIC_ACCESSOR_IMPL_CLASS_NAME = null;
                 MAGIC_ACCESSOR_IMPL_AVAILABLE = false;
             } else  {
-                MAGIC_ACCESSOR_IMPL_CLASS_NAME = MAGIC_ACCESSOR_IMPL_CLASS.getCanonicalName();
+                MAGIC_ACCESSOR_IMPL_CLASS_NAME = MAGIC_ACCESSOR_IMPL_CLASS.getName();
                 MAGIC_ACCESSOR_IMPL_AVAILABLE = true;
             }
         }
