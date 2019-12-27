@@ -48,10 +48,7 @@ jobs:
       jdk: openjdk8 # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
       if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
       script:
-        - chmod +x ./attempt-travis-deploy.sh
-        - chmod +x ./project-version.sh
-        - chmod +x ./.travis/deploy-to-maven-repositories.sh
-        - ./attempt-travis-deploy.sh
+        - bash attempt-travis-deploy.sh
 
 # Cached directories
 cache:
