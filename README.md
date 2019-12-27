@@ -1,9 +1,10 @@
 # PADLA
 
-###### Plain And Direct Language Additions for Java
-
 [![License](https://img.shields.io/github/license/JarvisCraft/padla)](/LICENSE)
+[![Build Status](https://travis-ci.org/JarvisCraft/padla.svg?branch=development)](https://travis-ci.org/JarvisCraft/padla)
 [![CodeFactor](https://www.codefactor.io/repository/github/jarviscraft/padla/badge)](https://www.codefactor.io/repository/github/jarviscraft/padla)
+
+###### Plain And Direct Language Additions for Java
 
 ## What is it?
 
