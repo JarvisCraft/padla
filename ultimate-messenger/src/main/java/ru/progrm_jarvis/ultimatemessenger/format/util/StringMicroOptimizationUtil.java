@@ -48,6 +48,7 @@ public class StringMicroOptimizationUtil {
      * Gets array of {@link String string} characters possibly returning
      * its internal {@value #STRING_VALUE_FIELD_NAME} field's value.
      *
+     * @param string string whose chars should be got
      * @return array of {@link String string} characters possibly being the one used by {@code string} itself
      *
      * @apiNote modifications to the array may reflect on {@code string}
