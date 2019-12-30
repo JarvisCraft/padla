@@ -148,39 +148,39 @@ public class AsmUtil {
     /**
      * Signature of {@code void()} method
      */
-    VOID_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE).getDescriptor(),
+    VOID_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE),
     /**
      * Signature of {@code boolean()} method
      */
-    BOOLEAN_METHOD_DESCRIPTOR = getMethodType(BOOLEAN_TYPE).getDescriptor(),
+    BOOLEAN_METHOD_DESCRIPTOR = getMethodDescriptor(BOOLEAN_TYPE),
     /**
      * Signature of {@code byte()} method
      */
-    BYTE_METHOD_DESCRIPTOR = getMethodType(BYTE_TYPE).getDescriptor(),
+    BYTE_METHOD_DESCRIPTOR = getMethodDescriptor(BYTE_TYPE),
     /**
      * Signature of {@code short()} method
      */
-    SHORT_METHOD_DESCRIPTOR = getMethodType(SHORT_TYPE).getDescriptor(),
+    SHORT_METHOD_DESCRIPTOR = getMethodDescriptor(SHORT_TYPE),
     /**
      * Signature of {@code int()} method
      */
-    INT_METHOD_DESCRIPTOR = getMethodType(INT_TYPE).getDescriptor(),
+    INT_METHOD_DESCRIPTOR = getMethodDescriptor(INT_TYPE),
     /**
      * Signature of {@code long()} method
      */
-    LONG_METHOD_DESCRIPTOR = getMethodType(LONG_TYPE).getDescriptor(),
+    LONG_METHOD_DESCRIPTOR = getMethodDescriptor(LONG_TYPE),
     /**
      * Signature of {@code float()} method
      */
-    FLOAT_METHOD_DESCRIPTOR = getMethodType(FLOAT_TYPE).getDescriptor(),
+    FLOAT_METHOD_DESCRIPTOR = getMethodDescriptor(FLOAT_TYPE),
     /**
      * Signature of {@code double()} method
      */
-    DOUBLE_METHOD_DESCRIPTOR = getMethodType(DOUBLE_TYPE).getDescriptor(),
+    DOUBLE_METHOD_DESCRIPTOR = getMethodDescriptor(DOUBLE_TYPE),
     /**
      * Signature of {@code char()} method
      */
-    CHAR_METHOD_DESCRIPTOR = getMethodType(CHAR_TYPE).getDescriptor(),
+    CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(CHAR_TYPE),
     /**
      * Signature of {@code String()} method
      */
@@ -188,39 +188,39 @@ public class AsmUtil {
     /**
      * Signature of {@code void(boolean)} method
      */
-    VOID_BOOLEAN_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, BOOLEAN_TYPE).getDescriptor(),
+    VOID_BOOLEAN_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, BOOLEAN_TYPE),
     /**
      * Signature of {@code void(byte)} method
      */
-    VOID_BYTE_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, BYTE_TYPE).getDescriptor(),
+    VOID_BYTE_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, BYTE_TYPE),
     /**
      * Signature of {@code void(short)} method
      */
-    VOID_SHORT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, SHORT_TYPE).getDescriptor(),
+    VOID_SHORT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, SHORT_TYPE),
     /**
      * Signature of {@code void(int)} method
      */
-    VOID_INT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, INT_TYPE).getDescriptor(),
+    VOID_INT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, INT_TYPE),
     /**
      * Signature of {@code void(long)} method
      */
-    VOID_LONG_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, LONG_TYPE).getDescriptor(),
+    VOID_LONG_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, LONG_TYPE),
     /**
      * Signature of {@code void(float)} method
      */
-    VOID_FLOAT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, FLOAT_TYPE).getDescriptor(),
+    VOID_FLOAT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, FLOAT_TYPE),
     /**
      * Signature of {@code void(double)} method
      */
-    VOID_DOUBLE_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, DOUBLE_TYPE).getDescriptor(),
+    VOID_DOUBLE_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, DOUBLE_TYPE),
     /**
      * Signature of {@code void(char)} method
      */
-    VOID_CHAR_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, CHAR_TYPE).getDescriptor(),
+    VOID_CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, CHAR_TYPE),
     /**
      * Signature of {@code void(String)} method
      */
-    VOID_STRING_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, STRING_TYPE).getDescriptor();
+    VOID_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, STRING_TYPE);
 
     /* ****************************************** Stored multi-opcodes ****************************************** */
     /**
