@@ -20,7 +20,7 @@
         <!-- Testing -->
         <version.junit>5.5.2</version.junit>
         <version.junit.platform>1.5.2</version.junit.platform>
-        <version.mockito>3.2.0</version.mockito>
+        <version.mockito>3.2.4</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -105,7 +105,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.2.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -167,7 +167,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>28.1-jre</version>
+                <version>28.2-jre</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>
@@ -305,12 +305,13 @@
             <id>sonatype-ossrh-deployment</id>
             <distributionManagement>
                 <repository>
-                    <id>maven-central</id>
-                    <url>http://repo1.maven.org/maven2/</url>
+                    <!-- This one is used for automatic sync with Maven Central -->
+                    <id>sonatype-ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
                 <snapshotRepository>
                     <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
             <build>
