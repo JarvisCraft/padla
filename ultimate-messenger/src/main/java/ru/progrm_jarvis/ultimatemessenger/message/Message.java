@@ -1,66 +1,84 @@
 package ru.progrm_jarvis.ultimatemessenger.message;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import lombok.NonNull;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
 
 /**
- * Message which may be sent to receivers and which may be serialized.
- * <p>
- * The basic object of UltimateMessenger API.
+ * Type of a message.
  *
+ * @param <C> type of message context
  * @param <R> type of message receivers
+ *
+ * @apiNote this interface has overloads for various iterable types in order to allow custom optimizations for them
  */
-public interface Message<R> {
+@FunctionalInterface
+public interface Message<C, R> {
 
     /**
-     * Instance of {@link Gson} with its default configuration
+     * Sends a message in the given context to the receiver.
+     *
+     * @param context context of the message
+     * @param receiver receiver of the message
      */
-    Gson SIMPLE_GSON = new Gson();
+    void send(@NotNull C context, @NotNull R receiver);
 
     /**
-     * Send the message to the receiver.
+     * Sends a message in the given context to each of the receivers.
      *
-     * @param receiver the one to whom to send the message
+     * @param context context of the message
+     * @param receivers receivers of the message
      */
-    void send(@NonNull R receiver);
-
-    /**
-     * Send the message to the receivers.
-     *
-     * @param receivers those to whom to send the message
-     * @throws NullPointerException if {@code receivers} is {@code null}
-     *
-     * @implNote simply iterates through receivers delegating to {@link #send(Object)} so may be overridden to optimize
-     */
-    @SuppressWarnings("unchecked")
-    default void send(@NonNull final R... receivers) {
-        for (val receiver : receivers) send(receiver);
+    @SuppressWarnings("unchecked") // generic vararg
+    default void send(@NotNull C context, @NotNull R... receivers) {
+        for (val receiver : receivers) send(context, receiver);
     }
 
     /**
-     * Send the message to the receivers.
+     * Sends a message in the given context to each of the receivers.
      *
-     * @param receivers those to whom to send the message
-     * @throws NullPointerException if {@code receivers} is {@code null}
-     *
-     * @implNote simply iterates through receivers delegating to {@link #send(Object)},
-     * may be overridden in order to optimize it
+     * @param context context of the message
+     * @param receivers receivers of the message
      */
-    default void send(@NonNull final Iterable<? extends R> receivers) {
-        for (val receiver : receivers) send(receiver);
+    default void send(@NotNull C context, @NotNull Iterator<@NotNull R> receivers) {
+        while (receivers.hasNext()) send(context, receivers.next());
+    }
+
+    default void send(@NotNull C context, @NotNull Spliterator<@NotNull R> receivers) {
+        receivers.forEachRemaining(receiver -> send(context, receiver));
     }
 
     /**
-     * Serializes this object to {@link JsonElement json element}.
+     * Sends a message in the given context to each of the receivers.
      *
-     * @return {@link JsonElement json element} representation of this object
-     *
-     * @implNote uses {@link #SIMPLE_GSON}'s {@link Gson#toJsonTree(Object)},
-     * may be overridden for more specific behaviour
+     * @param context context of the message
+     * @param receivers receivers of the message
      */
-    default JsonElement serialize() {
-        return SIMPLE_GSON.toJsonTree(this);
+    default void send(@NotNull C context, @NotNull Iterable<@NotNull R> receivers) {
+        for (val receiver : receivers) send(context, receiver);
+    }
+
+    /**
+     * Sends a message in the given context to each of the receivers.
+     *
+     * @param context context of the message
+     * @param receivers receivers of the message
+     */
+    default void send(@NotNull C context, @NotNull Collection<@NotNull R> receivers) {
+        for (val receiver : receivers) send(context, receiver);
+    }
+
+    /**
+     * Sends a message in the given context to each of the receivers.
+     *
+     * @param context context of the message
+     * @param receivers receivers of the message
+     */
+    default void send(@NotNull C context, @NotNull List<@NotNull R> receivers) {
+        for (val receiver : receivers) send(context, receiver);
     }
 }
