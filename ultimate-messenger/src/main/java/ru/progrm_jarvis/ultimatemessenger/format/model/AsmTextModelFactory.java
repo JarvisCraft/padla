@@ -243,10 +243,6 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          */
         STRING_OBJECT_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_TYPE, OBJECT_TYPE),
         /**
-         * Signature of {@code void()} method
-         */
-        VOID_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE),
-        /**
          * Signature of {@code void(int)} method
          */
         VOID_INT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, INT_TYPE),
