@@ -13,8 +13,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -51,7 +50,7 @@ class AsmUtilTest {
 
             constructor.setAccessible(true);
 
-            assertThat(constructor.newInstance(), isA(TestSubject.class));
+            assertThat(constructor.newInstance(), instanceOf(TestSubject.class));
         }
         {
             clazz = new ClassWriter(0);
@@ -63,7 +62,6 @@ class AsmUtilTest {
             AsmUtil.addEmptyConstructor(clazz, superClass);
             clazz.visitEnd();
 
-            // FIXME: 06.09.2019
             val constructor = ((Class<? extends StatusSubject>) GcClassDefiners.getDefault()
                     .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                     .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
@@ -76,7 +74,7 @@ class AsmUtilTest {
                 // a SuccessStatus should be thrown
                 fail();
             } catch (final InvocationTargetException e) {
-                assertThat(e.getCause(), isA((Class /* Hamcrest is ill */) SuccessStatus.class));
+                assertThat(e.getCause(), instanceOf(SuccessStatus.class));
             }
         }
     }
@@ -104,7 +102,7 @@ class AsmUtilTest {
         constructor.setAccessible(true);
 
         val instance = constructor.newInstance();
-        assertThat(instance, isA(Object.class));
+        assertThat(instance, instanceOf(Object.class));
 
         assertDoesNotThrow(() -> constructor.newInstance().getClass());
     }
