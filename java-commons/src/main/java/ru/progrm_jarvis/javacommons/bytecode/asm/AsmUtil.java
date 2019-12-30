@@ -61,11 +61,11 @@ public class AsmUtil {
     ///////////////////////////////////////////////////////////////////////////
     /* ******************************************** Special Method names ******************************************** */
     /**
-     * Prefix of generated fields after which the index will go
+     * Name of static initializer method
      */
     public final String STATIC_INITIALIZER_METHOD_NAME = "<clinit>",
     /**
-     * Name of constructor-method
+     * Name of constructor method
      */
     CONSTRUCTOR_METHOD_NAME = "<init>",
     /* ************************************ Very special names (read INDY magic) ************************************ */
