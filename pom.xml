@@ -305,12 +305,13 @@
             <id>sonatype-ossrh-deployment</id>
             <distributionManagement>
                 <repository>
-                    <id>maven-central</id>
-                    <url>http://repo1.maven.org/maven2/</url>
+                    <!-- This one is used for automatic sync with Maven Central -->
+                    <id>sonatype-ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
                 <snapshotRepository>
                     <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
             <build>
