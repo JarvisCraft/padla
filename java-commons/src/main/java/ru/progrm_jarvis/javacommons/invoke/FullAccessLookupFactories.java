@@ -1,9 +1,7 @@
 package ru.progrm_jarvis.javacommons.invoke;
 
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.ObjectUtil;
@@ -106,16 +104,5 @@ public class FullAccessLookupFactories {
      */
     public Optional<LookupFactory> getDefault() {
         return DEFAULT_LOOKUP_FACTORY.get();
-    }
-
-    // TODO: 06.09.2019 find a way to use it with LambdaMetafactory
-    @FunctionalInterface
-    interface InstantiatingLookupFactory extends LookupFactory {
-        @NotNull MethodHandles.Lookup create(@NotNull Class<?> clazz, int modes);
-
-        @Override
-        @NotNull default MethodHandles.Lookup create(@NonNull final Class<?> clazz) {
-            return create(clazz, ALL_LOOKUP_MODES);
-        }
     }
 }
