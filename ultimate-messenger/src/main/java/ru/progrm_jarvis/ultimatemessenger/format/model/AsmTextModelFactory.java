@@ -309,6 +309,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          */
         TEXT_MODEL_GENERIC_DESCRIPTOR_LENGTH = TEXT_MODEL_SIGNATURE.length();
 
+        /**
+         * Natural logarithm of {@link #STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS}
+         */
+        private static final double STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS_LOGARITHM
+                = Math.log(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+
         /*  *******************************************************************************************************  */
         /* ************************** java.lang.invoke.StringConcatFactory specific stuff ************************** */
         /*  *******************************************************************************************************  */
@@ -785,51 +791,114 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                     // The amount of dynamic nodes exceeds the maximal amount of those
                     // passed into the `StringConcatFactory`'s `makeConcat` methods
                     //<editor-fold desc="Not as fast implementation" defaultstate="collapsed">
-                    switch (configuration.stringConcatFactoryAlgorithm()) {
+                    /*
                         case TREE: {
-                            if (false) { // FIXME: 12.09.2019
-                                // log(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS, dynamicNodes)
-                                val stringConcatFactoryCalls = Math.round(
-                                        Math.log(dynamicNodes) / Math.log(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS)
-                                );
+                            // log(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS, dynamicNodes)
+                            val stringConcatFactoryCalls = Math.round(
+                                    Math.log(dynamicNodes) / STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS_LOGARITHM
+                            );
 
-                                val nodes = this.nodes.iterator();
-
-                                // The worst stack size happens for the following situation:
-                                // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
-                                // - target is on the stack
-                                // - currently `getText`ed TextModel is on the stack
-                                method.visitMaxs(
-                                        STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 /* [this + local variable] */
-                                );
-
-                                break;
-                            }
-                            log.warning("\n\nTREE is not implemented\n\n");
-                        }
-                        case VECTOR: {
-                            // linearly append nodes making the result of the last `makeConcat` call the
-                            // first argument of the new one
-                            // 200 -> impossible here, (min) 201 -> 2, 399 -> 2, 400 -> 3...
-                            val concatenations
-                                    = (dynamicNodes - 1) / STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1;
-
-                            // create an iterator to go through nodes between loops
                             val nodes = this.nodes.iterator();
 
-                            // index of the dynamic TextModel field
-                            var dynamicIndex = -1;
 
-                            // for the first `makeConcat` use all slots for the dynamic elements
-                            // also, don't add static elements after the last dynamic one
-                            var dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS;
 
-                            val bootstrapArguments = new ArrayList<Object>(1);
-                            bootstrapArguments.add(null); // gets set to `recipe` when needed
-                            val recipe = new StringBuilder(dynamicNodes);
+                            // The worst stack size happens for the following situation:
+                            // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
+                            // - target is on the stack
+                            // - currently `getText`ed TextModel is on the stack
+                            method.visitMaxs(
+                                    STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 / * [this + local variable] * /
+                            );
 
-                            var containsConstants = false;
-                            while (true) {
+                            break;
+                        }
+                        */
+                    if (configuration.stringConcatFactoryAlgorithm()
+                            == Configuration.StringConcatFactoryAlgorithm.VECTOR) {// linearly append nodes making
+                        // the result of the last `makeConcat` call the
+                        // first argument of the new one
+                        // Nodes -> Concatenations:
+                        // 200 -> impossible here, (min) 201 -> 2, 399 -> 2, 400 -> 3...
+
+                        // create an iterator to go through nodes between loops
+                        val nodes = this.nodes.iterator();
+
+                        // index of the dynamic TextModel field
+                        var dynamicIndex = -1;
+
+                        // for the first `makeConcat` use all slots for the dynamic elements
+                        // also, don't add static elements after the last dynamic one
+                        var dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS;
+
+                        val bootstrapArguments = new ArrayList<Object>(1);
+                        bootstrapArguments.add(null); // gets set to `recipe` when needed
+                        val recipe = new StringBuilder(dynamicNodes);
+
+                        var containsConstants = false;
+                        while (true) {
+                            val node = nodes.next();
+                            if (node.isDynamic()) {
+                                val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                                asm$addStaticFieldWithInitializer(
+                                        clazz, internalClassName, staticInitializer,
+                                        fieldName, node.asDynamic().getContent()
+                                );
+                                asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                        method, internalClassName, fieldName
+                                );
+                                recipe.append('\1');
+
+                                // when all dynamic slots get occupied, do `makeConcat`
+                                if (--dynamicSlotsRemaining == 0) break;
+                            } else {
+                                val staticNode = node.asStatic();
+                                if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+                                    bootstrapArguments.add(staticNode.getText());
+                                    recipe.append('\2');
+                                } else {
+                                    recipe.append(staticNode.getText());
+                                    containsConstants = true;
+                                }
+                            }
+                        }
+
+                        /*
+                         * Make the first concatenation
+                         */
+                        val maxDynamicArgumentsStringDescriptor
+                                = stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+                        if (containsConstants) {
+                            bootstrapArguments.set(0, recipe.toString());
+                            method.visitInvokeDynamicInsn(
+                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, maxDynamicArgumentsStringDescriptor,
+                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
+                            );
+                        } else method.visitInvokeDynamicInsn(
+                                MAKE_CONCAT_METHOD_NAME,
+                                maxDynamicArgumentsStringDescriptor,
+                                MAKE_CONCAT_HANDLE /* no bootstrap arguments */
+                        );
+                        // < now the result of concatenation is on stack >
+                        /*
+                         * Make all other concatenations
+                         */
+
+                        while (nodes.hasNext()) {
+                            // the beginning of the new concatenation group
+                            if (dynamicSlotsRemaining == 0) {
+                                // 1 dynamic slot get occupied for the result of the previous concatenation
+                                dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - 1;
+
+                                // reset the recipe without reallocating the `StringBuilder` object
+                                // indicating that the String starts from the dynamic value (previous String)
+                                recipe.delete(1, recipe.length()).setCharAt(0, '\1');
+                                containsConstants = false;
+                                bootstrapArguments.clear();
+                                bootstrapArguments.add(null);
+                            }
+
+                            // add the node
+                            {
                                 val node = nodes.next();
                                 if (node.isDynamic()) {
                                     val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
@@ -843,7 +912,24 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                     recipe.append('\1');
 
                                     // when all dynamic slots get occupied, do `makeConcat`
-                                    if (--dynamicSlotsRemaining == 0) break;
+                                    if (--dynamicSlotsRemaining == 0) {
+                                        // make the concatenation not breaking out of the loop
+                                        // BREAK ME OOOOUT (c) Muse 2017
+                                        // this happens as soon as the dynamic element boofer is filled
+                                        // so that the bigger String gets created closer to the end
+                                        if (containsConstants) {
+                                            bootstrapArguments.set(0, recipe.toString());
+                                            method.visitInvokeDynamicInsn(
+                                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
+                                                    maxDynamicArgumentsStringDescriptor,
+                                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
+                                            );
+                                        } else method.visitInvokeDynamicInsn(
+                                                MAKE_CONCAT_METHOD_NAME,
+                                                maxDynamicArgumentsStringDescriptor,
+                                                MAKE_CONCAT_HANDLE /* no bootstrap arguments */
+                                        );
+                                    }
                                 } else {
                                     val staticNode = node.asStatic();
                                     if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
@@ -855,120 +941,38 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                     }
                                 }
                             }
+                        }
 
-                            /*
-                             * Make the first concatenation
-                             */
-                            val maxDynamicArgumentsStringDescriptor
-                                    = stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+                        // There are no more unhandled nodes but some the last ones)
+                        // might have not been used for concatenation
+
+                        if (dynamicSlotsRemaining != 0) { // the last stack content was not used for concatenation
+                            // note: amount of dynamic elements may even be
+
                             if (containsConstants) {
                                 bootstrapArguments.set(0, recipe.toString());
                                 method.visitInvokeDynamicInsn(
-                                        MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, maxDynamicArgumentsStringDescriptor,
-                                        MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
+                                        MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
+                                                STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - dynamicSlotsRemaining
+                                        ), MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
                                 );
                             } else method.visitInvokeDynamicInsn(
                                     MAKE_CONCAT_METHOD_NAME,
                                     maxDynamicArgumentsStringDescriptor,
                                     MAKE_CONCAT_HANDLE /* no bootstrap arguments */
                             );
-                            // < now the result of concatenation is on stack >
-                            /*
-                             * Make all other concatenations
-                             */
 
-                            while (nodes.hasNext()) {
-                                // the beginning of the new concatenation group
-                                if (dynamicSlotsRemaining == 0) {
-                                    // 1 dynamic slot get occupied for the result of the previous concatenation
-                                    dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - 1;
-
-                                    // reset the recipe without reallocating the `StringBuilder` object
-                                    // indicating that the String starts from the dynamic value (previous String)
-                                    recipe.delete(1, recipe.length()).setCharAt(0, '\1');
-                                    containsConstants = false;
-                                    bootstrapArguments.clear();
-                                    bootstrapArguments.add(null);
-                                }
-
-                                // add the node
-                                {
-                                    val node = nodes.next();
-                                    if (node.isDynamic()) {
-                                        val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                                        asm$addStaticFieldWithInitializer(
-                                                clazz, internalClassName, staticInitializer,
-                                                fieldName, node.asDynamic().getContent()
-                                        );
-                                        asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                                method, internalClassName, fieldName
-                                        );
-                                        recipe.append('\1');
-
-                                        // when all dynamic slots get occupied, do `makeConcat`
-                                        if (--dynamicSlotsRemaining == 0) {
-                                            // make the concatenation not breaking out of the loop
-                                            // BREAK ME OOOOUT (c) Muse 2017
-                                            // this happens as soon as the dynamic element boofer is filled
-                                            // so that the bigger String gets created closer to the end
-                                            if (containsConstants) {
-                                                bootstrapArguments.set(0, recipe.toString());
-                                                method.visitInvokeDynamicInsn(
-                                                        MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
-                                                        maxDynamicArgumentsStringDescriptor,
-                                                        MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
-                                                );
-                                            } else method.visitInvokeDynamicInsn(
-                                                    MAKE_CONCAT_METHOD_NAME,
-                                                    maxDynamicArgumentsStringDescriptor,
-                                                    MAKE_CONCAT_HANDLE /* no bootstrap arguments */
-                                            );
-                                        }
-                                    } else {
-                                        val staticNode = node.asStatic();
-                                        if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
-                                            bootstrapArguments.add(staticNode.getText());
-                                            recipe.append('\2');
-                                        } else {
-                                            recipe.append(staticNode.getText());
-                                            containsConstants = true;
-                                        }
-                                    }
-                                }
-                            }
-
-                            // There are no more unhandled nodes but some the last ones)
-                            // might have not been used for concatenation
-
-                            if (dynamicSlotsRemaining != 0) { // the last stack content was not used for concatenation
-                                // note: amount of dynamic elements may even be
-
-                                if (containsConstants) {
-                                    bootstrapArguments.set(0, recipe.toString());
-                                    method.visitInvokeDynamicInsn(
-                                            MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
-                                                    STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - dynamicSlotsRemaining
-                                            ), MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
-                                    );
-                                } else method.visitInvokeDynamicInsn(
-                                        MAKE_CONCAT_METHOD_NAME,
-                                        maxDynamicArgumentsStringDescriptor,
-                                        MAKE_CONCAT_HANDLE /* no bootstrap arguments */
-                                );
-
-                            }
-
-                            // The worst stack size happens for the following situation:
-                            // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
-                            // - target is on the stack
-                            // - currently `getText`ed TextModel is on the stack
-                            method.visitMaxs(
-                                    STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 /* [this + local variable] */
-                            );
-
-                            break;
                         }
-                        default: throw new IllegalStateException("Unknown StringConcatFactory algorithm");
+
+                        // The worst stack size happens for the following situation:
+                        // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
+                        // - target is on the stack
+                        // - currently `getText`ed TextModel is on the stack
+                        method.visitMaxs(
+                                STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 /* [this + local variable] */
+                        );
+                    } else {
+                        throw new IllegalStateException("Unknown StringConcatFactory algorithm");
                     }
                     //</editor-fold>
                 }
@@ -1192,7 +1196,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
 
         enum StringConcatFactoryAlgorithm {
-            TREE,
+            //TREE,
             VECTOR
         }
     }
@@ -1243,6 +1247,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * Algorithm which should be used used for producing string concatenation logic via {@code
          * java.lang.invoke.StringConcatFactory}
          */
-        @Builder.Default StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm = StringConcatFactoryAlgorithm.TREE;
+        @Builder.Default StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
+                = StringConcatFactoryAlgorithm.VECTOR;
     }
 }

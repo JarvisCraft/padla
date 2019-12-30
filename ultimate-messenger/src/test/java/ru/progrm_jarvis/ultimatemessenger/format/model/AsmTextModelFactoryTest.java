@@ -8,12 +8,14 @@ class AsmTextModelFactoryTest extends AbstractTextModelFactoryTest {
 
     static Stream<TextModelFactory<User>> provideTestSubjects() {
         return Stream.of(
+                /*
                 AsmTextModelFactory.create(
                         AsmTextModelFactory.configuration()
                                 .enableStringConcatFactory(true)
                                 .stringConcatFactoryAlgorithm(StringConcatFactoryAlgorithm.TREE)
                                 .build()
                 ),
+                */
                 AsmTextModelFactory.create(
                         AsmTextModelFactory.configuration()
                                 .enableStringConcatFactory(true)
