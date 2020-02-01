@@ -72,7 +72,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     @Builder.Default @NonNull String unknownPlaceholderReplacement = "???";
 
     @Override
-    @NotNull public String format(@NotNull String source, final T target) {
+    public @NotNull String format(@NotNull String source, final T target) {
         if (source.isEmpty()) return source;
 
         @Nullable StringBuilder result = null;
@@ -180,8 +180,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     }
 
     @Override
-    public TextModel<T> parse(@NonNull final TextModelFactory<T> factory,
-                              @NonNull final String text) {
+    public @NotNull TextModel<T> parse(@NonNull final TextModelFactory<T> factory, @NonNull final String text) {
         if (text.isEmpty()) return factory.empty();
 
         val builder = factory.newBuilder();
