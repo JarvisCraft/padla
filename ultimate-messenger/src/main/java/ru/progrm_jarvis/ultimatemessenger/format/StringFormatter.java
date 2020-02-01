@@ -25,7 +25,7 @@ public interface StringFormatter<T> extends BiFunction<String, T, String> {
     @NotNull String format(@NotNull String source, T target);
 
     @Override
-    default String apply(final String source, final T target) {
+    default @NotNull String apply(final @NotNull String source, final T target) {
         return format(source, target);
     }
 }
