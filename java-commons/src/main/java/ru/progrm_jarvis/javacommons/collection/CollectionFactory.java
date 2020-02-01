@@ -96,7 +96,6 @@ public class CollectionFactory {
      * Adds an empty constructor to given {@link CtClass}.
      *
      * @param targetClass class to which to add an empty constructor
-     *
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addEmptyConstructor(@NonNull final CtClass targetClass) throws CannotCompileException {
@@ -108,7 +107,6 @@ public class CollectionFactory {
      *
      * @param src source code of the field
      * @param targetClass class to which to add the field
-     *
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addCtField(
@@ -123,7 +121,6 @@ public class CollectionFactory {
      *
      * @param src source code of the method
      * @param targetClass class to which to add the method
-     *
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addCtMethod(
@@ -138,17 +135,17 @@ public class CollectionFactory {
      *
      * @param values enum constants to be stored in the given set
      * @param <E> type of enum
-     * @return runtime-compiled optimized immutable enum {@link Set set} for the given enum values
-     * or a pre-compiled n empty set if {@code values} is empty
+     * @return runtime-compiled optimized immutable enum {@link Set set} for the given enum values or a pre-compiled n
+     * empty set if {@code values} is empty
      *
      * @apiNote at current, the instances are cached and not GC-ed (as their classes) so this should be used carefully
-     * @apiNote this implementation of immutable enum {@link Set}s is specific and should be used carefully
-     * {@code instanceof} and {@code switch} by {@link Enum#ordinal()} are used for containment-related checks
-     * and {@link}
+     * @apiNote this implementation of immutable enum {@link Set}s is specific and should be used carefully {@code
+     * instanceof} and {@code switch} by {@link Enum#ordinal()} are used for containment-related checks and {@link}
      */
     @SafeVarargs
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
+    @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
     @UsesBytecodeModification(value = BytecodeLibrary.JAVASSIST, optional = true)
     public <E extends Enum<E>> Set<E> createImmutableEnumSet(@NonNull final E... values) {
         if (values.length == 0) return Collections.emptySet();
@@ -259,9 +256,11 @@ public class CollectionFactory {
                 {// `void forEach(Consumer)`
                     val src = new StringBuilder(
                             "public void forEach(java.util.function.Consumer consumer) {"
-                                    + "if (consumer == null) throw new NullPointerException(\"consumer should not be empty\");"
+                                    + "if (consumer == null) throw new NullPointerException(\"consumer should not be "
+                                    + "empty\");"
                     );
-                    for (val enumName : enumNames) src.append("consumer.accept(").append(enumName).append(')').append(';');
+                    for (val enumName : enumNames)
+                        src.append("consumer.accept(").append(enumName).append(')').append(';');
 
                     addCtMethod(src.append('}').toString(), clazz);
                 }
@@ -286,7 +285,8 @@ public class CollectionFactory {
              */
                 final CtClass iteratorClazz;
                 {
-                    iteratorClazz = clazz.makeNestedClass(IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY.get(), true);
+                    // Use short name as Javassist appends it to parent class name
+                    iteratorClazz = clazz.makeNestedClass("Iterator", true);
                     iteratorClazz.setInterfaces(ITERATOR_CT_CLASS_ARRAY.get());
                     addEmptyConstructor(iteratorClazz);
 
