@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class SimplePlaceholdersTest {
 
@@ -30,50 +31,50 @@ class SimplePlaceholdersTest {
     protected static Stream<Arguments> provideWithoutRegisteredPlaceholders() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Hello world", "Hello world"),
-                        Arguments.of(target, "Hello my dear world", "Hello my dear world"),
-                        Arguments.of(target, "Hello, dear {", "Hello, dear {"),
-                        Arguments.of(target, "Hello, dear {.", "Hello, dear {."),
-                        Arguments.of(target, "Hello, dear {123.", "Hello, dear {123."),
-                        Arguments.of(target, "Hello, dear }", "Hello, dear }"),
-                        Arguments.of(target, "Hello, dear }.", "Hello, dear }."),
-                        Arguments.of(target, "Hello, dear }...", "Hello, dear }..."),
-                        Arguments.of(target, "Hello, dear 12}...", "Hello, dear 12}..."),
-                        Arguments.of(target, "Hello, dear {}", "Hello, dear {}"),
-                        Arguments.of(target, "Hello, dear {}...", "Hello, dear {}..."),
-                        Arguments.of(target, "{}", "{}"),
-                        Arguments.of(target, "{} hello", "{} hello"),
-                        Arguments.of(target, "{:} hello", "{:} hello"),
-                        Arguments.of(target, "hello {:}", "hello {:}"),
-                        Arguments.of(target, "{:} hello {:}", "{:} hello {:}"),
-                        Arguments.of(target, "{rand} hello {:}", "??? hello {:}"),
-                        Arguments.of(target, "{rand} hello {rand}", "??? hello ???"),
-                        Arguments.of(target, "{rand} hello {:}", "??? hello {:}"),
-                        Arguments.of(target, "{unknown:} hello {:}", "??? hello {:}")
+                        arguments(target, "Hello world", "Hello world"),
+                        arguments(target, "Hello my dear world", "Hello my dear world"),
+                        arguments(target, "Hello, dear {", "Hello, dear {"),
+                        arguments(target, "Hello, dear {.", "Hello, dear {."),
+                        arguments(target, "Hello, dear {123.", "Hello, dear {123."),
+                        arguments(target, "Hello, dear }", "Hello, dear }"),
+                        arguments(target, "Hello, dear }.", "Hello, dear }."),
+                        arguments(target, "Hello, dear }...", "Hello, dear }..."),
+                        arguments(target, "Hello, dear 12}...", "Hello, dear 12}..."),
+                        arguments(target, "Hello, dear {}", "Hello, dear {}"),
+                        arguments(target, "Hello, dear {}...", "Hello, dear {}..."),
+                        arguments(target, "{}", "{}"),
+                        arguments(target, "{} hello", "{} hello"),
+                        arguments(target, "{:} hello", "{:} hello"),
+                        arguments(target, "hello {:}", "hello {:}"),
+                        arguments(target, "{:} hello {:}", "{:} hello {:}"),
+                        arguments(target, "{rand} hello {:}", "??? hello {:}"),
+                        arguments(target, "{rand} hello {rand}", "??? hello ???"),
+                        arguments(target, "{rand} hello {:}", "??? hello {:}"),
+                        arguments(target, "{unknown:} hello {:}", "??? hello {:}")
                 ));
     }
 
     protected static Stream<Arguments> provideWithSinglePlaceholder() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Hello world {test:name}", "Hello world " + target.name),
-                        Arguments.of(target, "Hello world {test:id}", "Hello world " + target.ordinal()),
-                        Arguments.of(target, "Hello world {test:hash}", "Hello world " + target.hashCode()),
-                        Arguments.of(target, "Hello world {test:wut}", "Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
+                        arguments(target, "Hello world {test:name}", "Hello world " + target.name),
+                        arguments(target, "Hello world {test:id}", "Hello world " + target.ordinal()),
+                        arguments(target, "Hello world {test:hash}", "Hello world " + target.hashCode()),
+                        arguments(target, "Hello world {test:wut}", "Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
                 ));
     }
 
     protected static Stream<Arguments> provideWithMultiplePlaceholders() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(
+                        arguments(
                                 target, "Hello {test:name} at {test:id}",
                                 "Hello " + target.name + " at " + target.ordinal()),
-                        Arguments.of(
+                        arguments(
                                 target, "Hello world {test:id}@{test:hash}",
                                 "Hello world " + target.ordinal() + '@' + target.hashCode()
                         ),
-                        Arguments.of(
+                        arguments(
                                 target, "Hello world {test:id}@{test:hash} (I know you, {test:name})",
                                 "Hello world " + target.ordinal() + '@' + target.hashCode()
                                         + " (I know you, " + target.name + ')'
@@ -84,28 +85,28 @@ class SimplePlaceholdersTest {
     protected static Stream<Arguments> provideWithoutRegisteredPlaceholdersAndEscaping() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Hello \\\\world", "Hello \\world"),
-                        Arguments.of(target, "Hello my dear world\\\\", "Hello my dear world\\"),
-                        Arguments.of(target, "\\\\Hello, dear {", "\\Hello, dear {"),
-                        Arguments.of(target, "Hello, dear \\\\{.", "Hello, dear \\{."),
-                        Arguments.of(target, "He\\llo, dear {123.", "Hello, dear {123."),
-                        Arguments.of(target, "Hel\\lo, de\\ar \\}\\", "Hello, dear }\\"),
-                        Arguments.of(target, "Hello, dea\\r }.\\", "Hello, dea\r }.\\"),
-                        Arguments.of(target, "Hell\\o, dear }...", "Hello, dear }..."),
-                        Arguments.of(target, "Hello,\ndear 12}...", "Hello,\ndear 12}..."),
-                        Arguments.of(target, "Hello,\\\\ndear {}", "Hello,\\ndear {}"),
-                        Arguments.of(target, "Hello, dear \\{}...", "Hello, dear {}..."),
-                        Arguments.of(target, "\\{\\}", "{}"),
-                        Arguments.of(target, "\\{\\}\\ \\h\\e\\l\\l\\o", "{} hello"),
-                        Arguments.of(target, "{\\:} hello", "{\\:} hello"),
-                        Arguments.of(target, "hello \\{:}\\", "hello {:}\\"),
-                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
-                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
-                        Arguments.of(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
-                        Arguments.of(target, "{rand\\} \\hello {rand}", "???"),
-                        Arguments.of(target, "{rand\\} hello \\{:}", "???"),
-                        Arguments.of(target, "{unknown:\\} hi\\\\ {:}", "???"),
-                        Arguments.of(target, "{unknown:\\\\} <magic", "??? <magic")
+                        arguments(target, "Hello \\\\world", "Hello \\world"),
+                        arguments(target, "Hello my dear world\\\\", "Hello my dear world\\"),
+                        arguments(target, "\\\\Hello, dear {", "\\Hello, dear {"),
+                        arguments(target, "Hello, dear \\\\{.", "Hello, dear \\{."),
+                        arguments(target, "He\\llo, dear {123.", "Hello, dear {123."),
+                        arguments(target, "Hel\\lo, de\\ar \\}\\", "Hello, dear }\\"),
+                        arguments(target, "Hello, dea\\r }.\\", "Hello, dea\r }.\\"),
+                        arguments(target, "Hell\\o, dear }...", "Hello, dear }..."),
+                        arguments(target, "Hello,\ndear 12}...", "Hello,\ndear 12}..."),
+                        arguments(target, "Hello,\\\\ndear {}", "Hello,\\ndear {}"),
+                        arguments(target, "Hello, dear \\{}...", "Hello, dear {}..."),
+                        arguments(target, "\\{\\}", "{}"),
+                        arguments(target, "\\{\\}\\ \\h\\e\\l\\l\\o", "{} hello"),
+                        arguments(target, "{\\:} hello", "{\\:} hello"),
+                        arguments(target, "hello \\{:}\\", "hello {:}\\"),
+                        arguments(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
+                        arguments(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
+                        arguments(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
+                        arguments(target, "{rand\\} \\hello {rand}", "???"),
+                        arguments(target, "{rand\\} hello \\{:}", "???"),
+                        arguments(target, "{unknown:\\} hi\\\\ {:}", "???"),
+                        arguments(target, "{unknown:\\\\} <magic", "??? <magic")
                 ));
     }
 
@@ -113,69 +114,64 @@ class SimplePlaceholdersTest {
     protected static Stream<Arguments> provideWithMultiplePlaceholdersAndEscaping() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Hello \\\\world", "Hello \\world"),
-                        Arguments.of(target, "Hello my dear world\\\\", "Hello my dear world\\"),
-                        Arguments.of(target, "\\\\Hello, dear {", "\\Hello, dear {"),
-                        Arguments.of(target, "Hello, dear \\\\{.", "Hello, dear \\{."),
-                        Arguments.of(target, "He\\llo, dear {123.", "Hello, dear {123."),
-                        Arguments.of(target, "Hel\\lo, de\\ar \\}\\", "Hello, dear }\\"),
-                        Arguments.of(target, "Hello, dea\\r }.\\", "Hello, dea\r }.\\"),
-                        Arguments.of(target, "Hell\\o, dear }...", "Hello, dear }..."),
-                        Arguments.of(target, "Hello,\ndear 12}...", "Hello,\ndear 12}..."),
-                        Arguments.of(target, "Hello,\\\\ndear {}", "Hello,\\ndear {}"),
-                        Arguments.of(target, "Hello, dear \\{}...", "Hello, dear {}..."),
-                        Arguments.of(target, "\\{\\}", "{}"),
-                        Arguments.of(target, "\\{\\}\\ \\h\\e\\l\\l\\o", "{} hello"),
-                        Arguments.of(target, "{\\:} hello", "{\\:} hello"),
-                        Arguments.of(target, "hello \\{:}\\", "hello {:}\\"),
-                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
-                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
-                        Arguments.of(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
-                        Arguments.of(target, "{rand\\} \\hello {rand}", "???"),
-                        Arguments.of(target, "{rand\\} hello \\{:}", "???"),
-                        Arguments.of(target, "{unknown:\\} hi\\\\ {:}", "???"),
-                        Arguments.of(target, "{unknown:\\\\} <magic", "??? <magic")
+                        arguments(
+                                target, "Hello \\{test:name} at \\{test:id}",
+                                "Hello {test:name} at {test:id}"
+                        ),
+                        arguments(
+                                target, "Hello world \\{test:id}@{test:hash}",
+                                "Hello world {test:id}@" + target.hashCode()
+                        ),
+                        arguments(
+                                target, "Hello world {test:id}@\\{test:hash} (I know you, {test:name})",
+                                "Hello world " + target.ordinal() + "@{test:hash} (I know you, " + target.name + ')'
+                        ),
+                        arguments(
+                                target, "Hello \\\\{test:name} at {test:id}",
+                                "Hello \\" + target.name + " at " + target.ordinal()
+                        ),
+                        arguments(
+                                target, "Hello world {test:id}@\\\\{test:hash}",
+                                "Hello world " + target.ordinal() + "@\\" + target.hashCode()
+                        ),
+                        arguments(
+                                target, "Hello world \\\\{test:id}@\\\\{test:hash} (I know you, {test:name})",
+                                "Hello world \\" + target.ordinal() + "@\\" + target.hashCode()
+                                        + " (I know you, " + target.name + ')'
+                        )
                 ));
     }
 
     protected static Stream<Arguments> provideWithSinglePlaceholderAndEscaping() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(
-                                target, "Hello {test:name} at {test:id}",
-                                "Hello " + target.name + " at " + target.ordinal()),
-                        Arguments.of(
-                                target, "Hello world {test:id}@{test:hash}",
-                                "Hello world " + target.ordinal() + '@' + target.hashCode()
-                        ),
-                        Arguments.of(
-                                target, "Hello world {test:id}@{test:hash} (I know you, {test:name})",
-                                "Hello world " + target.ordinal() + '@'
-                                        + target.hashCode() + " (I know you, " + target.name + ')'
-                        )
+                        arguments(target, "Hello world {test:name}", "Hello world " + target.name),
+                        arguments(target, "Hello world {test:id}", "Hello world " + target.ordinal()),
+                        arguments(target, "Hello world {test:hash}", "Hello world " + target.hashCode()),
+                        arguments(target, "Hello world {test:wut}", "Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
                 ));
     }
 
     protected static Stream<Arguments> provideWithEscapedPlaceholders() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(
+                        arguments(
                                 target, "Hello world {test:name} but not \\{test:name}",
                                 "Hello world " + target.name + " but not {test:name}"
                         ),
-                        Arguments.of(
+                        arguments(
                                 target, "Raw value in raw value: \\{test:\\{test:id}}",
                                 "Raw value in raw value: {test:{test:id}}"
                         ),
-                        Arguments.of(
+                        arguments(
                                 target, "Non-raw value in raw value: \\{test:{test:id}}",
                                 "Non-raw value in raw value: {test:" + target.ordinal() + "}"
                         ),
-                        Arguments.of(
+                        arguments(
                                 target, "Raw value in non-raw value: {test:\\{test:id\\}}",
                                 "Raw value in non-raw value: " + ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER
                         ),
-                        Arguments.of(
+                        arguments(
                                 target, "Raw value in non-raw value: {test:\\{test:ordinal\\}}",
                                 "Raw value in non-raw value: " + UNKNOWN_VALUE_PLACEHOLDER
                         )
@@ -185,22 +181,22 @@ class SimplePlaceholdersTest {
     protected static Stream<Arguments> provideWithSingleCharacterPlaceholderName() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Foo{*}Bar", "Foo#Bar"),
-                        Arguments.of(target, "Foo{*}Bar{*}", "Foo#Bar#"),
-                        Arguments.of(target, "{*}Foo{*}Bar", "#Foo#Bar"),
-                        Arguments.of(target, "{*}Foo{*}Bar{*}", "#Foo#Bar#"),
-                        Arguments.of(target, "{*}{*}Foo{*}{*}Bar{*}{*}", "##Foo##Bar##")
+                        arguments(target, "Foo{*}Bar", "Foo#Bar"),
+                        arguments(target, "Foo{*}Bar{*}", "Foo#Bar#"),
+                        arguments(target, "{*}Foo{*}Bar", "#Foo#Bar"),
+                        arguments(target, "{*}Foo{*}Bar{*}", "#Foo#Bar#"),
+                        arguments(target, "{*}{*}Foo{*}{*}Bar{*}{*}", "##Foo##Bar##")
                 ));
     }
 
     protected static Stream<Arguments> provideWithEscapedChars() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Foo\\nBar", "Foo\nBar"),
-                        Arguments.of(target, "Foo\\nBar\\n", "Foo\nBar\n"),
-                        Arguments.of(target, "\\nFoo\\nBar", "\nFoo\nBar"),
-                        Arguments.of(target, "\\nFoo\\nBar\\n", "\nFoo\nBar\n"),
-                        Arguments.of(target, "\\n\\nFoo\\n\\nBar\\n\\n", "\n\nFoo\n\nBar\n\n")
+                        arguments(target, "Foo\\nBar", "Foo\nBar"),
+                        arguments(target, "Foo\\nBar\\n", "Foo\nBar\n"),
+                        arguments(target, "\\nFoo\\nBar", "\nFoo\nBar"),
+                        arguments(target, "\\nFoo\\nBar\\n", "\nFoo\nBar\n"),
+                        arguments(target, "\\n\\nFoo\\n\\nBar\\n\\n", "\n\nFoo\n\nBar\n\n")
                 ));
     }
 
