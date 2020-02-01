@@ -18,8 +18,8 @@ import java.util.function.Consumer;
  *
  * @param <T> type of object according to which the created text models are formatted
  */
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @DontOverrideEqualsAndHashCode
+@RequiredArgsConstructor(staticName = "createFor")
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
 
