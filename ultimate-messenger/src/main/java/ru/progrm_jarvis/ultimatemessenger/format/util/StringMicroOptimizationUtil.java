@@ -69,7 +69,7 @@ public class StringMicroOptimizationUtil {
      */
     public String escapeJavaStringLiteral(@NonNull final String source) {
         @Nullable StringBuilder result = null;
-        val characters = source.toCharArray();
+        val characters = getStringChars(source);
         int lastWriteIndex = -1;
         val length = characters.length;
         for (var index = 0; index < length; index++) {
@@ -131,6 +131,7 @@ public class StringMicroOptimizationUtil {
                             .append('\\').append('\\');
                     break;
                 }
+                default: {/* This character will be appended later */}
             }
         }
 
