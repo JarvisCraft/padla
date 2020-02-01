@@ -234,19 +234,18 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
                                 // close the placeholder:
                                 // 1.) as it was an actual placeholder, close the previous text element (if it hasn't
                                 // been yet)
-                                if (placeholderStartIndex - 1 != lastFlushIndex) {
-                                    if (lastRawText == null) builder.append(
-                                            text.substring(lastFlushIndex + 1, placeholderStartIndex)
+                                if (lastRawText == null) {
+                                    if (lastFlushIndex != placeholderStartIndex - 1) builder
+                                            .append(text.substring(lastFlushIndex + 1, placeholderStartIndex));
+                                } else {
+                                    builder.append(
+                                            lastRawText.append(text, lastFlushIndex + 1, placeholderStartIndex)
+                                                    .toString()
                                     );
-                                    else {
-                                        builder.append(
-                                                lastRawText.append(text, lastFlushIndex + 1, placeholderStartIndex)
-                                                        .toString()
-                                        );
-                                        // reset `lastRawText` so that it is reused effectively
-                                        lastRawText.delete(0, lastRawText.length());
-                                    }
+                                    // reset `lastRawText` so that it is reused effectively
+                                    lastRawText.delete(0, lastRawText.length());
                                 }
+
                                 // 2.) mark last flushed index at the position of the placeholder end
                                 lastFlushIndex = index;
                                 // add the very element

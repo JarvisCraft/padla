@@ -115,16 +115,29 @@ class SimplePlaceholdersTest {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
                         arguments(
-                                target, "Hello {test:name} at {test:id}",
-                                "Hello " + target.name + " at " + target.ordinal()),
-                        arguments(
-                                target, "Hello world {test:id}@{test:hash}",
-                                "Hello world " + target.ordinal() + '@' + target.hashCode()
+                                target, "Hello \\{test:name} at \\{test:id}",
+                                "Hello {test:name} at {test:id}"
                         ),
                         arguments(
-                                target, "Hello world {test:id}@{test:hash} (I know you, {test:name})",
-                                "Hello world " + target.ordinal() + '@'
-                                        + target.hashCode() + " (I know you, " + target.name + ')'
+                                target, "Hello world \\{test:id}@{test:hash}",
+                                "Hello world {test:id}@" + target.hashCode()
+                        ),
+                        arguments(
+                                target, "Hello world {test:id}@\\{test:hash} (I know you, {test:name})",
+                                "Hello world " + target.ordinal() + "@{test:hash} (I know you, " + target.name + ')'
+                        ),
+                        arguments(
+                                target, "Hello \\\\{test:name} at {test:id}",
+                                "Hello \\" + target.name + " at " + target.ordinal()
+                        ),
+                        arguments(
+                                target, "Hello world {test:id}@\\\\{test:hash}",
+                                "Hello world " + target.ordinal() + "@\\" + target.hashCode()
+                        ),
+                        arguments(
+                                target, "Hello world \\\\{test:id}@\\\\{test:hash} (I know you, {test:name})",
+                                "Hello world \\" + target.ordinal() + "@\\" + target.hashCode()
+                                        + " (I know you, " + target.name + ')'
                         )
                 ));
     }
