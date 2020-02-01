@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ClassFactoryTest {
@@ -22,7 +22,7 @@ class ClassFactoryTest {
     @EnabledIfSystemProperty(named = "test.gc.always-respects-System.gc()", matches = "true|yes|\\+|1|enabled")
     void testDefineGCClass() throws IOException, CannotCompileException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, InvocationTargetException {
-        val clazz = ClassPool.getDefault().makeClass("foo.bar.Baz");
+        val clazz = ClassPool.getDefault().makeClass(ClassFactoryTest.class.getName() + "$GeneratedClass");
         clazz.addMethod(CtNewMethod.make("public int foo() {return 123;}", clazz));
         clazz.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], clazz));
 
@@ -34,23 +34,29 @@ class ClassFactoryTest {
                     .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                     .defineClass(MethodHandles.lookup(), className, clazz.toBytecode());
             classRef = new WeakReference<>(newClass);
-            final WeakReference<?> instanceRef;
+            final WeakReference<?> instanceReference;
             {
                 var instance = newClass.getDeclaredConstructor().newInstance();
-                instanceRef = new WeakReference<>(instance);
+                instanceReference = new WeakReference<>(instance);
                 assertThat(instance.getClass().getDeclaredMethod("foo").invoke(instance), equalTo(123));
                 //noinspection UnusedAssignment GC magic :)
                 instance = null;
             }
-            while (instanceRef.get() != null)  System.gc();
+            {
+                var gcAttempts = 8;
+                while (instanceReference.get() != null && gcAttempts-- != 0) System.gc();
+            }
+            assertNull(instanceReference.get());
             //noinspection UnusedAssignment GC magic :)
             newClass = null;
         }
 
-        int counter = 10;
-        while (classRef.get() != null && counter-- != 0) System.gc();
+        {
+            var gcAttempts = 8;
+            while (classRef.get() != null && gcAttempts-- != 0) System.gc();
+        }
+        assertNull(classRef.get());
 
-        assertThat(classRef.get(), nullValue());
         assertThrows(ClassNotFoundException.class, () -> Class.forName(className));
     }
 }
