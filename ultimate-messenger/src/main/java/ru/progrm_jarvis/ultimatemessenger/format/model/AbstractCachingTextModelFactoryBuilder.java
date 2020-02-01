@@ -38,18 +38,18 @@ public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextM
      * @param release {@code true} if this text model builder will be released after the call and {@code false} otherwise
      * @return created text model
      */
-    @NotNull protected abstract TextModel<T> createTextModel(boolean release);
+    @NotNull protected abstract TextModel<T> buildTextModel(boolean release);
 
     @Override
-    @NotNull public TextModel<T> createAndRelease() {
+    @NotNull public TextModel<T> buildAndRelease() {
         // no need to cache as this method is guaranteed to be called at last on this instance
         // (at least in the given context, custom implementations may allow instance caching and reuse)
-        return cachedTextModel == null ? createTextModel(true) : cachedTextModel;
+        return cachedTextModel == null ? buildTextModel(true) : cachedTextModel;
     }
 
     @Override
-    @NotNull public TextModel<T> create() {
+    @NotNull public TextModel<T> build() {
         // cache the computed value so that it does not get computed again if attempt to create the same model happens
-        return cachedTextModel == null ? cachedTextModel = createTextModel(false) : cachedTextModel;
+        return cachedTextModel == null ? cachedTextModel = buildTextModel(false) : cachedTextModel;
     }
 }

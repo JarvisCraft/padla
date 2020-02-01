@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.progrm_jarvis.reflector.invoke;
+package ru.progrm_jarvis.javacommons.invoke;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -59,7 +59,8 @@ public class InvokeUtil {
     /**
      * Lookup factory used by this utility
      */
-    private final LookupFactory LOOKUP_FACTORY = LookupFactory.TRUSTED_LOOKUP_FACTORY.get();
+    private final LookupFactory LOOKUP_FACTORY = FullAccessLookupFactories.getDefault()
+            .orElseThrow(() -> new IllegalStateException("LookupFactory is unavailable"));
 
     /**
      * Method of {@link Runnable} functional method

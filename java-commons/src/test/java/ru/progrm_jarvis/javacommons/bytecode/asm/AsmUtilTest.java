@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import ru.progrm_jarvis.javacommons.classload.ClassFactory;
+import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -42,14 +42,15 @@ class AsmUtilTest {
             AsmUtil.addEmptyConstructor(clazz, superClass);
             clazz.visitEnd();
 
-            val constructor = ((Class<? extends TestSubject>) ClassFactory
-                    .defineGCClass(name, clazz.toByteArray())).getDeclaredConstructor();
+            val constructor = ((Class<? extends TestSubject>) GcClassDefiners.getDefault()
+                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                    .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
 
             assertThat(constructor.getParameterCount(), is(0));
 
             constructor.setAccessible(true);
 
-            assertThat(constructor.newInstance(), isA(TestSubject.class));
+            assertThat(constructor.newInstance(), instanceOf(TestSubject.class));
         }
         {
             clazz = new ClassWriter(0);
@@ -61,8 +62,9 @@ class AsmUtilTest {
             AsmUtil.addEmptyConstructor(clazz, superClass);
             clazz.visitEnd();
 
-            val constructor = ((Class<? extends StatusSubject>) ClassFactory
-                    .defineGCClass(name, clazz.toByteArray())).getDeclaredConstructor();
+            val constructor = ((Class<? extends StatusSubject>) GcClassDefiners.getDefault()
+                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                    .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
 
             assertThat(constructor.getParameterCount(), is(0));
 
@@ -72,7 +74,7 @@ class AsmUtilTest {
                 // a SuccessStatus should be thrown
                 fail();
             } catch (final InvocationTargetException e) {
-                assertThat(e.getCause(), isA((Class /* Hamcrest is ill */) SuccessStatus.class));
+                assertThat(e.getCause(), instanceOf(SuccessStatus.class));
             }
         }
     }
@@ -91,14 +93,16 @@ class AsmUtilTest {
         AsmUtil.addEmptyConstructor(clazz);
         clazz.visitEnd();
 
-        val constructor = ClassFactory.defineGCClass(name, clazz.toByteArray()).getDeclaredConstructor();
+        val constructor = GcClassDefiners.getDefault()
+                .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
+                .defineClass(MethodHandles.lookup(), name, clazz.toByteArray()).getDeclaredConstructor();
 
         assertThat(constructor.getParameterCount(), is(0));
 
         constructor.setAccessible(true);
 
         val instance = constructor.newInstance();
-        assertThat(instance, isA(Object.class));
+        assertThat(instance, instanceOf(Object.class));
 
         assertDoesNotThrow(() -> constructor.newInstance().getClass());
     }

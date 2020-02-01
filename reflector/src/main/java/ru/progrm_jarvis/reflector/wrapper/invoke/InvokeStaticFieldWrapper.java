@@ -9,7 +9,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import ru.progrm_jarvis.javacommons.pair.Pair;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
-import ru.progrm_jarvis.reflector.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.reflector.wrapper.AbstractFieldWrapper;
 import ru.progrm_jarvis.reflector.wrapper.StaticFieldWrapper;
 

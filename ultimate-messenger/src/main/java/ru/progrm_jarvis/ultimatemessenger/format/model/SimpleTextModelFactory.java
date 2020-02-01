@@ -20,7 +20,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<SimpleTextModelFactory> INSTANCE
+    private static final Lazy<SimpleTextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(SimpleTextModelFactory::new);
 
     /**
@@ -31,7 +31,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      */
     @SuppressWarnings("unchecked")
     @NotNull public static <T> SimpleTextModelFactory<T> get() {
-        return INSTANCE.get();
+        return (SimpleTextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Simple implementation of
      * {@link TextModelFactory.TextModelBuilder text model builder}
-     * capable of joining nearby static text blocks and optimizing {@link #createAndRelease()}.
+     * capable of joining nearby static text blocks and optimizing {@link #buildAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
      */
@@ -90,7 +90,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull protected TextModel<T> createTextModel(final boolean release) {
+        @NotNull protected TextModel<T> buildTextModel(final boolean release) {
             return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.fromCopyOf(elements);
         }
     }

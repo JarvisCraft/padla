@@ -4,23 +4,205 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.val;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import ru.progrm_jarvis.ultimatemessenger.format.model.SimpleTextModelFactory;
 import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelFactory;
 
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SimplePlaceholdersTest {
 
-    private static final String UNKNOWN_VALUE_PLACEHOLDER = "?",
+    private static final String
+            UNKNOWN_VALUE_PLACEHOLDER = "?",
             ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER = "Here could have been your ID";
+
     private Placeholders<Target> placeholders;
+
     private TextModelFactory<Target> modelFactory;
+
+    protected static Stream<Arguments> provideWithoutRegisteredPlaceholders() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Hello world", "Hello world"),
+                        Arguments.of(target, "Hello my dear world", "Hello my dear world"),
+                        Arguments.of(target, "Hello, dear {", "Hello, dear {"),
+                        Arguments.of(target, "Hello, dear {.", "Hello, dear {."),
+                        Arguments.of(target, "Hello, dear {123.", "Hello, dear {123."),
+                        Arguments.of(target, "Hello, dear }", "Hello, dear }"),
+                        Arguments.of(target, "Hello, dear }.", "Hello, dear }."),
+                        Arguments.of(target, "Hello, dear }...", "Hello, dear }..."),
+                        Arguments.of(target, "Hello, dear 12}...", "Hello, dear 12}..."),
+                        Arguments.of(target, "Hello, dear {}", "Hello, dear {}"),
+                        Arguments.of(target, "Hello, dear {}...", "Hello, dear {}..."),
+                        Arguments.of(target, "{}", "{}"),
+                        Arguments.of(target, "{} hello", "{} hello"),
+                        Arguments.of(target, "{:} hello", "{:} hello"),
+                        Arguments.of(target, "hello {:}", "hello {:}"),
+                        Arguments.of(target, "{:} hello {:}", "{:} hello {:}"),
+                        Arguments.of(target, "{rand} hello {:}", "??? hello {:}"),
+                        Arguments.of(target, "{rand} hello {rand}", "??? hello ???"),
+                        Arguments.of(target, "{rand} hello {:}", "??? hello {:}"),
+                        Arguments.of(target, "{unknown:} hello {:}", "??? hello {:}")
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithSinglePlaceholder() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Hello world {test:name}", "Hello world " + target.name),
+                        Arguments.of(target, "Hello world {test:id}", "Hello world " + target.ordinal()),
+                        Arguments.of(target, "Hello world {test:hash}", "Hello world " + target.hashCode()),
+                        Arguments.of(target, "Hello world {test:wut}", "Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithMultiplePlaceholders() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(
+                                target, "Hello {test:name} at {test:id}",
+                                "Hello " + target.name + " at " + target.ordinal()),
+                        Arguments.of(
+                                target, "Hello world {test:id}@{test:hash}",
+                                "Hello world " + target.ordinal() + '@' + target.hashCode()
+                        ),
+                        Arguments.of(
+                                target, "Hello world {test:id}@{test:hash} (I know you, {test:name})",
+                                "Hello world " + target.ordinal() + '@' + target.hashCode()
+                                        + " (I know you, " + target.name + ')'
+                        )
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithoutRegisteredPlaceholdersAndEscaping() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Hello \\\\world", "Hello \\world"),
+                        Arguments.of(target, "Hello my dear world\\\\", "Hello my dear world\\"),
+                        Arguments.of(target, "\\\\Hello, dear {", "\\Hello, dear {"),
+                        Arguments.of(target, "Hello, dear \\\\{.", "Hello, dear \\{."),
+                        Arguments.of(target, "He\\llo, dear {123.", "Hello, dear {123."),
+                        Arguments.of(target, "Hel\\lo, de\\ar \\}\\", "Hello, dear }\\"),
+                        Arguments.of(target, "Hello, dea\\r }.\\", "Hello, dea\r }.\\"),
+                        Arguments.of(target, "Hell\\o, dear }...", "Hello, dear }..."),
+                        Arguments.of(target, "Hello,\ndear 12}...", "Hello,\ndear 12}..."),
+                        Arguments.of(target, "Hello,\\\\ndear {}", "Hello,\\ndear {}"),
+                        Arguments.of(target, "Hello, dear \\{}...", "Hello, dear {}..."),
+                        Arguments.of(target, "\\{\\}", "{}"),
+                        Arguments.of(target, "\\{\\}\\ \\h\\e\\l\\l\\o", "{} hello"),
+                        Arguments.of(target, "{\\:} hello", "{\\:} hello"),
+                        Arguments.of(target, "hello \\{:}\\", "hello {:}\\"),
+                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
+                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
+                        Arguments.of(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
+                        Arguments.of(target, "{rand\\} \\hello {rand}", "???"),
+                        Arguments.of(target, "{rand\\} hello \\{:}", "???"),
+                        Arguments.of(target, "{unknown:\\} hi\\\\ {:}", "???"),
+                        Arguments.of(target, "{unknown:\\\\} <magic", "??? <magic")
+                ));
+    }
+
+
+    protected static Stream<Arguments> provideWithMultiplePlaceholdersAndEscaping() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Hello \\\\world", "Hello \\world"),
+                        Arguments.of(target, "Hello my dear world\\\\", "Hello my dear world\\"),
+                        Arguments.of(target, "\\\\Hello, dear {", "\\Hello, dear {"),
+                        Arguments.of(target, "Hello, dear \\\\{.", "Hello, dear \\{."),
+                        Arguments.of(target, "He\\llo, dear {123.", "Hello, dear {123."),
+                        Arguments.of(target, "Hel\\lo, de\\ar \\}\\", "Hello, dear }\\"),
+                        Arguments.of(target, "Hello, dea\\r }.\\", "Hello, dea\r }.\\"),
+                        Arguments.of(target, "Hell\\o, dear }...", "Hello, dear }..."),
+                        Arguments.of(target, "Hello,\ndear 12}...", "Hello,\ndear 12}..."),
+                        Arguments.of(target, "Hello,\\\\ndear {}", "Hello,\\ndear {}"),
+                        Arguments.of(target, "Hello, dear \\{}...", "Hello, dear {}..."),
+                        Arguments.of(target, "\\{\\}", "{}"),
+                        Arguments.of(target, "\\{\\}\\ \\h\\e\\l\\l\\o", "{} hello"),
+                        Arguments.of(target, "{\\:} hello", "{\\:} hello"),
+                        Arguments.of(target, "hello \\{:}\\", "hello {:}\\"),
+                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
+                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
+                        Arguments.of(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
+                        Arguments.of(target, "{rand\\} \\hello {rand}", "???"),
+                        Arguments.of(target, "{rand\\} hello \\{:}", "???"),
+                        Arguments.of(target, "{unknown:\\} hi\\\\ {:}", "???"),
+                        Arguments.of(target, "{unknown:\\\\} <magic", "??? <magic")
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithSinglePlaceholderAndEscaping() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(
+                                target, "Hello {test:name} at {test:id}",
+                                "Hello " + target.name + " at " + target.ordinal()),
+                        Arguments.of(
+                                target, "Hello world {test:id}@{test:hash}",
+                                "Hello world " + target.ordinal() + '@' + target.hashCode()
+                        ),
+                        Arguments.of(
+                                target, "Hello world {test:id}@{test:hash} (I know you, {test:name})",
+                                "Hello world " + target.ordinal() + '@'
+                                        + target.hashCode() + " (I know you, " + target.name + ')'
+                        )
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithEscapedPlaceholders() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(
+                                target, "Hello world {test:name} but not \\{test:name}",
+                                "Hello world " + target.name + " but not {test:name}"
+                        ),
+                        Arguments.of(
+                                target, "Raw value in raw value: \\{test:\\{test:id}}",
+                                "Raw value in raw value: {test:{test:id}}"
+                        ),
+                        Arguments.of(
+                                target, "Non-raw value in raw value: \\{test:{test:id}}",
+                                "Non-raw value in raw value: {test:" + target.ordinal() + "}"
+                        ),
+                        Arguments.of(
+                                target, "Raw value in non-raw value: {test:\\{test:id\\}}",
+                                "Raw value in non-raw value: " + ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER
+                        ),
+                        Arguments.of(
+                                target, "Raw value in non-raw value: {test:\\{test:ordinal\\}}",
+                                "Raw value in non-raw value: " + UNKNOWN_VALUE_PLACEHOLDER
+                        )
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithSingleCharacterPlaceholderName() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Foo{*}Bar", "Foo#Bar"),
+                        Arguments.of(target, "Foo{*}Bar{*}", "Foo#Bar#"),
+                        Arguments.of(target, "{*}Foo{*}Bar", "#Foo#Bar"),
+                        Arguments.of(target, "{*}Foo{*}Bar{*}", "#Foo#Bar#"),
+                        Arguments.of(target, "{*}{*}Foo{*}{*}Bar{*}{*}", "##Foo##Bar##")
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithEscapedChars() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Foo\\nBar", "Foo\nBar"),
+                        Arguments.of(target, "Foo\\nBar\\n", "Foo\nBar\n"),
+                        Arguments.of(target, "\\nFoo\\nBar", "\nFoo\nBar"),
+                        Arguments.of(target, "\\nFoo\\nBar\\n", "\nFoo\nBar\n"),
+                        Arguments.of(target, "\\n\\nFoo\\n\\nBar\\n\\n", "\n\nFoo\n\nBar\n\n")
+                ));
+    }
 
     @BeforeEach
     void setUp() {
@@ -30,12 +212,7 @@ class SimplePlaceholdersTest {
             switch (value) {
                 case "name": return target.name;
                 case "id": return Integer.toString(target.ordinal());
-                case "dynamic": {
-                    val dynamicValue = ThreadLocalRandom.current().nextInt();
-                    target.dynamicValue.set(dynamicValue);
-
-                    return Integer.toString(dynamicValue);
-                }
+                case "hash": return Integer.toString(target.hashCode());
                 case "{test:id}": return ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER;
                 default: return UNKNOWN_VALUE_PLACEHOLDER;
             }
@@ -43,524 +220,150 @@ class SimplePlaceholdersTest {
         modelFactory = new SimpleTextModelFactory<>();
     }
 
-    @Test
-    void testFormatWithoutRegisteredPlaceholders() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(placeholders.format("Hello world", target), equalTo("Hello world"));
-            assertThat(placeholders.format("Hello my dear world", target), equalTo("Hello my dear world"));
-            assertThat(placeholders.format("Hello, dear {", target), equalTo("Hello, dear {"));
-            assertThat(placeholders.format("Hello, dear {.", target), equalTo("Hello, dear {."));
-            assertThat(placeholders.format("Hello, dear {123.", target), equalTo("Hello, dear {123."));
-            assertThat(placeholders.format("Hello, dear }", target), equalTo("Hello, dear }"));
-            assertThat(placeholders.format("Hello, dear }.", target), equalTo("Hello, dear }."));
-            assertThat(placeholders.format("Hello, dear }...", target), equalTo("Hello, dear }..."));
-            assertThat(placeholders.format("Hello, dear 12}...", target), equalTo("Hello, dear 12}..."));
-            assertThat(placeholders.format("Hello, dear {}", target), equalTo("Hello, dear {}"));
-            assertThat(placeholders.format("Hello, dear {}...", target), equalTo("Hello, dear {}..."));
-            assertThat(placeholders.format("{}", target), equalTo("{}"));
-            assertThat(placeholders.format("{} hello", target), equalTo("{} hello"));
-            assertThat(placeholders.format("{:} hello", target), equalTo("{:} hello"));
-            assertThat(placeholders.format("hello {:}", target), equalTo("hello {:}"));
-            assertThat(placeholders.format("{:} hello {:}", target), equalTo("{:} hello {:}"));
-            assertThat(placeholders.format("{rand} hello {:}", target), equalTo("??? hello {:}"));
-            assertThat(placeholders.format("{rand} hello {rand}", target), equalTo("??? hello ???"));
-            assertThat(placeholders.format("{rand} hello {:}", target), equalTo("??? hello {:}"));
-            assertThat(placeholders.format("{unknown:} hello {:}", target), equalTo("??? hello {:}"));
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithoutRegisteredPlaceholders")
+    void testFormatWithoutRegisteredPlaceholders(@NotNull final Target target,
+                                                 @NotNull final String raw,
+                                                 @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFormatWithSinglePlaceholder() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.format("Hello world {test:name}", target),
-                    equalTo("Hello world " + target.name)
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:id}", target),
-                    equalTo("Hello world " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:dynamic}", target),
-                    equalTo("Hello world " + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:wut}", target),
-                    equalTo("Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithSinglePlaceholder")
+    void testFormatWithSinglePlaceholder(@NotNull final Target target,
+                                         @NotNull final String raw,
+                                         @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFormatWithMultiplePlaceholders() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.format("Hello {test:name} at {test:id}", target),
-                    equalTo("Hello " + target.name + " at " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:id}@{test:dynamic}", target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:id}@{test:dynamic} (I know you, {test:name})", target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get()
-                            + " (I know you, " + target.name + ')')
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithMultiplePlaceholders")
+    void testFormatWithMultiplePlaceholders(@NotNull final Target target,
+                                            @NotNull final String raw,
+                                            @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFormatWithoutRegisteredPlaceholdersAndEscaping() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(placeholders.format("Hello \\\\world", target), equalTo("Hello \\world"));
-            assertThat(placeholders.format("Hello my dear world\\\\", target), equalTo("Hello my dear world\\"));
-            assertThat(placeholders.format("\\\\Hello, dear {", target), equalTo("\\Hello, dear {"));
-            assertThat(placeholders.format("Hello, dear \\\\{.", target), equalTo("Hello, dear \\{."));
-            assertThat(placeholders.format("He\\llo, dear {123.", target), equalTo("Hello, dear {123."));
-            assertThat(placeholders.format("Hel\\lo, de\\ar \\}\\", target), equalTo("Hello, dear }\\"));
-            assertThat(placeholders.format("Hello, dea\\r }.\\", target), equalTo("Hello, dea\r }.\\"));
-            assertThat(placeholders.format("Hell\\o, dear }...", target), equalTo("Hello, dear }..."));
-            assertThat(placeholders.format("Hello,\ndear 12}...", target), equalTo("Hello,\ndear 12}..."));
-            assertThat(placeholders.format("Hello,\\\\ndear {}", target), equalTo("Hello,\\ndear {}"));
-            assertThat(placeholders.format("Hello, dear \\{}...", target), equalTo("Hello, dear {}..."));
-            assertThat(placeholders.format("\\{\\}", target), equalTo("{}"));
-            assertThat(placeholders.format("\\{\\}\\ \\h\\e\\l\\l\\o", target), equalTo("{} hello"));
-            assertThat(placeholders.format("{\\:} hello", target), equalTo("{\\:} hello"));
-            assertThat(placeholders.format("hello \\{:}\\", target), equalTo("hello {:}\\"));
-            assertThat(placeholders.format("\\{\\:\\}\\ hello \\{\\:\\}", target), equalTo("{:} hello {:}"));
-            assertThat(placeholders.format("\\{\\:\\}\\ hello \\{\\:\\}\\", target), equalTo("{:} hello {:}\\"));
-            assertThat(placeholders.format("{\\ran\\d} hello {:}", target), equalTo("??? hello {:}"));
-            assertThat(placeholders.format("{rand\\} \\hello {rand}", target), equalTo("???"));
-            assertThat(placeholders.format("{rand\\} hello \\{:}", target), equalTo("???"));
-            assertThat(placeholders.format("{unknown:\\} hi\\\\ {:}", target), equalTo("???"));
-            assertThat(placeholders.format("{unknown:\\\\} <magic", target), equalTo("??? <magic"));
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithoutRegisteredPlaceholdersAndEscaping")
+    void testFormatWithoutRegisteredPlaceholdersAndEscaping(@NotNull final Target target,
+                                                            @NotNull final String raw,
+                                                            @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFormatWithSinglePlaceholderAndEscaping() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.format("Hello world {test:name}", target),
-                    equalTo("Hello world " + target.name)
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:id}", target),
-                    equalTo("Hello world " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:dynamic}", target),
-                    equalTo("Hello world " + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:wut}", target),
-                    equalTo("Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithSinglePlaceholderAndEscaping")
+    void testFormatWithSinglePlaceholderAndEscaping(@NotNull final Target target,
+                                                    @NotNull final String raw,
+                                                    @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFormatWithMultiplePlaceholdersAndEscaping() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.format("Hello {test:name} at {test:id}", target),
-                    equalTo("Hello " + target.name + " at " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:id}@{test:dynamic}", target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.format("Hello world {test:id}@{test:dynamic} (I know you, {test:name})", target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get()
-                            + " (I know you, " + target.name + ')')
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithMultiplePlaceholdersAndEscaping")
+    void testFormatWithMultiplePlaceholdersAndEscaping(@NotNull final Target target,
+                                                       @NotNull final String raw,
+                                                       @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFormatWithEscapedPlaceholders() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.format("Hello world {test:name} but not \\{test:name}", target),
-                    equalTo("Hello world " + target.name + " but not {test:name}")
-            );
-            assertThat(
-                    placeholders.format("Raw value in raw value: \\{test:\\{test:id}}", target),
-                    equalTo("Raw value in raw value: {test:{test:id}}")
-            );
-            assertThat(
-                    placeholders.format("Non-raw value in raw value: \\{test:{test:id}}", target),
-                    equalTo("Non-raw value in raw value: {test:" + target.ordinal() + "}")
-            );
-            assertThat(
-                    placeholders.format("Raw value in non-raw value: {test:\\{test:id\\}}", target),
-                    equalTo("Raw value in non-raw value: " + ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER)
-            );
-            assertThat(
-                    placeholders.format("Raw value in non-raw value: {test:\\{test:ordinal\\}}", target),
-                    equalTo("Raw value in non-raw value: " + UNKNOWN_VALUE_PLACEHOLDER)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithEscapedPlaceholders")
+    void testFormatWithEscapedPlaceholders(@NotNull final Target target,
+                                           @NotNull final String raw,
+                                           @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFactoryWithSingleCharacterPlaceholderName() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(placeholders.format("Foo{*}Bar", target), equalTo("Foo#Bar"));
-            assertThat(placeholders.format("Foo{*}Bar{*}", target), equalTo("Foo#Bar#"));
-            assertThat(placeholders.format("{*}Foo{*}Bar", target), equalTo("#Foo#Bar"));
-            assertThat(placeholders.format("{*}Foo{*}Bar{*}", target), equalTo("#Foo#Bar#"));
-            assertThat(placeholders.format("{*}{*}Foo{*}{*}Bar{*}{*}", target), equalTo("##Foo##Bar##"));
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithSingleCharacterPlaceholderName")
+    void testFormatWithSingleCharacterPlaceholderName(@NotNull final Target target,
+                                                      @NotNull final String raw,
+                                                      @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testFactoryWithEscapedChars() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(placeholders.format("Foo\\nBar", target), equalTo("Foo\nBar"));
-            assertThat(placeholders.format("Foo\\nBar\\n", target), equalTo("Foo\nBar\n"));
-            assertThat(placeholders.format("\\nFoo\\nBar", target), equalTo("\nFoo\nBar"));
-            assertThat(placeholders.format("\\nFoo\\nBar\\n", target), equalTo("\nFoo\nBar\n"));
-            assertThat(placeholders.format("\\n\\nFoo\\n\\nBar\\n\\n", target), equalTo("\n\nFoo\n\nBar\n\n"));
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithEscapedChars")
+    void testFormatWithEscapedChars(@NotNull final Target target,
+                                    @NotNull final String raw,
+                                    @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.format(raw, target));
     }
 
-    @Test
-    void testParseFactoryWithoutRegisteredPlaceholders() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world").getText(target), equalTo("Hello world")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello my dear world").getText(target),
-                    equalTo("Hello my dear world")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear {").getText(target), equalTo("Hello, dear {")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear {.").getText(target), equalTo("Hello, dear {.")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear {123.").getText(target), equalTo("Hello, dear {123.")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear }").getText(target), equalTo("Hello, dear }")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear }.").getText(target), equalTo("Hello, dear }.")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear }...").getText(target), equalTo("Hello, dear }...")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear 12}...").getText(target),
-                    equalTo("Hello, dear 12}...")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear {}").getText(target), equalTo("Hello, dear {}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear {}...").getText(target), equalTo("Hello, dear {}...")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{}").getText(target), equalTo("{}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{} hello").getText(target), equalTo("{} hello")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{:} hello").getText(target), equalTo("{:} hello")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "hello {:}").getText(target), equalTo("hello {:}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{:} hello {:}").getText(target), equalTo("{:} hello {:}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{rand} hello {:}").getText(target), equalTo("??? hello {:}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{rand} hello {rand}").getText(target), equalTo("??? hello ???")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{rand} hello {:}").getText(target), equalTo("??? hello {:}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{unknown:} hello {:}").getText(target), equalTo("??? hello {:}")
-            );
-        }
+    /*  Factory  */
+
+    @ParameterizedTest
+    @MethodSource("provideWithoutRegisteredPlaceholders")
+    void testFactoryParseWithoutRegisteredPlaceholders(@NotNull final Target target,
+                                                       @NotNull final String raw,
+                                                       @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithSinglePlaceholder() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:name}").getText(target),
-                    equalTo("Hello world " + target.name)
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:id}").getText(target),
-                    equalTo("Hello world " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:dynamic}").getText(target),
-                    equalTo("Hello world " + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:wut}").getText(target),
-                    equalTo("Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithSinglePlaceholder")
+    void testFactoryParseWithSinglePlaceholder(@NotNull final Target target,
+                                               @NotNull final String raw,
+                                               @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithMultiplePlaceholders() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello {test:name} at {test:id}").getText(target),
-                    equalTo("Hello " + target.name + " at " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:id}@{test:dynamic}").getText(target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:id}@{test:dynamic} (I know you, {test:name})")
-                            .getText(target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get()
-                            + " (I know you, " + target.name + ')')
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithMultiplePlaceholders")
+    void testFactoryParseWithMultiplePlaceholders(@NotNull final Target target,
+                                                  @NotNull final String raw,
+                                                  @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithoutRegisteredPlaceholdersAndEscaping() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello \\\\world").getText(target), equalTo("Hello \\world")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello my dear world\\\\").getText(target),
-                    equalTo("Hello my dear world\\")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\\\Hello, dear {").getText(target),
-                    equalTo("\\Hello, dear {")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear \\\\{.").getText(target),
-                    equalTo("Hello, dear \\{.")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "He\\llo, dear {123.").getText(target),
-                    equalTo("Hello, dear {123.")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hel\\lo, de\\ar \\}\\").getText(target),
-                    equalTo("Hello, dear }\\")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dea\\r }.\\").getText(target),
-                    equalTo("Hello, dea\r }.\\")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hell\\o, dear }...").getText(target),
-                    equalTo("Hello, dear }...")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello,\ndear 12}...").getText(target),
-                    equalTo("Hello,\ndear 12}...")
-            );
-            assertThat(placeholders.parse(modelFactory, "Hello,\\\\ndear {}").getText(target),
-                    equalTo("Hello,\\ndear {}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello, dear \\{}...").getText(target),
-                    equalTo("Hello, dear {}...")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\{\\}").getText(target), equalTo("{}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\{\\}\\ \\h\\e\\l\\l\\o").getText(target),
-                    equalTo("{} hello")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{\\:} hello").getText(target), equalTo("{\\:} hello")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "hello \\{:}\\").getText(target), equalTo("hello {:}\\")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\{\\:\\}\\ hello \\{\\:\\}").getText(target),
-                    equalTo("{:} hello {:}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\{\\:\\}\\ hello \\{\\:\\}\\").getText(target),
-                    equalTo("{:} hello {:}\\")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{\\ran\\d} hello {:}").getText(target),
-                    equalTo("??? hello {:}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{rand\\} \\hello {rand}").getText(target), equalTo("???")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{rand\\} hello \\{:}").getText(target), equalTo("???")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{unknown:\\} hi\\\\ {:}").getText(target), equalTo("???")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{unknown:\\\\} <magic").getText(target),
-                    equalTo("??? <magic")
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithoutRegisteredPlaceholdersAndEscaping")
+    void testFactoryParseWithoutRegisteredPlaceholdersAndEscaping(@NotNull final Target target,
+                                                                  @NotNull final String raw,
+                                                                  @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithSinglePlaceholderAndEscaping() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:name}").getText(target),
-                    equalTo("Hello world " + target.name)
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:id}").getText(target),
-                    equalTo("Hello world " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:dynamic}").getText(target),
-                    equalTo("Hello world " + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:wut}").getText(target),
-                    equalTo("Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithSinglePlaceholderAndEscaping")
+    void testFactoryParseWithSinglePlaceholderAndEscaping(@NotNull final Target target,
+                                                          @NotNull final String raw,
+                                                          @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithMultiplePlaceholdersAndEscaping() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello {test:name} at {test:id}").getText(target),
-                    equalTo("Hello " + target.name + " at " + target.ordinal())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:id}@{test:dynamic}").getText(target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get())
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:id}@{test:dynamic} (I know you, {test:name})")
-                            .getText(target),
-                    equalTo("Hello world " + target.ordinal() + '@' + target.dynamicValue.get()
-                            + " (I know you, " + target.name + ')')
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithMultiplePlaceholdersAndEscaping")
+    void testFactoryParseWithMultiplePlaceholdersAndEscaping(@NotNull final Target target,
+                                                             @NotNull final String raw,
+                                                             @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithEscapedPlaceholders() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Hello world {test:name} but not \\{test:name}").getText(target),
-                    equalTo("Hello world " + target.name + " but not {test:name}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Raw value in raw value: \\{test:\\{test:id}}").getText(target),
-                    equalTo("Raw value in raw value: {test:{test:id}}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Non-raw value in raw value: \\{test:{test:id}}").getText(target),
-                    equalTo("Non-raw value in raw value: {test:" + target.ordinal() + "}")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Raw value in non-raw value: {test:\\{test:id\\}}")
-                            .getText(target),
-                    equalTo("Raw value in non-raw value: " + ESCAPED_ID_PLACEHOLDER_VALUE_PLACEHOLDER)
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Raw value in non-raw value: {test:\\{test:ordinal\\}}")
-                            .getText(target),
-                    equalTo("Raw value in non-raw value: " + UNKNOWN_VALUE_PLACEHOLDER)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithEscapedPlaceholders")
+    void testFactoryParseWithEscapedPlaceholders(@NotNull final Target target,
+                                                 @NotNull final String raw,
+                                                 @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithSingleCharacterPlaceholderName() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Foo{*}Bar").getText(target),
-                    equalTo("Foo#Bar")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Foo{*}Bar{*}").getText(target),
-                    equalTo("Foo#Bar#")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{*}Foo{*}Bar").getText(target),
-                    equalTo("#Foo#Bar")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{*}Foo{*}Bar{*}").getText(target),
-                    equalTo("#Foo#Bar#")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "{*}{*}Foo{*}{*}Bar{*}{*}").getText(target),
-                    equalTo("##Foo##Bar##")
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithSingleCharacterPlaceholderName")
+    void testFactoryParseWithSingleCharacterPlaceholderName(@NotNull final Target target,
+                                                            @NotNull final String raw,
+                                                            @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
-    @Test
-    void testParseFactoryWithEscapedChars() {
-        // test against each value
-        for (val target : Target.values()) {
-            assertThat(
-                    placeholders.parse(modelFactory, "Foo\\nBar").getText(target),
-                    equalTo("Foo\nBar")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "Foo\\nBar\\n").getText(target),
-                    equalTo("Foo\nBar\n")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\nFoo\\nBar").getText(target),
-                    equalTo("\nFoo\nBar")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\nFoo\\nBar\\n").getText(target),
-                    equalTo("\nFoo\nBar\n")
-            );
-            assertThat(
-                    placeholders.parse(modelFactory, "\\n\\nFoo\\n\\nBar\\n\\n").getText(target),
-                    equalTo("\n\nFoo\n\nBar\n\n")
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("provideWithEscapedChars")
+    void testFactoryParseWithEscapedChars(@NotNull final Target target,
+                                          @NotNull final String raw,
+                                          @NotNull final String formatted) {
+        assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @RequiredArgsConstructor
@@ -568,8 +371,8 @@ class SimplePlaceholdersTest {
     enum Target {
         FOO("Foo"),
         BAR("Bar"),
-        BAZ("baz");
+        BAZ("Baz");
+
         @NonNull String name;
-        private ThreadLocal<Integer> dynamicValue = new ThreadLocal<>();
     }
 }

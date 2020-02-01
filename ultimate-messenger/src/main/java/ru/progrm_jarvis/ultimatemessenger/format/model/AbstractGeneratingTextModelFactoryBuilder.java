@@ -4,8 +4,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +14,19 @@ import java.util.List;
  * which generates {@link TextModel text models} using its internal elements.
  *
  * @param <T> type of object according to which the created text models are formatted
+ * @param <N> type of {@link Node nodes} used for this builder's backend
+ * @param <SN> type of {@link StaticNode static nodes} used for this builder's backend
+ * @param <DN> type of {@link DynamicNode dynamic nodes} used for this builder's backend
  */
 @ToString
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true) // because why not? (also allows caching)
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
+public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
+        N extends AbstractGeneratingTextModelFactoryBuilder.Node<T, SN, DN>,
+        SN extends AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>,
+        DN extends AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>>
+        extends AbstractCachingTextModelFactoryBuilder<T> {
 
     /**
      * Instantiates new {@link AbstractGeneratingTextModelFactoryBuilder} using {@link ArrayList} for its backend.
@@ -29,36 +36,93 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
     }
 
     /**
-     * Elements of the text model
+     * Nodes of the text model
      */
-    @NonNull List<Element<T>> elements;
+    List<N> nodes;
 
     /**
-     * Amount of dynamic text model elements
+     * Amount of dynamic nodes
      */
-    @NonFinal transient int dynamicElementCount = 0,
-
+    @NonFinal transient int dynamicNodeCount = 0,
     /**
      * Length of static text part (minimal length of resulting text)
      */
-    staticLength = 0;
+    staticLength = 0,
+    /**
+     * Length of static text part (minimal length of resulting text)
+     */
+    minDynamicLength = 0;
 
     /**
-     * Last appended element
+     * Last appended node
      */
-    @NonFinal @Nullable transient Element<T> lastAppendedElement;
+    @NonFinal transient N lastNode;
+
+    /**
+     * Ends the modification of ta static node.
+     *
+     * @param staticNode node whose modification should be ended
+     */
+    @OverridingMethodsMustInvokeSuper
+    protected void endModification(@NotNull final SN staticNode) {
+        // increase the length of static text part
+        staticLength += staticNode.getTextLength();
+    }
+
+    /**
+     * Ends the modification of a dynamic one.
+     *
+     * @param dynamicNode node whose modification should be ended
+     */
+    @OverridingMethodsMustInvokeSuper
+    protected void endModification(@NotNull final DN dynamicNode) {
+        // increment the amount of dynamic elements
+        dynamicNodeCount++;
+        dynamicNode.getContent().getMinLength().ifPresent(length -> minDynamicLength += length);
+    }
+
+    /**
+     * Ends the modification of the last node delegating
+     * to {@link #endModification(DynamicNode)} if the {@link #lastNode last node} {@link Node#isDynamic() is dynamic}
+     * or {@link #endModification(StaticNode)} otherwise.
+     */
+    protected void endLastNodeModification() {
+        if (lastNode != null) {
+            if (lastNode.isDynamic()) endModification(lastNode.asDynamic());
+            else endModification(lastNode.asStatic());
+        }
+    }
+
+    /**
+     * Creates a new static node to be used for creation of the {@link TextModel text model}.
+     *
+     * @param text static text of the created node
+     * @return created static node
+     */
+    @NotNull protected abstract N newStaticNode(@NotNull final String text);
+
+    /**
+     * Creates a new dynamic node to be used for creation of the {@link TextModel text model}.
+     *
+     * @param content dynamic content of the created node
+     * @return created dynamic node
+     */
+    @NotNull protected abstract N newDynamicNode(@NotNull final TextModel<T> content);
 
     @Override
     @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
         if (!staticText.isEmpty()) {
-            val tail = lastAppendedElement;
+            val tail = lastNode;
 
-            if (tail == null || tail.isDynamic()) elements
-                    .add(lastAppendedElement = new StaticElement<>(staticText)); // add new static element
-            else tail.appendStaticContent(staticText); //  join nearby static elements
+            if (tail == null) {
+                val node = newStaticNode(staticText); // add new static element
+                nodes.add(lastNode = node);
+            } else if (tail.isDynamic()) {
+                endModification(lastNode.asDynamic());
 
-            // increment length of static content by the given text's length
-            staticLength += staticText.length();
+                val node = newStaticNode(staticText); // add new static element
+                nodes.add(lastNode = node);
+            } else tail.asStatic().appendText(staticText); //  join nearby static elements
 
             markAsChanged();
         }
@@ -68,21 +132,24 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
 
     @Override
     @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
-        elements.add(lastAppendedElement = new DynamicElement<>(dynamicText));
-        // increment the amount of dynamic elements
-        dynamicElementCount++;
+        if (dynamicText.isDynamic()) {
+            endLastNodeModification();
 
-        markAsChanged();
+            val node = newDynamicNode(dynamicText);
+            nodes.add(lastNode = node);
+
+            markAsChanged();
+        } else append(dynamicText.getText(null));
 
         return this;
     }
 
     @Override
     @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
-        if (!elements.isEmpty()) {
-            elements.clear();
-            lastAppendedElement = null;
-            staticLength = dynamicElementCount = 0;
+        if (!nodes.isEmpty()) {
+            nodes.clear();
+            lastNode = null;
+            staticLength = dynamicNodeCount = 0;
 
             markAsChanged();
         }
@@ -97,10 +164,10 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
      * @param release {@code true} if this text model builder will be released after the call and {@code false} otherwise
      * @return created text model
      *
-     * @apiNote gets called by {@link #createTextModel(boolean)}
+     * @apiNote gets called by {@link #buildTextModel(boolean)}
      * whenever it cannot create a fast universal implementation
      */
-    @NotNull protected abstract TextModel<T> performTextModelCreation(boolean release);
+    @NotNull protected abstract TextModel<T> performTextModelBuild(boolean release);
 
     /**
      * {@inheritDoc}
@@ -111,30 +178,39 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
      * @return {@inheritDoc}
      */
     @Override
-    @NotNull protected TextModel<T> createTextModel(final boolean release) {
-        if (elements.isEmpty()) return TextModel.empty();
-        if (dynamicElementCount == 0) { // no dynamic elements
-            val tail = lastAppendedElement;
+    @NotNull protected TextModel<T> buildTextModel(final boolean release) {
+        if (nodes.isEmpty()) return TextModel.empty();
+
+        // make sure that the last node modification is ended properly
+        endLastNodeModification();
+
+        if (dynamicNodeCount == 0) { // no dynamic elements
+            val tail = lastNode;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;
-            return StaticTextModel.of(tail.getStaticContent());
+            return StaticTextModel.of(tail.asStatic().getText());
         }
-        if (staticLength == 0 && dynamicElementCount == 1) { // only 1 dynamic element without static ones
-            val tail = lastAppendedElement;
+        if (staticLength == 0 && dynamicNodeCount == 1) { // only 1 dynamic element without static ones
+            val tail = lastNode;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;
-            return tail.getDynamicContent();
+            return tail.asDynamic().getContent();
         }
 
-        return performTextModelCreation(release);
+        return performTextModelBuild(release);
     }
 
     /**
-     * Element of the not generated {@link TextModel}.
+     * Node by which the created {@link TextModel} is formed.
+     * This is actually a type-safe wrapper for static and dynamic nodes (actually, a union-type)
+     * which usually do implement this interface returning themselves in the corresponding methods
+     * in order to decrease the amount of allocated objects.
      *
      * @param <T> type of object according to which the created text models are formatted
+     * @param <S> type of static node wrapped
+     * @param <D> type of dynamic node wrapped
      */
-    protected interface Element<T> {
+    protected interface Node<T, S extends StaticNode<T>, D extends DynamicNode<T>> {
 
         /**
          * Marker indicating whether this element is dynamic.
@@ -144,13 +220,39 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
         boolean isDynamic();
 
         /**
-         * Gets this element's dynamic content.
+         * Gets this node's static view if it is not {@link #isDynamic() dynamic} otherwise throwing an exception.
          *
-         * @return dynamic content of this element
+         * @return static view of this node
+         * @throws UnsupportedOperationException if this node is {@link #isDynamic() dynamic}
          *
-         * @throws UnsupportedOperationException if this element is static
+         * @see #isDynamic() to check if this method can be used
          */
-        @NotNull TextModel<T> getDynamicContent();
+        default S asStatic() {
+            throw new UnsupportedOperationException("This is not a static element");
+        }
+
+        /**
+         * Gets this node's dynamic view if it is {@link #isDynamic() dynamic} otherwise throwing an exception.
+         *
+         * @return dynamic view of this node
+         * @throws UnsupportedOperationException if this node is not {@link #isDynamic() dynamic}
+         *
+         * @see #isDynamic() to check if this method can be used
+         */
+        default D asDynamic() {
+            throw new UnsupportedOperationException("This is not a dynamic element");
+        }
+    }
+
+    /**
+     * Static {@link Node node}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     *
+     * @apiNote this interface does not extend {@link Node} but it is a common practice to have a class implement both
+     * in order to decrease the amount of allocated objects
+     */
+    protected interface StaticNode<T> {
 
         /**
          * Gets this element's static content.
@@ -159,62 +261,57 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
          *
          * @throws UnsupportedOperationException if this element is dynamic
          */
-        @NotNull String getStaticContent();
+        @NotNull String getText();
+
+        int getTextLength();
 
         /**
          * Appends a static element to this element's content.
          *
-         * @param content content to append to this element's current content
+         * @param text text to append to this element's current text
          *
          * @throws UnsupportedOperationException if this element is dynamic
          */
-        void appendStaticContent(@NotNull String content);
+        void appendText(@NotNull String text);
     }
 
+
     /**
-     * Dynamic {@link Element}.
+     * Dynamic {@link Node node}.
      *
      * @param <T> type of object according to which the created text models are formatted
+     *
+     * @apiNote this interface does not extend {@link Node} but it is a common practice to have a class implement both
+     * in order to decrease the amount of allocated objects
      */
-    @Value
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    protected static class DynamicElement<T> implements Element<T> {
-
+    protected interface DynamicNode<T> {
         /**
-         * Dynamic content of this element
+         * Gets this element's dynamic content.
+         *
+         * @return dynamic content of this element
+         *
+         * @throws UnsupportedOperationException if this element is static
          */
-        @NotNull TextModel<T> dynamicContent;
-
-        @Override
-        public boolean isDynamic() {
-            return true;
-        }
-
-        @Override
-        @NotNull public String getStaticContent() {
-            throw new UnsupportedOperationException("This is a dynamic element");
-        }
-
-        @Override
-        public void appendStaticContent(@NotNull final String content) {
-            throw new UnsupportedOperationException("This is a dynamic element");
-        }
+        @NotNull TextModel<T> getContent();
     }
 
     /**
-     * Static {@link Element}.
+     * Simple implementation of {@link StaticNode} also being a {@link Node}.
      *
      * @param <T> type of object according to which the created text models are formatted
      */
     @Value
     @RequiredArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    protected static class StaticElement<T> implements Element<T> {
+    public static class SimpleStaticNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T> {
 
-        @NotNull StringBuilder staticContent;
+        /**
+         * Text of this node
+         */
+        @NotNull StringBuilder text;
 
-        public StaticElement(@NonNull final String content) {
-            this(new StringBuilder(content));
+        protected SimpleStaticNode(@NonNull final String text) {
+            this(new StringBuilder(text));
         }
 
         @Override
@@ -223,18 +320,48 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T> extends Abstr
         }
 
         @Override
-        @NotNull public String getStaticContent() {
-            return staticContent.toString();
+        public SimpleStaticNode<T> asStatic() {
+            return this;
         }
 
         @Override
-        public void appendStaticContent(@NotNull final String content) {
-            staticContent.append(content);
+        @NotNull public String getText() {
+            return text.toString();
         }
 
         @Override
-        @NotNull public TextModel<T> getDynamicContent() {
-            throw new UnsupportedOperationException("This is a static element");
+        public int getTextLength() {
+            return text.length();
+        }
+
+        @Override
+        public void appendText(@NotNull final String text) {
+            this.text.append(text);
+        }
+    }
+
+    /**
+     * Simple implementation of {@link DynamicNode} also being a {@link Node}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    @Value
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    public static class SimpleDynamicNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, DynamicNode<T> {
+
+        /**
+         * Dynamic content of this node
+         */
+        @NotNull TextModel<T> content;
+
+        @Override
+        public boolean isDynamic() {
+            return true;
+        }
+
+        @Override
+        public DynamicNode<T> asDynamic() {
+            return this;
         }
     }
 }

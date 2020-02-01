@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.pair.Pair;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
-import ru.progrm_jarvis.reflector.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.StaticMethodWrapper;
 

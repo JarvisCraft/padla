@@ -6,7 +6,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.reflector.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 
 import java.lang.invoke.MethodHandle;
 
@@ -21,11 +21,11 @@ public class StringMicroOptimizationUtil {
      */
     private final String STRING_VALUE_FIELD_NAME = "value";
     /**
-     * Method handle for accessing {@link String}{@code .}{@value STRING_VALUE_FIELD_NAME} if it is possible
+     * Method handle for accessing {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} if it is possible
      */
     @Nullable private final MethodHandle STRING_VALUE_FIELD_GETTER_METHOD_HANDLE;
     /**
-     * Marker indicating whether access to {@link String}{@code .}{@value STRING_VALUE_FIELD_NAME} is available
+     * Marker indicating whether access to {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} is available
      */
     private final boolean STRING_VALUE_FIELD_AVAILABLE;
 
@@ -48,6 +48,7 @@ public class StringMicroOptimizationUtil {
      * Gets array of {@link String string} characters possibly returning
      * its internal {@value #STRING_VALUE_FIELD_NAME} field's value.
      *
+     * @param string string whose chars should be got
      * @return array of {@link String string} characters possibly being the one used by {@code string} itself
      *
      * @apiNote modifications to the array may reflect on {@code string}
@@ -68,7 +69,7 @@ public class StringMicroOptimizationUtil {
      */
     public String escapeJavaStringLiteral(@NonNull final String source) {
         @Nullable StringBuilder result = null;
-        val characters = source.toCharArray();
+        val characters = getStringChars(source);
         int lastWriteIndex = -1;
         val length = characters.length;
         for (var index = 0; index < length; index++) {
@@ -130,6 +131,7 @@ public class StringMicroOptimizationUtil {
                             .append('\\').append('\\');
                     break;
                 }
+                default: {/* This character will be appended later */}
             }
         }
 
@@ -145,13 +147,14 @@ public class StringMicroOptimizationUtil {
      */
     public String escapeJavaCharacterLiteral(final char source) {
         switch (source) {
-            case '\t': return "\\t";
-            case '\b': return "\\b";
+            /* Commented branches are those of characters which may but are not obliged to be represented via escapes */
+            // case '\t': return "\\t";
+            // case '\b': return "\\b";
             case '\n': return "\\n";
             case '\r': return "\\r";
-            case '\f': return "\\f";
+            // case '\f': return "\\f";
             case '\'': return "\\'";
-            case '"': return "\\\"";
+            // case '"': return "\\\"";
             case '\\': return "\\\\";
             default: return Character.toString(source);
         }

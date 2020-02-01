@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.reflector.invoke;
+package ru.progrm_jarvis.javacommons.invoke;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

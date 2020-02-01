@@ -10,6 +10,11 @@ import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.invoke.MethodType;
+
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 
@@ -28,21 +33,46 @@ public class AsmUtil {
      */
     public final Type OBJECT_TYPE = getType(Object.class),
     /**
+     * ASM type of {@link Object} array
+     */
+    OBJECT_ARRAY_TYPE = getType(Object[].class),
+    /**
      * ASM type of {@link String}
      */
-    STRING_TYPE = getType(String.class);
+    STRING_TYPE = getType(String.class),
+    /**
+     * ASM type of {@link MethodHandles}
+     */
+    METHOD_HANDLES_TYPE = getType(MethodHandles.class),
+    /**
+     * ASM type of {@link Lookup}
+     */
+    LOOKUP_TYPE = getType(Lookup.class),
+    /**
+     * ASM type of {@link CallSite}
+     */
+    CALL_SITE_TYPE = getType(CallSite.class),
+    /**
+     * ASM type of {@link MethodType}
+     */
+    METHOD_TYPE_TYPE = getType(MethodType.class);
     ///////////////////////////////////////////////////////////////////////////
     // Strings
     ///////////////////////////////////////////////////////////////////////////
     /* ******************************************** Special Method names ******************************************** */
     /**
-     * Prefix of generated fields after which the index will go
+     * Name of static initializer method
      */
     public final String STATIC_INITIALIZER_METHOD_NAME = "<clinit>",
     /**
-     * Name of constructor-method
+     * Name of constructor method
      */
     CONSTRUCTOR_METHOD_NAME = "<init>",
+    /* ************************************ Very special names (read INDY magic) ************************************ */
+    /**
+     * Name of inner lookup class.
+     */
+    LOOKUP_INNER_CLASS_NAME = "Lookup",
     /* ******************************************** Common method names ******************************************** */
     /**
      * Name of {@link Object#hashCode()} method
@@ -62,55 +92,95 @@ public class AsmUtil {
      */
     OBJECT_INTERNAL_NAME = OBJECT_TYPE.getInternalName(),
     /**
+     * Internal name of {@link Object} array
+     */
+    OBJECT_ARRAY_INTERNAL_NAME = OBJECT_ARRAY_TYPE.getInternalName(),
+    /**
      * Internal name of {@link String}
      */
     STRING_INTERNAL_NAME = STRING_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link MethodHandles}
+     */
+    METHOD_HANDLES_INTERNAL_NAME = METHOD_HANDLES_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link Lookup}
+     */
+    LOOKUP_INTERNAL_NAME = LOOKUP_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link CallSite}
+     */
+    CALL_SITE_INTERNAL_NAME = CALL_SITE_TYPE.getInternalName(),
+    /**
+     * Internal name of {@link MethodType}
+     */
+    METHOD_TYPE_INTERNAL_NAME = METHOD_TYPE_TYPE.getInternalName(),
     /* ********************************************* Class descriptors ********************************************* */
     /**
      * Descriptor of {@link Object}
      */
     OBJECT_DESCRIPTOR = OBJECT_TYPE.getDescriptor(),
     /**
+     * Descriptor of {@link Object} array
+     */
+    OBJECT_ARRAY_DESCRIPTOR = OBJECT_ARRAY_TYPE.getDescriptor(),
+    /**
      * Descriptor of {@link String}
      */
     STRING_DESCRIPTOR = STRING_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link MethodHandles}
+     */
+    METHOD_HANDLES_DESCRIPTOR = METHOD_HANDLES_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link Lookup}
+     */
+    LOOKUP_DESCRIPTOR = LOOKUP_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link CallSite}
+     */
+    CALL_SITE_DESCRIPTOR = CALL_SITE_TYPE.getDescriptor(),
+    /**
+     * Descriptor of {@link MethodType}
+     */
+    METHOD_TYPE_DESCRIPTOR = METHOD_TYPE_TYPE.getDescriptor(),
     /* ************************************ Method descriptors (aka signatures) ************************************ */
     /**
      * Signature of {@code void()} method
      */
-    VOID_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE).getDescriptor(),
+    VOID_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE),
     /**
      * Signature of {@code boolean()} method
      */
-    BOOLEAN_METHOD_DESCRIPTOR = getMethodType(BOOLEAN_TYPE).getDescriptor(),
+    BOOLEAN_METHOD_DESCRIPTOR = getMethodDescriptor(BOOLEAN_TYPE),
     /**
      * Signature of {@code byte()} method
      */
-    BYTE_METHOD_DESCRIPTOR = getMethodType(BYTE_TYPE).getDescriptor(),
+    BYTE_METHOD_DESCRIPTOR = getMethodDescriptor(BYTE_TYPE),
     /**
      * Signature of {@code short()} method
      */
-    SHORT_METHOD_DESCRIPTOR = getMethodType(SHORT_TYPE).getDescriptor(),
+    SHORT_METHOD_DESCRIPTOR = getMethodDescriptor(SHORT_TYPE),
     /**
      * Signature of {@code int()} method
      */
-    INT_METHOD_DESCRIPTOR = getMethodType(INT_TYPE).getDescriptor(),
+    INT_METHOD_DESCRIPTOR = getMethodDescriptor(INT_TYPE),
     /**
      * Signature of {@code long()} method
      */
-    LONG_METHOD_DESCRIPTOR = getMethodType(LONG_TYPE).getDescriptor(),
+    LONG_METHOD_DESCRIPTOR = getMethodDescriptor(LONG_TYPE),
     /**
      * Signature of {@code float()} method
      */
-    FLOAT_METHOD_DESCRIPTOR = getMethodType(FLOAT_TYPE).getDescriptor(),
+    FLOAT_METHOD_DESCRIPTOR = getMethodDescriptor(FLOAT_TYPE),
     /**
      * Signature of {@code double()} method
      */
-    DOUBLE_METHOD_DESCRIPTOR = getMethodType(DOUBLE_TYPE).getDescriptor(),
+    DOUBLE_METHOD_DESCRIPTOR = getMethodDescriptor(DOUBLE_TYPE),
     /**
      * Signature of {@code char()} method
      */
-    CHAR_METHOD_DESCRIPTOR = getMethodType(CHAR_TYPE).getDescriptor(),
+    CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(CHAR_TYPE),
     /**
      * Signature of {@code String()} method
      */
@@ -118,39 +188,39 @@ public class AsmUtil {
     /**
      * Signature of {@code void(boolean)} method
      */
-    VOID_BOOLEAN_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, BOOLEAN_TYPE).getDescriptor(),
+    VOID_BOOLEAN_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, BOOLEAN_TYPE),
     /**
      * Signature of {@code void(byte)} method
      */
-    VOID_BYTE_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, BYTE_TYPE).getDescriptor(),
+    VOID_BYTE_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, BYTE_TYPE),
     /**
      * Signature of {@code void(short)} method
      */
-    VOID_SHORT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, SHORT_TYPE).getDescriptor(),
+    VOID_SHORT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, SHORT_TYPE),
     /**
      * Signature of {@code void(int)} method
      */
-    VOID_INT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, INT_TYPE).getDescriptor(),
+    VOID_INT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, INT_TYPE),
     /**
      * Signature of {@code void(long)} method
      */
-    VOID_LONG_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, LONG_TYPE).getDescriptor(),
+    VOID_LONG_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, LONG_TYPE),
     /**
      * Signature of {@code void(float)} method
      */
-    VOID_FLOAT_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, FLOAT_TYPE).getDescriptor(),
+    VOID_FLOAT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, FLOAT_TYPE),
     /**
      * Signature of {@code void(double)} method
      */
-    VOID_DOUBLE_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, DOUBLE_TYPE).getDescriptor(),
+    VOID_DOUBLE_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, DOUBLE_TYPE),
     /**
      * Signature of {@code void(char)} method
      */
-    VOID_CHAR_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, CHAR_TYPE).getDescriptor(),
+    VOID_CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, CHAR_TYPE),
     /**
      * Signature of {@code void(String)} method
      */
-    VOID_STRING_METHOD_DESCRIPTOR = getMethodType(VOID_TYPE, STRING_TYPE).getDescriptor();
+    VOID_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, STRING_TYPE);
 
     /* ****************************************** Stored multi-opcodes ****************************************** */
     /**
@@ -176,6 +246,18 @@ public class AsmUtil {
      */
     public MethodVisitor visitStaticInitializer(@NonNull final ClassVisitor clazz) {
         return clazz.visitMethod(ACC_STATIC, STATIC_INITIALIZER_METHOD_NAME, VOID_METHOD_DESCRIPTOR, null, null);
+    }
+
+    /**
+     * Adds {@link Lookup the inner lookup class} to the class needed by the JVM via its visitor.
+     *
+     * @param clazz visitor of the class
+     */
+    public void addLookup(@NonNull final ClassVisitor clazz) {
+        clazz.visitInnerClass(
+                LOOKUP_INTERNAL_NAME, METHOD_HANDLES_INTERNAL_NAME,
+                LOOKUP_INNER_CLASS_NAME, OPCODES_ACC_PUBLIC_STATIC_FINAL
+        );
     }
 
     /**
