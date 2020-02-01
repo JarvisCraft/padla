@@ -33,7 +33,7 @@ public class CollectionFactory {
     /**
      * {@link Lookup lookup} of this class.
      */
-    private static Lookup LOOKUP = MethodHandles.lookup();
+    protected static final Lookup LOOKUP = MethodHandles.lookup();
 
     /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
