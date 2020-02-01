@@ -113,34 +113,6 @@ class SimplePlaceholdersTest {
     protected static Stream<Arguments> provideWithMultiplePlaceholdersAndEscaping() {
         return Arrays.stream(Target.values())
                 .flatMap(target -> Stream.of(
-                        Arguments.of(target, "Hello \\\\world", "Hello \\world"),
-                        Arguments.of(target, "Hello my dear world\\\\", "Hello my dear world\\"),
-                        Arguments.of(target, "\\\\Hello, dear {", "\\Hello, dear {"),
-                        Arguments.of(target, "Hello, dear \\\\{.", "Hello, dear \\{."),
-                        Arguments.of(target, "He\\llo, dear {123.", "Hello, dear {123."),
-                        Arguments.of(target, "Hel\\lo, de\\ar \\}\\", "Hello, dear }\\"),
-                        Arguments.of(target, "Hello, dea\\r }.\\", "Hello, dea\r }.\\"),
-                        Arguments.of(target, "Hell\\o, dear }...", "Hello, dear }..."),
-                        Arguments.of(target, "Hello,\ndear 12}...", "Hello,\ndear 12}..."),
-                        Arguments.of(target, "Hello,\\\\ndear {}", "Hello,\\ndear {}"),
-                        Arguments.of(target, "Hello, dear \\{}...", "Hello, dear {}..."),
-                        Arguments.of(target, "\\{\\}", "{}"),
-                        Arguments.of(target, "\\{\\}\\ \\h\\e\\l\\l\\o", "{} hello"),
-                        Arguments.of(target, "{\\:} hello", "{\\:} hello"),
-                        Arguments.of(target, "hello \\{:}\\", "hello {:}\\"),
-                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
-                        Arguments.of(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
-                        Arguments.of(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
-                        Arguments.of(target, "{rand\\} \\hello {rand}", "???"),
-                        Arguments.of(target, "{rand\\} hello \\{:}", "???"),
-                        Arguments.of(target, "{unknown:\\} hi\\\\ {:}", "???"),
-                        Arguments.of(target, "{unknown:\\\\} <magic", "??? <magic")
-                ));
-    }
-
-    protected static Stream<Arguments> provideWithSinglePlaceholderAndEscaping() {
-        return Arrays.stream(Target.values())
-                .flatMap(target -> Stream.of(
                         Arguments.of(
                                 target, "Hello {test:name} at {test:id}",
                                 "Hello " + target.name + " at " + target.ordinal()),
@@ -153,6 +125,16 @@ class SimplePlaceholdersTest {
                                 "Hello world " + target.ordinal() + '@'
                                         + target.hashCode() + " (I know you, " + target.name + ')'
                         )
+                ));
+    }
+
+    protected static Stream<Arguments> provideWithSinglePlaceholderAndEscaping() {
+        return Arrays.stream(Target.values())
+                .flatMap(target -> Stream.of(
+                        Arguments.of(target, "Hello world {test:name}", "Hello world " + target.name),
+                        Arguments.of(target, "Hello world {test:id}", "Hello world " + target.ordinal()),
+                        Arguments.of(target, "Hello world {test:hash}", "Hello world " + target.hashCode()),
+                        Arguments.of(target, "Hello world {test:wut}", "Hello world " + UNKNOWN_VALUE_PLACEHOLDER)
                 ));
     }
 
