@@ -55,7 +55,7 @@ public class CollectionFactory {
     /**
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
-    @SuppressWarnings("UnstableApiUsage") @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
+    @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
             = CacheBuilder
             .newBuilder()
             .concurrencyLevel(
