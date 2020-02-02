@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.classload;
+package ru.progrm_jarvis.javacommons.classloading;
 
 import javassist.*;
 import lombok.val;
@@ -16,13 +16,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class ClassFactoryTest {
+class GcClassDefinersTest {
 
     @Test
     @EnabledIfSystemProperty(named = "test.gc.always-respects-System.gc()", matches = "true|yes|\\+|1|enabled")
     void testDefineGCClass() throws IOException, CannotCompileException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, InvocationTargetException {
-        val clazz = ClassPool.getDefault().makeClass(ClassFactoryTest.class.getName() + "$GeneratedClass");
+        val clazz = ClassPool.getDefault().makeClass(GcClassDefinersTest.class.getName() + "$GeneratedClass");
         clazz.addMethod(CtNewMethod.make("public int foo() {return 123;}", clazz));
         clazz.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], clazz));
 
