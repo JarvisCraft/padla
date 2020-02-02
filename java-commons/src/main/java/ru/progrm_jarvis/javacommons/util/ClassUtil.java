@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.util;
 
-import com.google.common.base.Preconditions;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
@@ -8,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Comparator;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Utility for class-related stuff.
@@ -117,7 +118,7 @@ public class ClassUtil {
         val primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_CLASSES, primitiveClass, CLASS_HASH_CODE_COMPARATOR
         );
-        Preconditions.checkArgument(primitiveClassIndex >= 0, "Given class is not primitive");
+        checkArgument(primitiveClassIndex >= 0, "Given class is not primitive");
 
         return PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
     }
@@ -134,7 +135,7 @@ public class ClassUtil {
         val primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_WRAPPER_CLASSES, primitiveWrapperClass, CLASS_HASH_CODE_COMPARATOR
         );
-        Preconditions.checkArgument(primitiveClassIndex >= 0, "Given class is not a primitive-wrapper");
+        checkArgument(primitiveClassIndex >= 0, "Given class is not a primitive-wrapper");
 
         return PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex];
     }
