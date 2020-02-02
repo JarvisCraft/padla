@@ -115,7 +115,7 @@ class ClassUtilTest {
 
     @ParameterizedTest
     @MethodSource("provideNonPrimitiveOrWrapperClasses")
-    void testToPrimitiveWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> unrelated) {
-        assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(unrelated));
+    void testToPrimitiveWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
+        assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(nonPrimitiveOrWrapper));
     }
 }
