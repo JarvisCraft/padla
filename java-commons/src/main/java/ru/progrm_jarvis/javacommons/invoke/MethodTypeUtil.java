@@ -52,7 +52,7 @@ public class MethodTypeUtil {
         {
             val originalParameterCount = original.parameterCount();
             checkArgument(
-                    originalStartIndex >= 0 && originalStartIndex < originalParameterCount
+                    originalStartIndex >= 0 && originalStartIndex <= originalParameterCount
                             && originalStartIndex + parameterCount <= originalParameterCount,
                     "Original index should not exceed amount of original parameters or be negative"
             );
@@ -60,7 +60,7 @@ public class MethodTypeUtil {
         {
             val targetParameterCount = target.parameterCount();
             checkArgument(
-                    targetStartIndex >= 0 && targetStartIndex < targetParameterCount
+                    targetStartIndex >= 0 && targetStartIndex <= targetParameterCount
                             && targetStartIndex + parameterCount <= targetParameterCount,
                     "Target index should not exceed amount of target parameters or be negative"
             );
