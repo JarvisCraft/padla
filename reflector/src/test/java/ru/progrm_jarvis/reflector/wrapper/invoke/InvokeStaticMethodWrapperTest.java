@@ -6,10 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
 class InvokeStaticMethodWrapperTest {
 
@@ -17,6 +14,7 @@ class InvokeStaticMethodWrapperTest {
     void testBoundVoidNoArgs() {
         final class Petya {
             private boolean called;
+
             private void call() {
                 called = true;
             }
@@ -27,7 +25,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call"), instance)
                 .invoke()
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -36,8 +34,9 @@ class InvokeStaticMethodWrapperTest {
 
         final class Petya {
             private boolean called;
+
             private void call(final int arg1) {
-                assertThat(arg1, is(val1));
+                assertEquals(val1, arg1);
 
                 called = true;
             }
@@ -48,7 +47,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call", int.class), instance)
                 .invoke(val1)
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -62,9 +61,10 @@ class InvokeStaticMethodWrapperTest {
 
         final class Petya {
             private boolean called;
+
             private void call(final int arg1, final int arg2) {
-                assertThat(arg1, is(val1));
-                assertThat(arg2, is(val2));
+                assertEquals(val1, arg1);
+                assertEquals(val2, arg2);
 
                 called = true;
             }
@@ -75,7 +75,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call", int.class, int.class), instance)
                 .invoke(val1, val2)
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -90,10 +90,11 @@ class InvokeStaticMethodWrapperTest {
 
         final class Petya {
             private boolean called;
+
             private void call(final int arg1, final int arg2, final int arg3) {
-                assertThat(arg1, is(val1));
-                assertThat(arg2, is(val2));
-                assertThat(arg3, is(val3));
+                assertEquals(val1, arg1);
+                assertEquals(val2, arg2);
+                assertEquals(val3, arg3);
 
                 called = true;
             }
@@ -104,7 +105,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call", int.class, int.class, int.class), instance)
                 .invoke(val1, val2, val3)
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -112,15 +113,16 @@ class InvokeStaticMethodWrapperTest {
         val result = "Res0_" + ThreadLocalRandom.current().nextInt();
         final class Petya {
             private boolean called;
+
             private String call() {
                 return result;
             }
         }
         val instance = new Petya();
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call"), instance)
-                .invoke(), equalTo(result)
+                .invoke()
         );
     }
 
@@ -136,17 +138,18 @@ class InvokeStaticMethodWrapperTest {
 
         final class Petya {
             private boolean called;
+
             private String call(final int arg1) {
-                assertThat(arg1, is(val1));
+                assertEquals(val1, arg1);
 
                 return result;
             }
         }
         val instance = new Petya();
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call", int.class), instance)
-                .invoke(val1), equalTo(result)
+                .invoke(val1)
         );
     }
 
@@ -163,17 +166,17 @@ class InvokeStaticMethodWrapperTest {
 
         class Petya {
             private String call(final int arg1, final int arg2) {
-                assertThat(arg1, is(val1));
-                assertThat(arg2, is(val2));
+                assertEquals(val1, arg1);
+                assertEquals(val2, arg2);
 
                 return result;
             }
         }
         val instance = new Petya();
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call", int.class, int.class), instance)
-                .invoke(val1, val2), equalTo(result)
+                .invoke(val1, val2)
         );
     }
 
@@ -191,18 +194,18 @@ class InvokeStaticMethodWrapperTest {
 
         class Petya {
             private String call(final int arg1, final int arg2, final int arg3) {
-                assertThat(arg1, is(val1));
-                assertThat(arg2, is(val2));
-                assertThat(arg3, is(val3));
+                assertEquals(val1, arg1);
+                assertEquals(val2, arg2);
+                assertEquals(val3, arg3);
 
                 return result;
             }
         }
         val instance = new Petya();
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call", int.class, int.class, int.class), instance)
-                .invoke(val1, val2, val3), equalTo(result)
+                .invoke(val1, val2, val3)
         );
     }
 
@@ -212,7 +215,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Void0StaticPetya.class.getDeclaredMethod("call"))
                 .invoke()
         );
-        assertThat(Void0StaticPetya.called, is(true));
+        assertTrue(Void0StaticPetya.called);
     }
 
     @Test
@@ -223,7 +226,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Void1StaticPetya.class.getDeclaredMethod("call", int.class))
                 .invoke(val1)
         );
-        assertThat(Void1StaticPetya.called, is(true));
+        assertTrue(Void1StaticPetya.called);
     }
 
     @Test
@@ -239,7 +242,7 @@ class InvokeStaticMethodWrapperTest {
                 .from(Void2StaticPetya.class.getDeclaredMethod("call", int.class, int.class))
                 .invoke(val1, val2)
         );
-        assertThat(Void2StaticPetya.called, is(true));
+        assertTrue(Void2StaticPetya.called);
     }
 
     @Test
@@ -256,16 +259,16 @@ class InvokeStaticMethodWrapperTest {
                 .from(Void3StaticPetya.class.getDeclaredMethod("call", int.class, int.class, int.class))
                 .invoke(val1, val2, val3)
         );
-        assertThat(Void3StaticPetya.called, is(true));
+        assertTrue(Void3StaticPetya.called);
     }
 
     @Test
     void testStaticObjectNoArgs() throws NoSuchMethodException {
         final String result = Object0StaticPetya.result = "Res0_" + ThreadLocalRandom.current().nextInt();
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Object0StaticPetya.class.getDeclaredMethod("call"))
-                .invoke(), equalTo(result)
+                .invoke(), result
         );
     }
 
@@ -279,9 +282,9 @@ class InvokeStaticMethodWrapperTest {
             result = Object1StaticPetya.result = "Res1_" + random.nextInt();
         }
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Object1StaticPetya.class.getDeclaredMethod("call", int.class))
-                .invoke(val1), equalTo(result)
+                .invoke(val1)
         );
     }
 
@@ -296,9 +299,9 @@ class InvokeStaticMethodWrapperTest {
             result = Object2StaticPetya.result = "Res2_" + random.nextInt();
         }
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Object2StaticPetya.class.getDeclaredMethod("call", int.class, int.class))
-                .invoke(val1, val2), equalTo(result)
+                .invoke(val1, val2)
         );
     }
 
@@ -314,9 +317,9 @@ class InvokeStaticMethodWrapperTest {
             result = Object3StaticPetya.result = "Res3_" + random.nextInt();
         }
 
-        assertThat(InvokeStaticMethodWrapper
+        assertEquals(result, InvokeStaticMethodWrapper
                 .from(Object3StaticPetya.class.getDeclaredMethod("call", int.class, int.class, int.class))
-                .invoke(val1, val2, val3), equalTo(result)
+                .invoke(val1, val2, val3)
         );
     }
 
@@ -337,7 +340,7 @@ class InvokeStaticMethodWrapperTest {
         private boolean called;
 
         private void call(final int arg1) {
-            assertThat(arg1, is(val1));
+            assertEquals(val1, arg1);
 
             called = true;
         }
@@ -350,8 +353,8 @@ class InvokeStaticMethodWrapperTest {
         private boolean called;
 
         private void call(final int arg1, final int arg2) {
-            assertThat(arg1, is(val1));
-            assertThat(arg2, is(val2));
+            assertEquals(val1, arg1);
+            assertEquals(val2, arg2);
 
             called = true;
         }
@@ -364,9 +367,9 @@ class InvokeStaticMethodWrapperTest {
         private int val1, val2, val3;
 
         private void call(final int arg1, final int arg2, final int arg3) {
-            assertThat(arg1, is(val1));
-            assertThat(arg2, is(val2));
-            assertThat(arg3, is(val3));
+            assertEquals(val1, arg1);
+            assertEquals(val2, arg2);
+            assertEquals(val3, arg3);
 
             called = true;
         }
@@ -389,7 +392,7 @@ class InvokeStaticMethodWrapperTest {
         private String result;
 
         private String call(final int arg1) {
-            assertThat(arg1, is(val1));
+            assertEquals(val1, arg1);
 
             return result;
         }
@@ -402,8 +405,8 @@ class InvokeStaticMethodWrapperTest {
         private String result;
 
         private String call(final int arg1, final int arg2) {
-            assertThat(arg1, is(val1));
-            assertThat(arg2, is(val2));
+            assertEquals(val1, arg1);
+            assertEquals(val2, arg2);
 
             return result;
         }
@@ -416,9 +419,9 @@ class InvokeStaticMethodWrapperTest {
         private String result;
 
         private String call(final int arg1, final int arg2, final int arg3) {
-            assertThat(arg1, is(val1));
-            assertThat(arg2, is(val2));
-            assertThat(arg3, is(val3));
+            assertEquals(val1, arg1);
+            assertEquals(val2, arg2);
+            assertEquals(val3, arg3);
 
             return result;
         }

@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InvokeDynamicFieldWrapperTest {
 
@@ -62,7 +63,7 @@ class InvokeDynamicFieldWrapperTest {
         //noinspection RedundantCast Java 11 issue
         assertDoesNotThrow((Executable) () -> field.set(instance, newId));
         // value gets cached (?)
-        assertThat(field.get(instance), /*allOf(*/equalTo(newId)/*, equalTo(instance.id))*/);
+        assertEquals(field.get(instance), newId);
     }
 
     @Test
@@ -79,7 +80,7 @@ class InvokeDynamicFieldWrapperTest {
         //noinspection RedundantCast Java 11 issue
         assertDoesNotThrow((Executable) () -> field.set(instance, newName));
         // value gets cached (?)
-        assertThat(field.get(instance), /*allOf(*/equalTo(newName)/*, equalTo(instance.name))*/);
+        assertEquals(newName, field.get(instance));
     }
 
     @AllArgsConstructor
