@@ -41,7 +41,7 @@ class ClassUtilTest {
         );
     }
 
-    protected static Stream<Arguments> provideNonPrimitiveOrWrapperClasses() {
+    protected static Stream<Arguments> provideNonPrimitiveOrWrappers() {
         return Stream.of(
                 arguments(Object.class),
                 arguments(String.class),
@@ -78,7 +78,7 @@ class ClassUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideNonPrimitiveOrWrapperClasses")
+    @MethodSource("provideNonPrimitiveOrWrappers")
     void testIsPrimitiveWrapperWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
         assertFalse(ClassUtil.isPrimitiveWrapper(nonPrimitiveOrWrapper));
     }
@@ -96,7 +96,7 @@ class ClassUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideNonPrimitiveOrWrapperClasses")
+    @MethodSource("provideNonPrimitiveOrWrappers")
     void testToPrimitiveWrapperWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitiveWrapper(nonPrimitiveOrWrapper));
     }
@@ -114,7 +114,7 @@ class ClassUtilTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideNonPrimitiveOrWrapperClasses")
+    @MethodSource("provideNonPrimitiveOrWrappers")
     void testToPrimitiveWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(nonPrimitiveOrWrapper));
     }
