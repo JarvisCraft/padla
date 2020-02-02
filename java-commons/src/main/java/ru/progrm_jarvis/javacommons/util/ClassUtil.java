@@ -139,4 +139,37 @@ public class ClassUtil {
 
         return PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex];
     }
+
+    /**
+     * <p>Integrates the original type with the target
+     * making so that target type should be assignable from integrated one
+     * (i.e., attempting to make the original type a sub-class of the target type)</p>
+     * <p>This method performs primitive-to-wrapper conversion in oder to attempt integration.</p>
+     *
+     * @param original original type which should be integrated to the target type
+     * @param target target type to which the original type should be integrated
+     * @return result of type integration, my be the same as original type
+     *
+     * @throws IllegalArgumentException if original type cannot be integrated to the target type
+     */
+    public Class<?> integrateType(@NotNull /* hot spot */ final Class<?> original,
+                                  @NotNull /* hot spot */ final Class<?> target) {
+        // As `Class#isAssignableFrom()` is an intrinsic candidate
+        // there is no need for simple `==` check which is probably included in it
+        if (target.isAssignableFrom(original)) return original;
+
+        checkArgument(
+                original.isPrimitive(),
+                "Original type %s cannot be integrated with the target type %s and is not primitive", original, target
+        );
+
+        val wrapper = toPrimitiveWrapper(original);
+
+        checkArgument(
+                target.isAssignableFrom(wrapper),
+                "Wrapper %s of the original type %s cannot be integrated with target type %s", wrapper, original, target
+        );
+
+        return wrapper;
+    }
 }
