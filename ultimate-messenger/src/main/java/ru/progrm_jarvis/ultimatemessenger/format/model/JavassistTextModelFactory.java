@@ -120,7 +120,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        @NonNull private static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+        @NonNull protected static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
                 TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 

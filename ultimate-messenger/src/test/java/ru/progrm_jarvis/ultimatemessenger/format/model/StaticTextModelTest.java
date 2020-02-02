@@ -16,21 +16,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class StaticTextModelTest {
 
     static List<Arguments> provideTestSubjects() {
         return Arrays.asList(
-                Arguments.of(StaticTextModel.of("foo"), "foo"),
-                Arguments.of(StaticTextModel.of("bar"), "bar"),
-                Arguments.of(StaticTextModel.of("baz"), "baz"),
-                Arguments.of(StaticTextModel.of("mr. user"), "mr. user"),
-                Arguments.of(StaticTextModel.of("Hello world!"), "Hello world!"),
-                Arguments.of(
+                arguments(StaticTextModel.of("foo"), "foo"),
+                arguments(StaticTextModel.of("bar"), "bar"),
+                arguments(StaticTextModel.of("baz"), "baz"),
+                arguments(StaticTextModel.of("mr. user"), "mr. user"),
+                arguments(StaticTextModel.of("Hello world!"), "Hello world!"),
+                arguments(
                         StaticTextModel.of("Japris Pogrammer seems to be a coder"),
                         "Japris Pogrammer seems to be a coder"
                 ),
-                Arguments.of(StaticTextModel.of(""), "") // empty text is also text
+                arguments(StaticTextModel.of(""), "") // empty text is also text
         );
     }
 
