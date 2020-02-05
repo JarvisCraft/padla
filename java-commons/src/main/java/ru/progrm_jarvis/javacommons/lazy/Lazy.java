@@ -87,7 +87,7 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     static <T> Lazy<T> createWeakThreadSafe(@NonNull final Supplier<T> valueSupplier) {
-        return new LockedWeakLazy<>(valueSupplier);
+        return new LockingWeakLazy<>(valueSupplier);
     }
 
     /**
@@ -236,7 +236,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    class LockedWeakLazy<@NotNull T> implements Lazy<T> {
+    class LockingWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
          * Mutex used for synchronizations
@@ -253,7 +253,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
-        protected LockedWeakLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected LockingWeakLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
 
             {
