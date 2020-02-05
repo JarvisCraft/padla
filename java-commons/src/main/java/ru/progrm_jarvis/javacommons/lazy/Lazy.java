@@ -104,7 +104,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @Nullable Supplier<T> valueSupplier;
 
-        protected SimpleLazy(@SuppressWarnings("NullableProblems") @NonNull final Supplier<T> valueSupplier) {
+        protected SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
         }
 
@@ -154,7 +154,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         volatile T value;
 
-        protected DoubleCheckedLazy(@SuppressWarnings("NullableProblems") @NonNull final Supplier<T> valueSupplier) {
+        protected DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
             mutex = new Object[0];
             this.valueSupplier = valueSupplier;
         }
