@@ -41,9 +41,7 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @see #getOptionally() behaves similarly but uses {@link Optional} instead of raw value
      */
-    default T getInitializedOrNull() {
-        return isInitialized() ? get() : null;
-    }
+    @Nullable T getInitializedOrNull();
 
     /**
      * Gets the wrapped value wrapped in {@link Optional} if it is already initialized
@@ -54,7 +52,7 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @see #getInitializedOrNull() behaves similarly but uses raw value instead of {@link Optional}
      */
-    default Optional<T> getOptionally() {
+    default @NotNull Optional<T> getOptionally() {
         return Optional.ofNullable(getInitializedOrNull());
     }
 
@@ -153,6 +151,11 @@ public interface Lazy<T> extends Supplier<T> {
         public boolean isInitialized() {
             return valueSupplier == null;
         }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            return valueSupplier == null ? value : null;
+        }
     }
 
     /**
@@ -208,6 +211,14 @@ public interface Lazy<T> extends Supplier<T> {
                 return valueSupplier == null;
             }
         }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            if (valueSupplier != null) synchronized (mutex) {
+                if (this.valueSupplier != null) return null;
+            }
+            return value;
+        }
     }
 
     /**
@@ -248,6 +259,11 @@ public interface Lazy<T> extends Supplier<T> {
         @Override
         public boolean isInitialized() {
             return value.get() != null;
+        }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            return value.get();
         }
     }
 
@@ -313,6 +329,16 @@ public interface Lazy<T> extends Supplier<T> {
             readLock.lock();
             try {
                 return value.get() != null;
+            } finally {
+                readLock.unlock();
+            }
+        }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            readLock.lock();
+            try {
+                return value.get();
             } finally {
                 readLock.unlock();
             }
