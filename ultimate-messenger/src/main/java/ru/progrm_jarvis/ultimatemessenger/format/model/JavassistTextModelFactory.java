@@ -103,11 +103,10 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          * Lazily initialized {@link CtClass compile-time class} of {@link TextModel text model}
          */
         private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
-            val className = TextModel.class.getCanonicalName();
             try {
-                return CLASS_POOL.get().getCtClass(className);
+                return CLASS_POOL.get().getCtClass(TextModel.class.getCanonicalName());
             } catch (final NotFoundException e) {
-                throw new IllegalStateException("Unable to get CtClass by name " + className);
+                throw new IllegalStateException("Unable to get CtClass by name " + TextModel.class.getCanonicalName());
             }
         });
 
