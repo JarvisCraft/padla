@@ -104,9 +104,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          */
         private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
             try {
-                return CLASS_POOL.get().getCtClass(TextModel.class.getCanonicalName());
+                return CLASS_POOL.get().getCtClass(TextModel.class.getName());
             } catch (final NotFoundException e) {
-                throw new IllegalStateException("Unable to get CtClass by name " + TextModel.class.getCanonicalName());
+                throw new IllegalStateException("Unable to get CtClass by name " + TextModel.class.getName());
             }
         });
 

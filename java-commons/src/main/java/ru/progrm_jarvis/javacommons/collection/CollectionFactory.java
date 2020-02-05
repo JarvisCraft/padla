@@ -84,11 +84,10 @@ public class CollectionFactory {
      * @throws IllegalStateException if it is impossible to find {@link CtClass} representation of the given class
      */
     private CtClass toCtClass(@NonNull final Class<?> clazz) {
-        val className = clazz.getCanonicalName();
         try {
-            return CLASS_POOL.get().get(className);
+            return CLASS_POOL.get().get(clazz.getName());
         } catch (final NotFoundException e) {
-            throw new IllegalStateException("Unable to get CtClass by name " + className);
+            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName());
         }
     }
 
