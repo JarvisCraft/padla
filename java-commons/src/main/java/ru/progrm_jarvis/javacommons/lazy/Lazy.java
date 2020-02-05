@@ -20,9 +20,9 @@ import java.util.function.Supplier;
 public interface Lazy<T> extends Supplier<T> {
 
     /**
-     * Gets the value wrapped initializing it once requested.
+     * Gets the wrapped value initializing it once requested.
      *
-     * @return value wrapped by this lazy
+     * @return wrapped value
      */
     @Override
     T get();
@@ -35,12 +35,27 @@ public interface Lazy<T> extends Supplier<T> {
     boolean isInitialized();
 
     /**
-     * Gets the value wrapped if it is already initialized or {@code null} otherwise.
+     * Gets the wrapped value if it is already initialized or {@code null} otherwise.
      *
-     * @return value wrapped if it is already initialized or {@code null} otherwise
+     * @return wrapped value if it is already initialized or {@code null} otherwise
+     *
+     * @see #getOptionally() behaves similarly but uses {@link Optional} instead of raw value
      */
     default T getInitializedOrNull() {
         return isInitialized() ? get() : null;
+    }
+
+    /**
+     * Gets the wrapped value wrapped in {@link Optional} if it is already initialized
+     * or an {@link Optional#empty() empty optional} otherwise.
+     *
+     * @return wrapped value wrapped in {@link Optional} if it is already initialized
+     * or an {@link Optional#empty() empty optional} otherwise.
+     *
+     * @see #getInitializedOrNull() behaves similarly but uses raw value instead of {@link Optional}
+     */
+    default Optional<T> getOptionally() {
+        return Optional.ofNullable(getInitializedOrNull());
     }
 
     ///////////////////////////////////////////////////////////////////////////
