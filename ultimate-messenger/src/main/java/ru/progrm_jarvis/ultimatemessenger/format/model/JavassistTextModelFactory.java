@@ -97,12 +97,12 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Lazily initialized {@link ClassPool Javassist class pool}
          */
-        private static Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+        private static final Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
 
         /**
          * Lazily initialized {@link CtClass compile-time class} of {@link TextModel text model}
          */
-        private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
+        private static final Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
             try {
                 return CLASS_POOL.get().getCtClass(TextModel.class.getName());
             } catch (final NotFoundException e) {
