@@ -7,7 +7,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 
 import java.lang.invoke.CallSite;
@@ -22,7 +22,7 @@ import static org.objectweb.asm.Type.*;
  * Utility for common ObjectWeb ASM tasks.
  */
 @UtilityClass
-@UsesBytecodeModification(BytecodeLibrary.ASM)
+@UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 public class AsmUtil {
 
     ///////////////////////////////////////////////////////////////////////////

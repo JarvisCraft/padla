@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
@@ -41,7 +41,7 @@ import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
 @Log
 @ToString
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-@UsesBytecodeModification(BytecodeLibrary.ASM)
+@UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
     /**

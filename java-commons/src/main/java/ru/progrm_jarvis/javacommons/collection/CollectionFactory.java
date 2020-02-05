@@ -9,7 +9,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.intellij.lang.annotations.Language;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
@@ -145,11 +145,11 @@ public class CollectionFactory {
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
     @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
-    @UsesBytecodeModification(value = BytecodeLibrary.JAVASSIST, optional = true)
+    @UsesBytecodeModification(value = CommonBytecodeLibrary.JAVASSIST, optional = true)
     public <E extends Enum<E>> Set<E> createImmutableEnumSet(@NonNull final E... values) {
         if (values.length == 0) return Collections.emptySet();
 
-        if (BytecodeLibrary.JAVASSIST.isAvailable()) {
+        if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) {
             // sort enum values so that the cache does not store different instances for different orders of same
             // elements
             //noinspection unchecked,SuspiciousToArrayCall
