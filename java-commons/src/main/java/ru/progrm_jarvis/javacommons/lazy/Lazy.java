@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.util.ReferenceUtil;
 
 import java.lang.ref.WeakReference;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -34,9 +35,9 @@ public interface Lazy<T> extends Supplier<T> {
     boolean isInitialized();
 
     /**
-     * Gets the value wrapped by this lazy if it is already initialized or {@code null} otherwise.
+     * Gets the value wrapped if it is already initialized or {@code null} otherwise.
      *
-     * @return value wrapped by this lazy if it is already initialized or {@code null} otherwise
+     * @return value wrapped if it is already initialized or {@code null} otherwise
      */
     default T getInitializedOrNull() {
         return isInitialized() ? get() : null;
