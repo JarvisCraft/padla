@@ -33,6 +33,15 @@ public interface Lazy<T> extends Supplier<T> {
      */
     boolean isInitialized();
 
+    /**
+     * Gets the value wrapped by this lazy if it is already initialized, otherwise {@code null}
+     *
+     * @return the value wrapped by this lazy if it is already initialized, otherwise {@code null}
+     */
+    default T getInitializedOrNull() {
+        return isInitialized() ? get() : null;
+    }
+
     ///////////////////////////////////////////////////////////////////////////
     // Static factories
     ///////////////////////////////////////////////////////////////////////////
