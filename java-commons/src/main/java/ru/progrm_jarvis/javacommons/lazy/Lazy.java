@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.util.ReferenceUtil;
 
 import java.lang.ref.WeakReference;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -19,9 +20,9 @@ import java.util.function.Supplier;
 public interface Lazy<T> extends Supplier<T> {
 
     /**
-     * Gets the value wrapped initializing it once requested.
+     * Gets the wrapped value initializing it once requested.
      *
-     * @return value wrapped by this lazy
+     * @return wrapped value
      */
     @Override
     T get();
@@ -32,6 +33,28 @@ public interface Lazy<T> extends Supplier<T> {
      * @return {@code true} if this lazy's value was initialize and {@code false} otherwise
      */
     boolean isInitialized();
+
+    /**
+     * Gets the wrapped value if it is already initialized or {@code null} otherwise.
+     *
+     * @return wrapped value if it is already initialized or {@code null} otherwise
+     *
+     * @see #getOptionally() behaves similarly but uses {@link Optional} instead of raw value
+     */
+    @Nullable T getInitializedOrNull();
+
+    /**
+     * Gets the wrapped value wrapped in {@link Optional} if it is already initialized
+     * or an {@link Optional#empty() empty optional} otherwise.
+     *
+     * @return wrapped value wrapped in {@link Optional} if it is already initialized
+     * or an {@link Optional#empty() empty optional} otherwise.
+     *
+     * @see #getInitializedOrNull() behaves similarly but uses raw value instead of {@link Optional}
+     */
+    default @NotNull Optional<T> getOptionally() {
+        return Optional.ofNullable(getInitializedOrNull());
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Static factories
@@ -87,7 +110,7 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     static <T> Lazy<T> createWeakThreadSafe(@NonNull final Supplier<T> valueSupplier) {
-        return new LockedWeakLazy<>(valueSupplier);
+        return new LockingWeakLazy<>(valueSupplier);
     }
 
     /**
@@ -104,7 +127,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @Nullable Supplier<T> valueSupplier;
 
-        protected SimpleLazy(@SuppressWarnings("NullableProblems") @NonNull final Supplier<T> valueSupplier) {
+        protected SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
         }
 
@@ -127,6 +150,11 @@ public interface Lazy<T> extends Supplier<T> {
         @Override
         public boolean isInitialized() {
             return valueSupplier == null;
+        }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            return valueSupplier == null ? value : null;
         }
     }
 
@@ -154,7 +182,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         volatile T value;
 
-        protected DoubleCheckedLazy(@SuppressWarnings("NullableProblems") @NonNull final Supplier<T> valueSupplier) {
+        protected DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
             mutex = new Object[0];
             this.valueSupplier = valueSupplier;
         }
@@ -182,6 +210,14 @@ public interface Lazy<T> extends Supplier<T> {
             synchronized (mutex) {
                 return valueSupplier == null;
             }
+        }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            if (valueSupplier != null) synchronized (mutex) {
+                if (this.valueSupplier != null) return null;
+            }
+            return value;
         }
     }
 
@@ -224,6 +260,11 @@ public interface Lazy<T> extends Supplier<T> {
         public boolean isInitialized() {
             return value.get() != null;
         }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            return value.get();
+        }
     }
 
     /**
@@ -236,7 +277,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    class LockedWeakLazy<@NotNull T> implements Lazy<T> {
+    class LockingWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
          * Mutex used for synchronizations
@@ -253,7 +294,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
-        protected LockedWeakLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected LockingWeakLazy(@NonNull final Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
 
             {
@@ -288,6 +329,16 @@ public interface Lazy<T> extends Supplier<T> {
             readLock.lock();
             try {
                 return value.get() != null;
+            } finally {
+                readLock.unlock();
+            }
+        }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            readLock.lock();
+            try {
+                return value.get();
             } finally {
                 readLock.unlock();
             }
