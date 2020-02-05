@@ -26,7 +26,15 @@ public enum CommonBytecodeLibrary implements BytecodeLibrary {
     /**
      * Javassist
      */
-    JAVASSIST("javassist.ClassPool");
+    JAVASSIST("javassist.ClassPool"),
+    /**
+     * Commons BCEL
+     */
+    BCEL("org.apache.bcel.classfile.JavaClass"),
+    /**
+     * GNU Bytecode
+     */
+    GNU("gnu.bytecode.ClassType");
 
     /**
      * Name of the class according to whose existence at runtime the availability of this bytecode library gets computed
