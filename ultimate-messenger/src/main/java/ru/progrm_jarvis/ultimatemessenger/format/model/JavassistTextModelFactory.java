@@ -41,12 +41,12 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    @NotNull public static <T> JavassistTextModelFactory<T> get() {
+    public static <T> @NotNull JavassistTextModelFactory<T> get() {
         return (JavassistTextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>();
     }
 
@@ -227,7 +227,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          */
         protected static void javassist$addStaticFieldWithInitializer(@NotNull final CtClass clazz,
                                                                       @NotNull final String fieldName,
-                                                                      @NotNull final TextModel value) {
+                                                                      @NotNull final TextModel<?> value) {
             try {
                 val field = new CtField(TEXT_MODEL_CT_CLASS.get(), fieldName, clazz);
                 field.setModifiers(PUBLIC_STATIC_FINAL_MODIFIERS);

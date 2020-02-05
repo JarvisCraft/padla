@@ -35,7 +35,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    @NotNull public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>();
     }
 

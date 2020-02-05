@@ -119,13 +119,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> AsmTextModelFactory<T, ?> get() {
+    public static <T> @NotNull AsmTextModelFactory<T, ?> get() {
         return (AsmTextModelFactory<T, ?>) INSTANCE.get();
     }
 
     @Override
-    @NotNull
-    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>(configuration);
     }
 
@@ -1049,7 +1048,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                                                 @NotNull final String internalClassName,
                                                                 @NotNull final MethodVisitor staticInitializer,
                                                                 @NotNull final String fieldName,
-                                                                @NotNull final TextModel value) {
+                                                                @NotNull final TextModel<?> value) {
             // add field
             clazz.visitField(
                     OPCODES_ACC_PUBLIC_STATIC_FINAL /* less access checks & possible JIT folding */,
