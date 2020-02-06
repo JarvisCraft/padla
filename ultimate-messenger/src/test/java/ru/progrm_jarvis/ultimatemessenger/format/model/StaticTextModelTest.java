@@ -9,8 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,8 +19,8 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class StaticTextModelTest {
 
-    static List<Arguments> provideTestSubjects() {
-        return Arrays.asList(
+    static Stream<Arguments> provideTestSubjects() {
+        return Stream.of(
                 arguments(StaticTextModel.of("foo"), "foo"),
                 arguments(StaticTextModel.of("bar"), "bar"),
                 arguments(StaticTextModel.of("baz"), "baz"),

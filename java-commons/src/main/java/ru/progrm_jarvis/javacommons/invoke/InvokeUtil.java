@@ -96,7 +96,7 @@ public class InvokeUtil {
      */
     SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
 
-    @NonNull private Cache<Class<?>, Lookup> LOOKUPS
+    @NonNull private final Cache<Class<?>, Lookup> LOOKUPS
             = CacheBuilder.newBuilder()
             .softValues() // because there is no need to GC lookups which may be expansive to create
             .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
@@ -105,7 +105,7 @@ public class InvokeUtil {
     /**
      * Lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
      */
-    private LookupFactory DELEGATING_LOOKUP_FACTORY = InvokeUtil::lookup;
+    private final LookupFactory DELEGATING_LOOKUP_FACTORY = InvokeUtil::lookup;
 
     /**
      * Gets the proxy lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
@@ -426,21 +426,7 @@ public class InvokeUtil {
 
             checkArgument(Modifier.isStatic(modifiers), "field should be static");
 
-            if (Modifier.isFinal(modifiers)) {
-                val accessible = field.isAccessible();
-                field.setAccessible(true);
-                try {
-                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
-                } catch (final IllegalAccessException e) {
-                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
-                } finally {
-                    field.setAccessible(accessible);
-                }
-            } else try {
-                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
-            } catch (final IllegalAccessException e) {
-                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
-            }
+            methodHandle = getMethodHandle(field, modifiers);
         }
 
         return value -> {
@@ -510,21 +496,7 @@ public class InvokeUtil {
 
             checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
 
-            if (Modifier.isFinal(modifiers)) {
-                val accessible = field.isAccessible();
-                field.setAccessible(true);
-                try {
-                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
-                } catch (final IllegalAccessException e) {
-                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
-                } finally {
-                    field.setAccessible(accessible);
-                }
-            } else try {
-                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
-            } catch (final IllegalAccessException e) {
-                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
-            }
+            methodHandle = getMethodHandle(field, modifiers);
         }
 
         return (target, value) -> {
@@ -534,6 +506,26 @@ public class InvokeUtil {
                 throw new RuntimeException(throwable);
             }
         };
+    }
+
+    private static MethodHandle getMethodHandle(final @NonNull Field field, final int modifiers) {
+        final MethodHandle methodHandle;
+        if (Modifier.isFinal(modifiers)) {
+            val accessible = field.isAccessible();
+            field.setAccessible(true);
+            try {
+                methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+            } catch (final IllegalAccessException e) {
+                throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            } finally {
+                field.setAccessible(accessible);
+            }
+        } else try {
+            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field);
+        } catch (final IllegalAccessException e) {
+            throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+        }
+        return methodHandle;
     }
 
     /**

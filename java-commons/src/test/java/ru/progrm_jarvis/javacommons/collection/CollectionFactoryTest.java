@@ -1,7 +1,10 @@
 package ru.progrm_jarvis.javacommons.collection;
 
 import lombok.val;
+import lombok.var;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -11,12 +14,14 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CollectionFactoryTest {
 
     @Test
+    @Disabled
     void testEmptyImmutableEnumSet() {
         val set = CollectionFactory.<TestEnum>createImmutableEnumSet();
 
@@ -30,6 +35,7 @@ class CollectionFactoryTest {
     }
 
     @Test
+    @Disabled
     void testNonEmptyImmutableEnumSet() {
         val set = CollectionFactory.createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR);
 
@@ -110,13 +116,18 @@ class CollectionFactoryTest {
     }
 
     @Test
-    void testClassUnloading() {
-        val set = new WeakReference<>(CollectionFactory
+    @Disabled
+    @EnabledIfSystemProperty(named = "test.gc.always-respects-System.gc()", matches = "true|yes|\\+|1|enabled")
+    void testImmutableEnumSetClassUnloading() {
+        val setReference = new WeakReference<>(CollectionFactory
                 .createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR)
         );
-        while (set.get() != null) System.gc();
-        CollectionFactory
-                .createImmutableEnumSet(TestEnum.BAR, TestEnum.FOO);
+
+        {
+            var gcAttempts = 8;
+            while (setReference.get() != null && gcAttempts-- != 0) System.gc();
+        }
+        assertNull(setReference.get());
     }
 
     public enum TestEnum {

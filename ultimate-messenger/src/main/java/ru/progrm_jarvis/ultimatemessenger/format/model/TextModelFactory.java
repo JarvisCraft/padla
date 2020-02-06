@@ -20,7 +20,7 @@ public interface TextModelFactory<T> {
      *
      * @apiNote as {@link TextModel text models} are immutable, this method may return an empty singleton
      */
-    @NotNull default TextModel<T> empty() {
+    default @NotNull TextModel<T> empty() {
         return TextModel.empty();
     }
 

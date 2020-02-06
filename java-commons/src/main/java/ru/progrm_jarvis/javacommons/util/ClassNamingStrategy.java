@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import ru.progrm_jarvis.javacommons.classloading.ClassLoadingUtil;
 
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -23,21 +24,6 @@ public interface ClassNamingStrategy extends Supplier<String> {
      */
     @Override
     String get();
-
-    /**
-     * Checks whether the class of the given name exists at current runtime (is loaded).
-     *
-     * @param className name of the class to check for existence at current runtime
-     * @return {@code true} if there is a class loaded by the given name and {@code false} otherwise
-     */
-    static boolean classExists(@NonNull final String className) {
-        try {
-            // use null check instead of simple `return true` in case the method contract changes
-            return Class.forName(className, false, Thread.currentThread().getContextClassLoader()) != null;
-        } catch (final ClassNotFoundException e) {
-            return false;
-        }
-    }
 
     /**
      * Creates new instance of paginated class naming strategy with the given base name.
@@ -95,7 +81,7 @@ public interface ClassNamingStrategy extends Supplier<String> {
             String name;
             do {
                 name = baseName + nextClassNameId().toString();
-            } while (classExists(name));
+            } while (ClassLoadingUtil.isClassAvailable(name, false));
 
             return name;
         }
