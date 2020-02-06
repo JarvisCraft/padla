@@ -114,12 +114,23 @@ public interface Lazy<T> extends Supplier<T> {
     }
 
     /**
+     * Creates a new thread-local lazy creating its value using the given supplier.
+     *
+     * @param valueSupplier supplier of the value to be called once needed
+     * @param <T> type of value wrapped
+     * @return created lazy
+     */
+    static <T> Lazy<T> createThreadLocal(@NonNull final Supplier<T> valueSupplier) {
+        return new ThreadLocalLazy<>(valueSupplier);
+    }
+
+    /**
      * Non-thread-safe lazy getting its value from the specified value supplier.
      *
      * @param <T> type of wrapped value
      */
     @Data
-    @FieldDefaults(level = AccessLevel.PROTECTED)
+    @FieldDefaults(level = AccessLevel.PRIVATE)
     final class SimpleLazy<T> implements Lazy<T> {
 
         /**
@@ -164,7 +175,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of wrapped value
      */
     @Data
-    @FieldDefaults(level = AccessLevel.PROTECTED)
+    @FieldDefaults(level = AccessLevel.PRIVATE)
     final class DoubleCheckedLazy<T> implements Lazy<T> {
 
         /**
@@ -230,8 +241,8 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     @Data
-    @FieldDefaults(level = AccessLevel.PROTECTED)
-    @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
@@ -276,7 +287,7 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     @Data
-    @FieldDefaults(level = AccessLevel.PROTECTED)
+    @FieldDefaults(level = AccessLevel.PRIVATE)
     final class LockingWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
@@ -342,6 +353,56 @@ public interface Lazy<T> extends Supplier<T> {
             } finally {
                 readLock.unlock();
             }
+        }
+    }
+
+    /**
+     * Lazy which stores its values thread-locally.
+     *
+     * @param <T> type of wrapped value
+     */
+    @Value
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    final class ThreadLocalLazy<T> implements Lazy<T> {
+
+        /**
+         * Stub value used as the default value of {@code #value}
+         */
+        private static final Object UNSET_VALUE = new Object[0];
+
+        /**
+         * Supplier used for creation of the value
+         */
+        @NonNull Supplier<T> valueSupplier;
+
+        /**
+         * The value stored wrapped in {@link ThreadLocal}
+         *
+         * @implNote In order to minimize the amount of variables thread-local is typed weaker
+         * and if is unset returns {@link #UNSET_VALUE}
+         */
+        @NonNull ThreadLocal<Object> value = new ThreadLocal<>();
+
+        @Override
+        public T get() {
+            var value = this.value.get();
+            if (value == UNSET_VALUE) this.value.set(value = valueSupplier.get());
+
+            //noinspection unchecked: value is weakly typed
+            return (T) value;
+        }
+
+        @Override
+        public boolean isInitialized() {
+            return value.get() != UNSET_VALUE;
+        }
+
+        @Override
+        public @Nullable T getInitializedOrNull() {
+            val value = this.value.get();
+
+            //noinspection unchecked: value is weakly typed
+            return value == UNSET_VALUE ? null : (T) value;
         }
     }
 }
