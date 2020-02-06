@@ -12,10 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.*;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
-import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
+import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
@@ -41,7 +41,7 @@ import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
 @Log
 @ToString
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-@UsesBytecodeModification(BytecodeLibrary.ASM)
+@UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
     /**
@@ -119,13 +119,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> AsmTextModelFactory<T, ?> get() {
+    public static <T> @NotNull AsmTextModelFactory<T, ?> get() {
         return (AsmTextModelFactory<T, ?>) INSTANCE.get();
     }
 
     @Override
-    @NotNull
-    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>(configuration);
     }
 
@@ -1049,7 +1048,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                                                 @NotNull final String internalClassName,
                                                                 @NotNull final MethodVisitor staticInitializer,
                                                                 @NotNull final String fieldName,
-                                                                @NotNull final TextModel value) {
+                                                                @NotNull final TextModel<?> value) {
             // add field
             clazz.visitField(
                     OPCODES_ACC_PUBLIC_STATIC_FINAL /* less access checks & possible JIT folding */,

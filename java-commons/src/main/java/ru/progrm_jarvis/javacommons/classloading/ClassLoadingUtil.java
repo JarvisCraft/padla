@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.classload;
+package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -9,7 +9,7 @@ import java.util.Optional;
  * General purpose utility for {@link Class}-related operations.
  */
 @UtilityClass
-public class ClassUtil {
+public class ClassLoadingUtil {
 
     /**
      * Attempts to find a class by the given name wrapping it in an {@link Optional}.
@@ -40,7 +40,7 @@ public class ClassUtil {
      */
     public <T> Optional<Class<? extends T>> getClass(@NonNull final String className,
                                                      final boolean loadIfNeeded) {
-        return getClass(className, loadIfNeeded, ClassUtil.class.getClassLoader());
+        return getClass(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
 
     /**
@@ -89,7 +89,7 @@ public class ClassUtil {
      */
     public <T> Class<? extends T> getNullableClass(@NonNull final String className,
                                                              final boolean loadIfNeeded) {
-        return getNullableClass(className, loadIfNeeded, ClassUtil.class.getClassLoader());
+        return getNullableClass(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
 
     /**
@@ -136,7 +136,7 @@ public class ClassUtil {
      */
     public boolean isClassAvailable(@NonNull final String className,
                                     final boolean loadIfNeeded) {
-        return isClassAvailable(className, loadIfNeeded, ClassUtil.class.getClassLoader());
+        return isClassAvailable(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
 
     /**

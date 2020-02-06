@@ -1,6 +1,6 @@
 package ru.progrm_jarvis.javacommons.bytecode.annotation;
 
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 
 import java.lang.annotation.*;
 
@@ -17,7 +17,7 @@ public @interface UsesBytecodeModification {
      *
      * @return array of bytecode libraries required for the target to work properly
      */
-    BytecodeLibrary[] value();
+    CommonBytecodeLibrary[] value();
 
     /**
      * Marker indicating whether bytecode modifications are optional

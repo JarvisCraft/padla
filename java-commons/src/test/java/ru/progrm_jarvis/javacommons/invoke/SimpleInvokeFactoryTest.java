@@ -2,8 +2,6 @@ package ru.progrm_jarvis.javacommons.invoke;
 
 import lombok.NonNull;
 import org.junit.jupiter.api.Test;
-import ru.progrm_jarvis.javacommons.invoke.LookupFactory;
-import ru.progrm_jarvis.javacommons.invoke.SimpleInvokeFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.util.function.BiFunction;
