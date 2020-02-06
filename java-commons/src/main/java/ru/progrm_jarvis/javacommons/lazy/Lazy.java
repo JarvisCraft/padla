@@ -114,7 +114,7 @@ public interface Lazy<T> extends Supplier<T> {
     }
 
     /**
-     * Non-thread-safe (using double-checked locking) lazy getting its value from the specified value supplier.
+     * Non-thread-safe lazy getting its value from the specified value supplier.
      *
      * @param <T> type of wrapped value
      */
