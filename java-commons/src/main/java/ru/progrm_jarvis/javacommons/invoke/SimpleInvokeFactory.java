@@ -108,16 +108,65 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
 
         val lookup = lookupFactory.create(targetClass);
         val methodHandle = methodHandleCreator.apply(lookup);
-        val bound = target != null;
+
+        if (target == null) {
+            /* Not bound */
+
+            val targetMethodHandle = LambdaMetafactory.metafactory(
+                    lookup, functionalMethodName,
+                    functionalInterface,
+                    functionalMethodSignature, methodHandle,
+                    MethodTypeUtil.integrateTypes(methodHandle.type(), functionalMethodSignature)
+            ).getTarget();
+
+            //noinspection unchecked
+            return (F) targetMethodHandle.invoke();
+        }
+
+        /* Bound */
+
+        /*
+        var signature = methodHandle.type();
+        {
+            val functionalParameterCount = functionalMethodSignature.parameterCount();
+
+            checkState(
+                    signature.parameterCount() == functionalParameterCount + 1,
+                    "Malformed parameter count: actual - %s, implemented - %s",
+                    signature.parameterCount(), functionalParameterCount
+            );
+
+            // use indexed iteration not to create short-living collections
+            for (var i = 1; i <= functionalParameterCount; i++) {
+                final Class<?>
+                        actualType = signature.parameterType(i),
+                        functionalType = functionalMethodSignature.parameterType(i - 1);
+
+                if (!functionalType.isAssignableFrom(actualType)) {
+                    checkState(
+                            actualType.isPrimitive(), "Parameter types are incompatible at index [%s]", i - 1
+                    );
+
+                    val wrapperType = ClassUtil.toPrimitiveWrapper(actualType);
+                    checkState(
+                            functionalType.isAssignableFrom(wrapperType),
+                            "Parameter types are incompatible at index [%s] even with wrapping", i - 1
+                    );
+                    signature = signature.changeParameterType(i, wrapperType);
+                }
+            }
+        }
+        */
 
         val targetMethodHandle = LambdaMetafactory.metafactory(
                 lookup, functionalMethodName,
-                bound ? functionalInterface.appendParameterTypes(target.getClass()) : functionalInterface,
+                functionalInterface.appendParameterTypes(target.getClass()),
                 functionalMethodSignature, methodHandle,
-                bound ? methodHandle.type().dropParameterTypes(0, 1) : methodHandle.type()
+                MethodTypeUtil.integrateTypes(methodHandle.type().dropParameterTypes(0, 1), functionalMethodSignature)
+
         ).getTarget();
 
         //noinspection unchecked
-        return (F) (bound ? targetMethodHandle.invoke(target) : targetMethodHandle.invoke());
+        return (F) targetMethodHandle.invoke(target);
     }
 }

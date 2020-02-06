@@ -5,9 +5,9 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
-import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
+import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
@@ -25,7 +25,7 @@ import java.lang.reflect.Modifier;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
-@UsesBytecodeModification(BytecodeLibrary.JAVASSIST)
+@UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)
 public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
@@ -41,12 +41,12 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    @NotNull public static <T> JavassistTextModelFactory<T> get() {
+    public static <T> @NotNull JavassistTextModelFactory<T> get() {
         return (JavassistTextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
-    public TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new TextModelBuilder<>();
     }
 
@@ -97,17 +97,16 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Lazily initialized {@link ClassPool Javassist class pool}
          */
-        private static Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+        private static final Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
 
         /**
          * Lazily initialized {@link CtClass compile-time class} of {@link TextModel text model}
          */
-        private static Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
-            val className = TextModel.class.getCanonicalName();
+        private static final Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
             try {
-                return CLASS_POOL.get().getCtClass(className);
+                return CLASS_POOL.get().getCtClass(TextModel.class.getName());
             } catch (final NotFoundException e) {
-                throw new IllegalStateException("Unable to get CtClass by name " + className);
+                throw new IllegalStateException("Unable to get CtClass by name " + TextModel.class.getName());
             }
         });
 
@@ -228,7 +227,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          */
         protected static void javassist$addStaticFieldWithInitializer(@NotNull final CtClass clazz,
                                                                       @NotNull final String fieldName,
-                                                                      @NotNull final TextModel value) {
+                                                                      @NotNull final TextModel<?> value) {
             try {
                 val field = new CtField(TEXT_MODEL_CT_CLASS.get(), fieldName, clazz);
                 field.setModifiers(PUBLIC_STATIC_FINAL_MODIFIERS);

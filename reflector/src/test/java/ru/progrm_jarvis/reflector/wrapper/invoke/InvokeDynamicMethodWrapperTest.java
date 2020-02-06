@@ -5,10 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 
 class InvokeDynamicMethodWrapperTest {
 
@@ -26,7 +23,7 @@ class InvokeDynamicMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call"))
                 .invoke(instance)
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -36,7 +33,7 @@ class InvokeDynamicMethodWrapperTest {
         final class Petya {
             private boolean called;
             private void call(final int arg1) {
-                assertThat(arg1, is(val1));
+                assertEquals(val1, arg1);
 
                 called = true;
             }
@@ -47,7 +44,7 @@ class InvokeDynamicMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call", int.class))
                 .invoke(instance, val1)
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -62,8 +59,8 @@ class InvokeDynamicMethodWrapperTest {
         final class Petya {
             private boolean called;
             private void call(final int arg1, final int arg2) {
-                assertThat(arg1, is(val1));
-                assertThat(arg2, is(val2));
+                assertEquals(val1, arg1);
+                assertEquals(val2, arg2);
 
                 called = true;
             }
@@ -74,7 +71,7 @@ class InvokeDynamicMethodWrapperTest {
                 .from(Petya.class.getDeclaredMethod("call", int.class, int.class))
                 .invoke(instance, val1, val2)
         );
-        assertThat(instance.called, is(true));
+        assertTrue(instance.called);
     }
 
     @Test
@@ -88,9 +85,9 @@ class InvokeDynamicMethodWrapperTest {
         }
         val instance = new Petya();
 
-        assertThat(InvokeDynamicMethodWrapper
+        assertEquals(result, InvokeDynamicMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call"))
-                .invoke(instance), equalTo(result)
+                .invoke(instance)
         );
     }
 
@@ -107,16 +104,16 @@ class InvokeDynamicMethodWrapperTest {
         final class Petya {
             private boolean called;
             private String call(final int arg1) {
-                assertThat(arg1, is(val1));
+                assertEquals(val1, arg1);
 
                 return result;
             }
         }
         val instance = new Petya();
 
-        assertThat(InvokeDynamicMethodWrapper
+        assertEquals(result, InvokeDynamicMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call", int.class))
-                .invoke(instance, val1), equalTo(result)
+                .invoke(instance, val1)
         );
     }
 
@@ -133,17 +130,17 @@ class InvokeDynamicMethodWrapperTest {
 
         class Petya {
             private String call(final int arg1, final int arg2) {
-                assertThat(arg1, is(val1));
-                assertThat(arg2, is(val2));
+                assertEquals(val1, arg1);
+                assertEquals(val2, arg2);
 
                 return result;
             }
         }
         val instance = new Petya();
 
-        assertThat(InvokeDynamicMethodWrapper
+        assertEquals(result, InvokeDynamicMethodWrapper
                 .from(Petya.class.getDeclaredMethod("call", int.class, int.class))
-                .invoke(instance, val1, val2), equalTo(result)
+                .invoke(instance, val1, val2)
         );
     }
 }

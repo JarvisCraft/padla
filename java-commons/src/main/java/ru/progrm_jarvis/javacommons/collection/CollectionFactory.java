@@ -9,9 +9,9 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.intellij.lang.annotations.Language;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
-import ru.progrm_jarvis.javacommons.classload.GcClassDefiners;
+import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
 import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
@@ -33,7 +33,7 @@ public class CollectionFactory {
     /**
      * {@link Lookup lookup} of this class.
      */
-    private static Lookup LOOKUP = MethodHandles.lookup();
+    protected static final Lookup LOOKUP = MethodHandles.lookup();
 
     /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
@@ -55,7 +55,7 @@ public class CollectionFactory {
     /**
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
-    @SuppressWarnings("UnstableApiUsage") @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
+    @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
             = CacheBuilder
             .newBuilder()
             .concurrencyLevel(
@@ -84,11 +84,10 @@ public class CollectionFactory {
      * @throws IllegalStateException if it is impossible to find {@link CtClass} representation of the given class
      */
     private CtClass toCtClass(@NonNull final Class<?> clazz) {
-        val className = clazz.getCanonicalName();
         try {
-            return CLASS_POOL.get().get(className);
+            return CLASS_POOL.get().get(clazz.getName());
         } catch (final NotFoundException e) {
-            throw new IllegalStateException("Unable to get CtClass by name " + className);
+            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName());
         }
     }
 
@@ -96,7 +95,6 @@ public class CollectionFactory {
      * Adds an empty constructor to given {@link CtClass}.
      *
      * @param targetClass class to which to add an empty constructor
-     *
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addEmptyConstructor(@NonNull final CtClass targetClass) throws CannotCompileException {
@@ -108,7 +106,6 @@ public class CollectionFactory {
      *
      * @param src source code of the field
      * @param targetClass class to which to add the field
-     *
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addCtField(
@@ -123,7 +120,6 @@ public class CollectionFactory {
      *
      * @param src source code of the method
      * @param targetClass class to which to add the method
-     *
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
     private void addCtMethod(
@@ -138,22 +134,22 @@ public class CollectionFactory {
      *
      * @param values enum constants to be stored in the given set
      * @param <E> type of enum
-     * @return runtime-compiled optimized immutable enum {@link Set set} for the given enum values
-     * or a pre-compiled n empty set if {@code values} is empty
+     * @return runtime-compiled optimized immutable enum {@link Set set} for the given enum values or a pre-compiled n
+     * empty set if {@code values} is empty
      *
      * @apiNote at current, the instances are cached and not GC-ed (as their classes) so this should be used carefully
-     * @apiNote this implementation of immutable enum {@link Set}s is specific and should be used carefully
-     * {@code instanceof} and {@code switch} by {@link Enum#ordinal()} are used for containment-related checks
-     * and {@link}
+     * @apiNote this implementation of immutable enum {@link Set}s is specific and should be used carefully {@code
+     * instanceof} and {@code switch} by {@link Enum#ordinal()} are used for containment-related checks and {@link}
      */
     @SafeVarargs
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    @UsesBytecodeModification(value = BytecodeLibrary.JAVASSIST, optional = true)
+    @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
+    @UsesBytecodeModification(value = CommonBytecodeLibrary.JAVASSIST, optional = true)
     public <E extends Enum<E>> Set<E> createImmutableEnumSet(@NonNull final E... values) {
         if (values.length == 0) return Collections.emptySet();
 
-        if (BytecodeLibrary.JAVASSIST.isAvailable()) {
+        if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) {
             // sort enum values so that the cache does not store different instances for different orders of same
             // elements
             //noinspection unchecked,SuspiciousToArrayCall
@@ -259,9 +255,11 @@ public class CollectionFactory {
                 {// `void forEach(Consumer)`
                     val src = new StringBuilder(
                             "public void forEach(java.util.function.Consumer consumer) {"
-                                    + "if (consumer == null) throw new NullPointerException(\"consumer should not be empty\");"
+                                    + "if (consumer == null) throw new NullPointerException(\"consumer should not be "
+                                    + "empty\");"
                     );
-                    for (val enumName : enumNames) src.append("consumer.accept(").append(enumName).append(')').append(';');
+                    for (val enumName : enumNames)
+                        src.append("consumer.accept(").append(enumName).append(')').append(';');
 
                     addCtMethod(src.append('}').toString(), clazz);
                 }
@@ -286,7 +284,8 @@ public class CollectionFactory {
              */
                 final CtClass iteratorClazz;
                 {
-                    iteratorClazz = clazz.makeNestedClass(IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY.get(), true);
+                    // Use short name as Javassist appends it to parent class name
+                    iteratorClazz = clazz.makeNestedClass("Iterator", true);
                     iteratorClazz.setInterfaces(ITERATOR_CT_CLASS_ARRAY.get());
                     addEmptyConstructor(iteratorClazz);
 

@@ -2,7 +2,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.bytecode.BytecodeLibrary;
+import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 
 /**
  * Utility making use of {@link TextModelFactory text model factories} easier.
@@ -17,11 +17,11 @@ public class TextModelFactories {
      * @return the best available {@link TextModelFactory text model factory}
      */
     @NotNull public <T> TextModelFactory<T> getAvailable() {
-        if (BytecodeLibrary.ASM.isAvailable()) try {
+        if (CommonBytecodeLibrary.ASM.isAvailable()) try {
             return AsmTextModelFactory.get();
         } catch (final Throwable ignored) {}
 
-        if (BytecodeLibrary.JAVASSIST.isAvailable()) try {
+        if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) try {
             return JavassistTextModelFactory.get();
         } catch (final Throwable ignored) {}
 

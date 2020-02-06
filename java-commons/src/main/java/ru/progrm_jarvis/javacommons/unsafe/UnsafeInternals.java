@@ -2,7 +2,7 @@ package ru.progrm_jarvis.javacommons.unsafe;
 
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.classload.ClassUtil;
+import ru.progrm_jarvis.javacommons.classloading.ClassLoadingUtil;
 
 /**
  * List of commonly used unsafe internals.
@@ -39,8 +39,8 @@ public class UnsafeInternals {
 
     static {
         {
-            UNSAFE_CLASS = ClassUtil.getClass("jdk.internal.misc.Unsafe")
-                    .orElseGet(() -> ClassUtil.getNullableClass("sun.misc.Unsafe"));
+            UNSAFE_CLASS = ClassLoadingUtil.getClass("jdk.internal.misc.Unsafe")
+                    .orElseGet(() -> ClassLoadingUtil.getNullableClass("sun.misc.Unsafe"));
             if (UNSAFE_CLASS == null) {
                 UNSAFE_CLASS_NAME = null;
                 UNSAFE_AVAILABLE = false;
@@ -51,8 +51,8 @@ public class UnsafeInternals {
         }
         {
 
-            MAGIC_ACCESSOR_IMPL_CLASS = ClassUtil.getClass("jdk.internal.reflect.MagicAccessorImpl")
-                    .orElseGet(() -> ClassUtil.getNullableClass("sun.reflect.MagicAccessorImpl"));
+            MAGIC_ACCESSOR_IMPL_CLASS = ClassLoadingUtil.getClass("jdk.internal.reflect.MagicAccessorImpl")
+                    .orElseGet(() -> ClassLoadingUtil.getNullableClass("sun.reflect.MagicAccessorImpl"));
             if (MAGIC_ACCESSOR_IMPL_CLASS == null) {
                 MAGIC_ACCESSOR_IMPL_CLASS_NAME = null;
                 MAGIC_ACCESSOR_IMPL_AVAILABLE = false;
