@@ -120,7 +120,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    class SimpleLazy<T> implements Lazy<T> {
+    final class SimpleLazy<T> implements Lazy<T> {
 
         /**
          * Supplier used for creation of the value
@@ -165,7 +165,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    class DoubleCheckedLazy<T> implements Lazy<T> {
+    final class DoubleCheckedLazy<T> implements Lazy<T> {
 
         /**
          * Mutex used for synchronizations
@@ -232,7 +232,7 @@ public interface Lazy<T> extends Supplier<T> {
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
     @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-    class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
+    final class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
          * Supplier used for creation of the value
@@ -277,7 +277,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    class LockingWeakLazy<@NotNull T> implements Lazy<T> {
+    final class LockingWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
          * Mutex used for synchronizations
