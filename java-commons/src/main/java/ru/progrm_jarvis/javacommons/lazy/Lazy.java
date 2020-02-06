@@ -381,7 +381,7 @@ public interface Lazy<T> extends Supplier<T> {
          * @implNote In order to minimize the amount of variables thread-local is typed weaker
          * and if is unset returns {@link #UNSET_VALUE}
          */
-        @NonNull ThreadLocal<Object> value = new ThreadLocal<>();
+        @NonNull ThreadLocal<Object> value = ThreadLocal.withInitial(() -> UNSET_VALUE);
 
         @Override
         public T get() {
