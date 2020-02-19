@@ -121,7 +121,7 @@ public class PlaceholdersBenchmark {
 
     @State(Scope.Benchmark)
     public static class RegexConfiguration {
-        protected final Pattern placeholderPattern = Pattern.compile("\\{([^:}]*)(?::([^}]*))?}");
+        protected final Pattern placeholderPattern = Pattern.compile("\\{([^:}]?)(?::([^}]*))?}");
         protected String rawText;
         protected final Map<String, StringFormatter<FormattingTarget>> formatters = new HashMap<>();
 
