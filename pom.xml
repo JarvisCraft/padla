@@ -18,9 +18,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Testing -->
-        <version.junit>5.6.0</version.junit>
-        <version.junit.platform>1.6.0</version.junit.platform>
-        <version.mockito>3.3.0</version.mockito>
+        <version.junit>5.6.1</version.junit>
+        <version.junit.platform>1.6.1</version.junit.platform>
+        <version.mockito>3.3.3</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -110,7 +110,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.2.0</version>
                     <configuration>
                         <tags>
                             <tag>
@@ -177,14 +177,14 @@
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>7.3.1</version>
+                <version>8.0.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.26.0-GA</version>
+                <version>3.27.0-GA</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
