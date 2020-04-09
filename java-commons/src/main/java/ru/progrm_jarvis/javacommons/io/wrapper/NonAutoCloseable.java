@@ -15,7 +15,8 @@ public interface NonAutoCloseable extends AutoCloseable {
      * @apiNote this object should be explicitly called using {@link #doClose()}
      */
     @Override
-    default void close() {}
+    @SuppressWarnings("RedundantThrows") // needed for safe overriding
+    default void close() throws Exception {}
 
     /**
      * Actually closes this object as if it was done by calling {@link AutoCloseable#close()}.
