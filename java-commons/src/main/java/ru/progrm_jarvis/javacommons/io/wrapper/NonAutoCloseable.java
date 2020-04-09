@@ -22,5 +22,5 @@ public interface NonAutoCloseable extends AutoCloseable {
      *
      * @see AutoCloseable#close() for this method's behaviour
      */
-    void doClose();
+    void doClose() throws Exception;
 }
