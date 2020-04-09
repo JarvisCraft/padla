@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.io.nonclosing;
+package ru.progrm_jarvis.javacommons.io.wrapper;
 
 /**
  * <p>A wrapper for {@link AutoCloseable} which disables its {@link AutoCloseable#close()} method
