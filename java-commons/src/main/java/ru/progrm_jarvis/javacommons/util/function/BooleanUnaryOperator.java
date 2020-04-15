@@ -12,7 +12,8 @@ import java.util.function.UnaryOperator;
  *
  * @see UnaryOperator non-primitive generic equivalent
  */
-public interface BooleanUnaryOperator extends UnaryOperator<Boolean> {
+@FunctionalInterface
+public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOperator<Boolean> {
 
     /**
      * Applies this operator to the given operand.
@@ -23,7 +24,12 @@ public interface BooleanUnaryOperator extends UnaryOperator<Boolean> {
     boolean applyAsBoolean(boolean operand);
 
     @Override
-    default Boolean apply(final Boolean operand /* no need for explicit null-check*/) {
+    default Boolean apply(boolean argument) {
+        return applyAsBoolean(argument);
+    }
+
+    @Override
+    default Boolean apply(final Boolean operand /* no need for explicit null-check */) {
         return applyAsBoolean(operand);
     }
 
