@@ -45,7 +45,7 @@ public final class UnsafeMethodsAccessGenerator {
         engine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
         engine.init();
 
-        val template = engine.getTemplate("/templates/UnsafeMethodsAccess.java.velocity");
+        val template = engine.getTemplate("/templates/UnsafeMethodsAccess.java.vm");
         val writer = new OutputStreamWriter(System.out);
         writeUnsafeMethodsAccessClass(
                 className, packageName, template, writer
