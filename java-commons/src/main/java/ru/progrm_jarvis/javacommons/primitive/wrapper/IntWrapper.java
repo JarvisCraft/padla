@@ -130,7 +130,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @return created int wrapper
      */
     public static IntWrapper create() {
-        return new IntIntWrapper(0);
+        return new IntIntWrapper();
     }
 
     /**
