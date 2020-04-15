@@ -22,7 +22,7 @@ public class UnsafeInternals {
     /**
      * Name of {@link #UNSAFE_CLASS} class
      */
-    public static final String UNSAFE_CLASS_NAME,
+    public final String UNSAFE_CLASS_NAME,
     /**
      * Name of {@link #MAGIC_ACCESSOR_IMPL_CLASS} class
      */
@@ -31,7 +31,7 @@ public class UnsafeInternals {
     /**
      * Flag indicating whether or not {@link #UNSAFE_CLASS} class is available
      */
-    public static final boolean UNSAFE_AVAILABLE,
+    public final boolean UNSAFE_AVAILABLE,
     /**
      * Flag indicating whether or not {@link #MAGIC_ACCESSOR_IMPL_CLASS} class is available
      */
