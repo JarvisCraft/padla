@@ -4,7 +4,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
 
 /**
- * Represents an operation on a single {@code boolean} operand that produces a {@code boolean}} result.
+ * Represents an operation on a single {@code boolean} operand that produces a {@code boolean} result.
  * This is the primitive type specialization of {@link UnaryOperator} for {@code boolean}.
  *
  * @see UnaryOperator non-primitive generic equivalent
