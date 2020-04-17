@@ -39,7 +39,7 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      *
      * @param before the operator to provide the value to this operator
      * @return a composed operator that first applies the provided operator and then this one
-     * @throws NullPointerException if before is null
+     * @throws NullPointerException if {@code before} is {@code null}
      *
      * @see #andThen(BooleanUnaryOperator) behaving in opposite manner
      */
@@ -54,7 +54,7 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      *
      * @param after the operator to operate on the value provided by this operator
      * @return a composed operator that first applies this operator and then the provided one
-     * @throws NullPointerException if after is null
+     * @throws NullPointerException if {@code after} is {@code null}
      *
      * @see #compose(BooleanUnaryOperator) behaving in opposite manner
      */
