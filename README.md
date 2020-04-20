@@ -17,7 +17,7 @@ In addition to common tools, it does also provide more specific ones aimed at ma
 As its dependencies PADLA uses:
 - Compiletime:
   - [Lombok](https://github.com/rzwitserloot/lombok) for generating boilerplate stuff
-  - [Jetbrains Annotations](https://github.com/JetBrains/java-annotations) and []() for documenting code logic
+  - [Jetbrains Annotations](https://github.com/JetBrains/java-annotations) for documenting code logic
 - Runtime:
   - [Guava](https://github.com/google/guava) for some general-purpose needs
   - [GSON](https://github.com/google/gson) for manipulating JSON
