@@ -2,6 +2,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongBinaryOperator;
@@ -10,15 +11,15 @@ import java.util.function.LongUnaryOperator;
 /**
  * {@link PrimitiveWrapper Primitive wrapper} of {@code long}.
  */
-public abstract class LongWrapper extends Number implements PrimitiveWrapper {
+public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
 
     @Override
-    public Class<?> getPrimitiveClass() {
+    default Class<Long> getPrimitiveClass() {
         return long.class;
     }
 
     @Override
-    public Class<?> getWrapperClass() {
+    default Class<Long> getWrapperClass() {
         return Long.class;
     }
 
@@ -27,42 +28,42 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      *
      * @return value
      */
-    public abstract long get();
+    long get();
 
     /**
      * Sets the value.
      *
      * @param value value to be set
      */
-    public abstract void set(long value);
+    void set(long value);
 
     /**
      * Gets the value after what it gets incremented.
      *
      * @return value before increment
      */
-    public abstract long getAndIncrement();
+    long getAndIncrement();
 
     /**
      * Increments the value after what it is returned.
      *
      * @return value after increment
      */
-    public abstract long incrementAndGet();
+    long incrementAndGet();
 
     /**
      * Gets the value after what it gets decremented.
      *
      * @return value before decrement
      */
-    public abstract long getAndDecrement();
+    long getAndDecrement();
 
     /**
      * Decrements the value after what it is returned.
      *
      * @return value after decrement
      */
-    public abstract long decrementAndGet();
+    long decrementAndGet();
 
     /**
      * Gets the value after what delta is added to it.
@@ -70,7 +71,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param delta the value which should be added to the current value
      * @return value before addition
      */
-    public abstract long getAndAdd(long delta);
+    long getAndAdd(long delta);
 
     /**
      * Adds the delta to the value after what it is returned.
@@ -78,7 +79,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param delta the value which should be added to the current value
      * @return value after addition
      */
-    public abstract long addAndGet(long delta);
+    long addAndGet(long delta);
 
     /**
      * Updates the current value using the specified function after what the new value is returned.
@@ -86,7 +87,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param updateFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract long getAndUpdate(@NonNull LongUnaryOperator updateFunction);
+    long getAndUpdate(@NonNull LongUnaryOperator updateFunction);
 
     /**
      * Gets the value after what it gets updated using the specified function.
@@ -94,7 +95,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param updateFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract long updateAndGet(@NonNull LongUnaryOperator updateFunction);
+    long updateAndGet(@NonNull LongUnaryOperator updateFunction);
 
     /**
      * Updates the current value using specified function and update value after what the new value is returned.
@@ -103,7 +104,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param accumulatorFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract long getAndAccumulate(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
+    long getAndAccumulate(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
 
     /**
      * Gets the value after what it gets updated using the specified function and update value.
@@ -112,7 +113,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param accumulatorFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract long accumulateAndGet(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
+    long accumulateAndGet(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
 
     /**
      * Creates new simple long wrapper.
@@ -120,7 +121,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param value initial value of long wrapper
      * @return created long wrapper
      */
-    public static LongWrapper create(final long value) {
+    static LongWrapper create(final long value) {
         return new LongLongWrapper(value);
     }
 
@@ -129,7 +130,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      *
      * @return created long wrapper
      */
-    public static LongWrapper create() {
+    static LongWrapper create() {
         return new LongLongWrapper(0);
     }
 
@@ -139,7 +140,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      * @param value initial value of long wrapper
      * @return created long wrapper
      */
-    public static LongWrapper createAtomic(final long value) {
+    static LongWrapper createAtomic(final long value) {
         return new AtomicLongLongWrapper(value);
     }
 
@@ -148,7 +149,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
      *
      * @return created long wrapper
      */
-    public static LongWrapper createAtomic() {
+    static LongWrapper createAtomic() {
         return new AtomicLongLongWrapper();
     }
 
@@ -160,7 +161,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
     @AllArgsConstructor
     @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    private static final class LongLongWrapper extends LongWrapper {
+    final class LongLongWrapper implements LongWrapper {
 
         long value;
 
@@ -234,6 +235,16 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
         }
 
         @Override
+        public byte byteValue() {
+            return (byte) value;
+        }
+
+        @Override
+        public short shortValue() {
+            return (short) value;
+        }
+
+        @Override
         public int intValue() {
             return (int) value;
         }
@@ -260,7 +271,7 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
     @ToString
     @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class AtomicLongLongWrapper extends LongWrapper {
+    final class AtomicLongLongWrapper implements LongWrapper {
 
         @NonNull AtomicLong value;
 
@@ -338,6 +349,16 @@ public abstract class LongWrapper extends Number implements PrimitiveWrapper {
         @Override
         public long accumulateAndGet(final long updateValue, @NonNull final LongBinaryOperator accumulatorFunction) {
             return value.accumulateAndGet(updateValue, accumulatorFunction);
+        }
+
+        @Override
+        public byte byteValue() {
+            return value.byteValue();
+        }
+
+        @Override
+        public short shortValue() {
+            return value.shortValue();
         }
 
         @Override

@@ -2,6 +2,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntBinaryOperator;
@@ -10,15 +11,15 @@ import java.util.function.IntUnaryOperator;
 /**
  * {@link PrimitiveWrapper Primitive wrapper} of {@code int}.
  */
-public abstract class IntWrapper extends Number implements PrimitiveWrapper {
+public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
 
     @Override
-    public Class<?> getPrimitiveClass() {
+    default Class<Integer> getPrimitiveClass() {
         return int.class;
     }
 
     @Override
-    public Class<?> getWrapperClass() {
+    default Class<Integer> getWrapperClass() {
         return Integer.class;
     }
 
@@ -27,42 +28,42 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      *
      * @return value
      */
-    public abstract int get();
+    int get();
 
     /**
      * Sets the value.
      *
      * @param value value to be set
      */
-    public abstract void set(int value);
+    void set(int value);
 
     /**
      * Gets the value after what it gets incremented.
      *
      * @return value before increment
      */
-    public abstract int getAndIncrement();
+    int getAndIncrement();
 
     /**
      * Increments the value after what it is returned.
      *
      * @return value after increment
      */
-    public abstract int incrementAndGet();
+    int incrementAndGet();
 
     /**
      * Gets the value after what it gets decremented.
      *
      * @return value before decrement
      */
-    public abstract int getAndDecrement();
+    int getAndDecrement();
 
     /**
      * Decrements the value after what it is returned.
      *
      * @return value after decrement
      */
-    public abstract int decrementAndGet();
+    int decrementAndGet();
 
     /**
      * Gets the value after what delta is added to it.
@@ -70,7 +71,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param delta the value which should be added to the current value
      * @return value before addition
      */
-    public abstract int getAndAdd(int delta);
+    int getAndAdd(int delta);
 
     /**
      * Adds the delta to the value after what it is returned.
@@ -78,7 +79,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param delta the value which should be added to the current value
      * @return value after addition
      */
-    public abstract int addAndGet(int delta);
+    int addAndGet(int delta);
 
     /**
      * Updates the current value using the specified function after what the new value is returned.
@@ -86,7 +87,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param updateFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract int getAndUpdate(@NonNull IntUnaryOperator updateFunction);
+    int getAndUpdate(@NonNull IntUnaryOperator updateFunction);
 
     /**
      * Gets the value after what it gets updated using the specified function.
@@ -94,7 +95,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param updateFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract int updateAndGet(@NonNull IntUnaryOperator updateFunction);
+    int updateAndGet(@NonNull IntUnaryOperator updateFunction);
 
     /**
      * Updates the current value using specified function and update value after what the new value is returned.
@@ -103,7 +104,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param accumulatorFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract int getAndAccumulate(int updateValue, @NonNull IntBinaryOperator accumulatorFunction);
+    int getAndAccumulate(int updateValue, @NonNull IntBinaryOperator accumulatorFunction);
 
     /**
      * Gets the value after what it gets updated using the specified function and update value.
@@ -112,7 +113,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param accumulatorFunction function to be used for updating the value
      * @return value after update
      */
-    public abstract int accumulateAndGet(int updateValue, @NonNull IntBinaryOperator accumulatorFunction);
+    int accumulateAndGet(int updateValue, @NonNull IntBinaryOperator accumulatorFunction);
 
     /**
      * Creates new simple int wrapper.
@@ -120,7 +121,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param value initial value of int wrapper
      * @return created int wrapper
      */
-    public static IntWrapper create(final int value) {
+    static IntWrapper create(final int value) {
         return new IntIntWrapper(value);
     }
 
@@ -129,7 +130,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      *
      * @return created int wrapper
      */
-    public static IntWrapper create() {
+    static IntWrapper create() {
         return new IntIntWrapper();
     }
 
@@ -139,7 +140,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      * @param value initial value of int wrapper
      * @return created int wrapper
      */
-    public static IntWrapper createAtomic(final int value) {
+    static IntWrapper createAtomic(final int value) {
         return new AtomicIntegerIntWrapper(value);
     }
 
@@ -148,7 +149,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
      *
      * @return created int wrapper
      */
-    public static IntWrapper createAtomic() {
+    static IntWrapper createAtomic() {
         return new AtomicIntegerIntWrapper();
     }
 
@@ -160,7 +161,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
     @AllArgsConstructor
     @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    private static final class IntIntWrapper extends IntWrapper {
+    final class IntIntWrapper implements IntWrapper {
 
         int value;
 
@@ -234,6 +235,16 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
         }
 
         @Override
+        public byte byteValue() {
+            return (byte) value;
+        }
+
+        @Override
+        public short shortValue() {
+            return (short) value;
+        }
+
+        @Override
         public int intValue() {
             return value;
         }
@@ -260,7 +271,7 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
     @ToString
     @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class AtomicIntegerIntWrapper extends IntWrapper {
+    final class AtomicIntegerIntWrapper implements IntWrapper {
 
         @NonNull AtomicInteger value;
 
@@ -338,6 +349,16 @@ public abstract class IntWrapper extends Number implements PrimitiveWrapper {
         @Override
         public int accumulateAndGet(final int updateValue, @NonNull final IntBinaryOperator accumulatorFunction) {
             return value.accumulateAndGet(updateValue, accumulatorFunction);
+        }
+
+        @Override
+        public byte byteValue() {
+            return value.byteValue();
+        }
+
+        @Override
+        public short shortValue() {
+            return value.shortValue();
         }
 
         @Override

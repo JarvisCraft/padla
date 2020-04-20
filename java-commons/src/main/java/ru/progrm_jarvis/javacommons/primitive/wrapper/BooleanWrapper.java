@@ -7,18 +7,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link PrimitiveWrapper Primitive wrapper} of {@code boolean}.
- *
- * @implNote this is an abstract class for consistency with other wrappers
  */
-public abstract class BooleanWrapper implements PrimitiveWrapper {
+public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
 
     @Override
-    public Class<?> getPrimitiveClass() {
+    default Class<Boolean> getPrimitiveClass() {
         return boolean.class;
     }
 
     @Override
-    public Class<?> getWrapperClass() {
+    default Class<Boolean> getWrapperClass() {
         return Boolean.class;
     }
 
@@ -27,14 +25,14 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
      *
      * @return value
      */
-    public abstract boolean get();
+    boolean get();
 
     /**
      * Sets the value.
      *
      * @param value value to be set
      */
-    public abstract void set(boolean value);
+    void set(boolean value);
 
     /**
      * Creates new simple boolean wrapper.
@@ -42,7 +40,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
      * @param value initial value of boolean wrapper
      * @return created boolean wrapper
      */
-    public static BooleanWrapper create(final boolean value) {
+    static BooleanWrapper create(final boolean value) {
         return new BooleanBooleanWrapper(value);
     }
 
@@ -51,7 +49,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
      *
      * @return created boolean wrapper
      */
-    public static BooleanWrapper create() {
+    static BooleanWrapper create() {
         return new BooleanBooleanWrapper(false);
     }
 
@@ -61,7 +59,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
      * @param value initial value of boolean wrapper
      * @return created boolean wrapper
      */
-    public static BooleanWrapper createAtomic(final boolean value) {
+    static BooleanWrapper createAtomic(final boolean value) {
         return new AtomicBooleanWrapper(value);
     }
 
@@ -70,7 +68,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
      *
      * @return created boolean wrapper
      */
-    public static BooleanWrapper createAtomic() {
+    static BooleanWrapper createAtomic() {
         return new AtomicBooleanWrapper();
     }
 
@@ -82,7 +80,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
     @AllArgsConstructor
     @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    private static final class BooleanBooleanWrapper extends BooleanWrapper {
+    final class BooleanBooleanWrapper implements BooleanWrapper {
 
         boolean value;
 
@@ -103,7 +101,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
     @ToString
     @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class AtomicBooleanWrapper extends BooleanWrapper {
+    final class AtomicBooleanWrapper implements BooleanWrapper {
 
         @NonNull AtomicBoolean value;
 
@@ -120,7 +118,7 @@ public abstract class BooleanWrapper implements PrimitiveWrapper {
          * Creates new atomic boolean boolean wrapper with initial value set to {@code 0}.
          */
         public AtomicBooleanWrapper() {
-            this.value = new AtomicBoolean();
+            value = new AtomicBoolean();
         }
 
         @Override
