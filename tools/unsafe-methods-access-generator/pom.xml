@@ -10,6 +10,25 @@
     </parent>
     <artifactId>unsafe-methods-access-generator</artifactId>
 
+    <build>
+        <defaultGoal>pa</defaultGoal>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>
+                                ru.progrm_jarvis.padla.tools.unsafemethodsaccessgenerator.UnsafeMethodsAccessGenerator
+                            </mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>commons-cli</groupId>
