@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.javacommons.primitive.wrapper;
 
 import lombok.*;
+import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
 import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
@@ -36,6 +37,14 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @param value value to be set
      */
     void set(long value);
+
+    /**
+     * Sets the value to the one given returning the previous one.
+     *
+     * @param newValue value to be set
+     * @return previous value
+     */
+    long getAndSet(long newValue);
 
     /**
      * Gets the value after what it gets incremented.
@@ -176,6 +185,14 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
         }
 
         @Override
+        public long getAndSet(final long newValue) {
+            val oldValue = value;
+            value = newValue;
+
+            return oldValue;
+        }
+
+        @Override
         public long getAndIncrement() {
             return value++;
         }
@@ -273,6 +290,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicLongLongWrapper implements LongWrapper {
 
+        @Delegate(types = LongWrapper.class)
         @NonNull AtomicLong value;
 
         /**
@@ -288,97 +306,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
          * Creates new atomic long long wrapper with initial value set to {@code 0}.
          */
         public AtomicLongLongWrapper() {
-            this.value = new AtomicLong();
-        }
-
-        @Override
-        public long get() {
-            return value.get();
-        }
-
-        @Override
-        public void set(final long value) {
-            this.value.set(value);
-        }
-
-        @Override
-        public long getAndIncrement() {
-            return value.getAndIncrement();
-        }
-
-        @Override
-        public long incrementAndGet() {
-            return value.incrementAndGet();
-        }
-
-        @Override
-        public long getAndDecrement() {
-            return value.getAndDecrement();
-        }
-
-        @Override
-        public long decrementAndGet() {
-            return value.decrementAndGet();
-        }
-
-        @Override
-        public long getAndAdd(final long delta) {
-            return value.getAndAdd(delta);
-        }
-
-        @Override
-        public long addAndGet(final long delta) {
-            return value.addAndGet(delta);
-        }
-
-        @Override
-        public long getAndUpdate(@NonNull final LongUnaryOperator updateFunction) {
-            return value.getAndUpdate(updateFunction);
-        }
-
-        @Override
-        public long updateAndGet(@NonNull final LongUnaryOperator updateFunction) {
-            return value.updateAndGet(updateFunction);
-        }
-
-        @Override
-        public long getAndAccumulate(final long updateValue, @NonNull final LongBinaryOperator accumulatorFunction) {
-            return value.getAndAccumulate(updateValue, accumulatorFunction);
-        }
-
-        @Override
-        public long accumulateAndGet(final long updateValue, @NonNull final LongBinaryOperator accumulatorFunction) {
-            return value.accumulateAndGet(updateValue, accumulatorFunction);
-        }
-
-        @Override
-        public byte byteValue() {
-            return value.byteValue();
-        }
-
-        @Override
-        public short shortValue() {
-            return value.shortValue();
-        }
-
-        @Override
-        public int intValue() {
-            return value.intValue();
-        }
-
-        @Override
-        public long longValue() {
-            return value.longValue();
-        }
-
-        @Override
-        public float floatValue() {
-            return value.floatValue();
-        }
-
-        @Override
-        public double doubleValue() {
-            return value.doubleValue();
+            value = new AtomicLong();
         }
     }
 }

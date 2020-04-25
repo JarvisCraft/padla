@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.javacommons.primitive.wrapper;
 
 import lombok.*;
+import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
 import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
@@ -36,6 +37,14 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @param value value to be set
      */
     void set(int value);
+
+    /**
+     * Sets the value to the one given returning the previous one.
+     *
+     * @param newValue value to be set
+     * @return previous value
+     */
+    int getAndSet(int newValue);
 
     /**
      * Gets the value after what it gets incremented.
@@ -176,6 +185,14 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
         }
 
         @Override
+        public int getAndSet(final int newValue) {
+            val oldValue = value;
+            value = newValue;
+
+            return oldValue;
+        }
+
+        @Override
         public int getAndIncrement() {
             return value++;
         }
@@ -273,6 +290,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicIntegerIntWrapper implements IntWrapper {
 
+        @Delegate(types = IntWrapper.class)
         @NonNull AtomicInteger value;
 
         /**
@@ -288,97 +306,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
          * Creates new atomic integer int wrapper with initial value set to {@code 0}.
          */
         public AtomicIntegerIntWrapper() {
-            this.value = new AtomicInteger();
-        }
-
-        @Override
-        public int get() {
-            return value.get();
-        }
-
-        @Override
-        public void set(final int value) {
-            this.value.set(value);
-        }
-
-        @Override
-        public int getAndIncrement() {
-            return value.getAndIncrement();
-        }
-
-        @Override
-        public int incrementAndGet() {
-            return value.incrementAndGet();
-        }
-
-        @Override
-        public int getAndDecrement() {
-            return value.getAndDecrement();
-        }
-
-        @Override
-        public int decrementAndGet() {
-            return value.decrementAndGet();
-        }
-
-        @Override
-        public int getAndAdd(final int delta) {
-            return value.getAndAdd(delta);
-        }
-
-        @Override
-        public int addAndGet(final int delta) {
-            return value.addAndGet(delta);
-        }
-
-        @Override
-        public int getAndUpdate(@NonNull final IntUnaryOperator updateFunction) {
-            return value.getAndUpdate(updateFunction);
-        }
-
-        @Override
-        public int updateAndGet(@NonNull final IntUnaryOperator updateFunction) {
-            return value.updateAndGet(updateFunction);
-        }
-
-        @Override
-        public int getAndAccumulate(final int updateValue, @NonNull final IntBinaryOperator accumulatorFunction) {
-            return value.getAndAccumulate(updateValue, accumulatorFunction);
-        }
-
-        @Override
-        public int accumulateAndGet(final int updateValue, @NonNull final IntBinaryOperator accumulatorFunction) {
-            return value.accumulateAndGet(updateValue, accumulatorFunction);
-        }
-
-        @Override
-        public byte byteValue() {
-            return value.byteValue();
-        }
-
-        @Override
-        public short shortValue() {
-            return value.shortValue();
-        }
-
-        @Override
-        public int intValue() {
-            return value.intValue();
-        }
-
-        @Override
-        public long longValue() {
-            return value.longValue();
-        }
-
-        @Override
-        public float floatValue() {
-            return value.floatValue();
-        }
-
-        @Override
-        public double doubleValue() {
-            return value.doubleValue();
+            value = new AtomicInteger();
         }
     }
 }

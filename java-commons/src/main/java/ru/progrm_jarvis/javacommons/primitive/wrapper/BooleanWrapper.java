@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.javacommons.primitive.wrapper;
 
 import lombok.*;
+import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,11 +36,20 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
     void set(boolean value);
 
     /**
+     * Sets the value to the one given returning the previous one.
+     *
+     * @param newValue value to be set
+     * @return previous value
+     */
+    boolean getAndSet(boolean newValue);
+
+    /**
      * Creates new simple boolean wrapper.
      *
      * @param value initial value of boolean wrapper
      * @return created boolean wrapper
      */
+
     static BooleanWrapper create(final boolean value) {
         return new BooleanBooleanWrapper(value);
     }
@@ -93,6 +103,14 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
         public void set(final boolean value) {
             this.value = value;
         }
+
+        @Override
+        public boolean getAndSet(final boolean newValue) {
+            val oldValue = value;
+            value = newValue;
+
+            return oldValue;
+        }
     }
 
     /**
@@ -103,6 +121,7 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicBooleanWrapper implements BooleanWrapper {
 
+        @Delegate(types = BooleanWrapper.class)
         @NonNull AtomicBoolean value;
 
         /**
@@ -119,16 +138,6 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
          */
         public AtomicBooleanWrapper() {
             value = new AtomicBoolean();
-        }
-
-        @Override
-        public boolean get() {
-            return value.get();
-        }
-
-        @Override
-        public void set(final boolean value) {
-            this.value.set(value);
         }
     }
 }
