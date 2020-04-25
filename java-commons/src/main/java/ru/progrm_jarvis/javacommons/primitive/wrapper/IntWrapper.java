@@ -290,7 +290,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicIntegerIntWrapper implements IntWrapper {
 
-        @Delegate(types = IntWrapper.class)
+        @Delegate(types = IntWrapper.class, excludes = PrimitiveWrapper.class)
         @NonNull AtomicInteger value;
 
         /**

@@ -121,7 +121,7 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicBooleanWrapper implements BooleanWrapper {
 
-        @Delegate(types = BooleanWrapper.class)
+        @Delegate(types = BooleanWrapper.class, excludes = PrimitiveWrapper.class)
         @NonNull AtomicBoolean value;
 
         /**

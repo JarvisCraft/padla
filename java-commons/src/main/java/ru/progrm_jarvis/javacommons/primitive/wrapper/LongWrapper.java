@@ -290,7 +290,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicLongLongWrapper implements LongWrapper {
 
-        @Delegate(types = LongWrapper.class)
+        @Delegate(types = LongWrapper.class, excludes = PrimitiveWrapper.class)
         @NonNull AtomicLong value;
 
         /**
