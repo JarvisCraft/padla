@@ -19,26 +19,19 @@ public abstract class AbstractConcurrentService implements Service {
     @NonNull AtomicBoolean enabled;
 
     /**
-     * Lock used for synchronizing lifecycle operations such as {@link #enable()} and {@link #disable()}
+     * Lock used for synchronizing lifecycle operations
      */
     @NonNull Lock lifecycleLock;
 
+    /**
+     * Creates a new abstract concurrent service using the given lock.
+     *
+     * @param lifecycleLock lock used for synchronizing lifecycle operations
+     */
     protected AbstractConcurrentService(final @NonNull Lock lifecycleLock) {
         enabled = new AtomicBoolean();
         this.lifecycleLock = lifecycleLock;
     }
-
-    /**
-     * Actually enables this service.
-     * This should not be manually synchronized as it is called by an already concurrent {@link #enable()}.
-     */
-    protected abstract void onEnable();
-
-    /**
-     * Actually disables this service.
-     * This should not be manually synchronized as it is called by an already concurrent {@link #disable()} ()}.
-     */
-    protected abstract void onDisable();
 
     @Override
     public void enable() {
@@ -51,6 +44,12 @@ public abstract class AbstractConcurrentService implements Service {
         }
     }
 
+    /**
+     * Actually enables this service.
+     * This should not be manually synchronized as it is called by an already concurrent {@link #enable()}.
+     */
+    protected abstract void onEnable();
+
     @Override
     public void disable() {
         final Lock lock;
@@ -61,4 +60,10 @@ public abstract class AbstractConcurrentService implements Service {
             lock.unlock();
         }
     }
+
+    /**
+     * Actually disables this service.
+     * This should not be manually synchronized as it is called by an already concurrent {@link #disable()} ()}.
+     */
+    protected abstract void onDisable();
 }
