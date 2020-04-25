@@ -11,38 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
 
-    @Override
-    default Class<Boolean> getPrimitiveClass() {
-        return boolean.class;
-    }
-
-    @Override
-    default Class<Boolean> getWrapperClass() {
-        return Boolean.class;
-    }
-
-    /**
-     * Gets the value.
-     *
-     * @return value
-     */
-    boolean get();
-
-    /**
-     * Sets the value.
-     *
-     * @param value value to be set
-     */
-    void set(boolean value);
-
-    /**
-     * Sets the value to the one given returning the previous one.
-     *
-     * @param newValue value to be set
-     * @return previous value
-     */
-    boolean getAndSet(boolean newValue);
-
     /**
      * Creates new simple boolean wrapper.
      *
@@ -81,6 +49,38 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
     static BooleanWrapper createAtomic() {
         return new AtomicBooleanWrapper();
     }
+
+    @Override
+    default Class<Boolean> getPrimitiveClass() {
+        return boolean.class;
+    }
+
+    @Override
+    default Class<Boolean> getWrapperClass() {
+        return Boolean.class;
+    }
+
+    /**
+     * Gets the value.
+     *
+     * @return value
+     */
+    boolean get();
+
+    /**
+     * Sets the value.
+     *
+     * @param value value to be set
+     */
+    void set(boolean value);
+
+    /**
+     * Sets the value to the one given returning the previous one.
+     *
+     * @param newValue value to be set
+     * @return previous value
+     */
+    boolean getAndSet(boolean newValue);
 
     /**
      * {@link BooleanWrapper} implementation based on {@code boolean}.
@@ -129,14 +129,14 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
          *
          * @param value initial value
          */
-        public AtomicBooleanWrapper(final boolean value) {
+        private AtomicBooleanWrapper(final boolean value) {
             this.value = new AtomicBoolean(value);
         }
 
         /**
          * Creates new atomic boolean boolean wrapper with initial value set to {@code 0}.
          */
-        public AtomicBooleanWrapper() {
+        private AtomicBooleanWrapper() {
             value = new AtomicBoolean();
         }
     }

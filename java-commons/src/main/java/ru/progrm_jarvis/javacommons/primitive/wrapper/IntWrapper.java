@@ -14,6 +14,44 @@ import java.util.function.IntUnaryOperator;
  */
 public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
 
+    /**
+     * Creates new simple int wrapper.
+     *
+     * @param value initial value of int wrapper
+     * @return created int wrapper
+     */
+    static IntWrapper create(final int value) {
+        return new IntIntWrapper(value);
+    }
+
+    /**
+     * Creates new simple int wrapper with initial value set to {@code 0}.
+     *
+     * @return created int wrapper
+     */
+    static IntWrapper create() {
+        return new IntIntWrapper();
+    }
+
+    /**
+     * Creates new atomic int wrapper.
+     *
+     * @param value initial value of int wrapper
+     * @return created int wrapper
+     */
+    static IntWrapper createAtomic(final int value) {
+        return new AtomicIntegerIntWrapper(value);
+    }
+
+    /**
+     * Creates new atomic int wrapper with initial value set to {@code 0}.
+     *
+     * @return created int wrapper
+     */
+    static IntWrapper createAtomic() {
+        return new AtomicIntegerIntWrapper();
+    }
+
     @Override
     default Class<Integer> getPrimitiveClass() {
         return int.class;
@@ -123,44 +161,6 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return value after update
      */
     int accumulateAndGet(int updateValue, @NonNull IntBinaryOperator accumulatorFunction);
-
-    /**
-     * Creates new simple int wrapper.
-     *
-     * @param value initial value of int wrapper
-     * @return created int wrapper
-     */
-    static IntWrapper create(final int value) {
-        return new IntIntWrapper(value);
-    }
-
-    /**
-     * Creates new simple int wrapper with initial value set to {@code 0}.
-     *
-     * @return created int wrapper
-     */
-    static IntWrapper create() {
-        return new IntIntWrapper();
-    }
-
-    /**
-     * Creates new atomic int wrapper.
-     *
-     * @param value initial value of int wrapper
-     * @return created int wrapper
-     */
-    static IntWrapper createAtomic(final int value) {
-        return new AtomicIntegerIntWrapper(value);
-    }
-
-    /**
-     * Creates new atomic int wrapper with initial value set to {@code 0}.
-     *
-     * @return created int wrapper
-     */
-    static IntWrapper createAtomic() {
-        return new AtomicIntegerIntWrapper();
-    }
 
     /**
      * {@link IntWrapper} implementation based on {@code int}.
@@ -298,14 +298,14 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
          *
          * @param value initial value
          */
-        public AtomicIntegerIntWrapper(final int value) {
+        private AtomicIntegerIntWrapper(final int value) {
             this.value = new AtomicInteger(value);
         }
 
         /**
          * Creates new atomic integer int wrapper with initial value set to {@code 0}.
          */
-        public AtomicIntegerIntWrapper() {
+        private AtomicIntegerIntWrapper() {
             value = new AtomicInteger();
         }
     }

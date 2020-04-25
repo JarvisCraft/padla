@@ -14,6 +14,44 @@ import java.util.function.LongUnaryOperator;
  */
 public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
 
+    /**
+     * Creates new simple long wrapper.
+     *
+     * @param value initial value of long wrapper
+     * @return created long wrapper
+     */
+    static LongWrapper create(final long value) {
+        return new LongLongWrapper(value);
+    }
+
+    /**
+     * Creates new simple long wrapper with initial value set to {@code 0}.
+     *
+     * @return created long wrapper
+     */
+    static LongWrapper create() {
+        return new LongLongWrapper(0);
+    }
+
+    /**
+     * Creates new atomic long wrapper.
+     *
+     * @param value initial value of long wrapper
+     * @return created long wrapper
+     */
+    static LongWrapper createAtomic(final long value) {
+        return new AtomicLongLongWrapper(value);
+    }
+
+    /**
+     * Creates new atomic long wrapper with initial value set to {@code 0}.
+     *
+     * @return created long wrapper
+     */
+    static LongWrapper createAtomic() {
+        return new AtomicLongLongWrapper();
+    }
+
     @Override
     default Class<Long> getPrimitiveClass() {
         return long.class;
@@ -123,44 +161,6 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return value after update
      */
     long accumulateAndGet(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
-
-    /**
-     * Creates new simple long wrapper.
-     *
-     * @param value initial value of long wrapper
-     * @return created long wrapper
-     */
-    static LongWrapper create(final long value) {
-        return new LongLongWrapper(value);
-    }
-
-    /**
-     * Creates new simple long wrapper with initial value set to {@code 0}.
-     *
-     * @return created long wrapper
-     */
-    static LongWrapper create() {
-        return new LongLongWrapper(0);
-    }
-
-    /**
-     * Creates new atomic long wrapper.
-     *
-     * @param value initial value of long wrapper
-     * @return created long wrapper
-     */
-    static LongWrapper createAtomic(final long value) {
-        return new AtomicLongLongWrapper(value);
-    }
-
-    /**
-     * Creates new atomic long wrapper with initial value set to {@code 0}.
-     *
-     * @return created long wrapper
-     */
-    static LongWrapper createAtomic() {
-        return new AtomicLongLongWrapper();
-    }
 
     /**
      * {@link LongWrapper} implementation based on {@code long}.
@@ -298,14 +298,14 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
          *
          * @param value initial value
          */
-        public AtomicLongLongWrapper(final long value) {
+        private AtomicLongLongWrapper(final long value) {
             this.value = new AtomicLong(value);
         }
 
         /**
          * Creates new atomic long long wrapper with initial value set to {@code 0}.
          */
-        public AtomicLongLongWrapper() {
+        private AtomicLongLongWrapper() {
             value = new AtomicLong();
         }
     }
