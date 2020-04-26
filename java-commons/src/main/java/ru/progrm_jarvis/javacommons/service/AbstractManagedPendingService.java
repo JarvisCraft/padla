@@ -100,7 +100,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
      * Attempts to start this service.
      */
     protected void tryStart() {
-        if (state.compareAndSet(State.READY, State.STARTED)) runReadyCallbacks(start());
+        if (owners.isEmpty() && state.compareAndSet(State.READY, State.STARTED)) runReadyCallbacks(start());
     }
 
     /**
