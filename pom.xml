@@ -21,7 +21,7 @@
         <!-- Testing -->
         <version.junit>5.6.2</version.junit>
         <version.junit.platform>1.6.2</version.junit.platform>
-        <version.mockito>3.4.0</version.mockito>
+        <version.mockito>3.4.2</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
