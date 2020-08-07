@@ -31,7 +31,7 @@ public interface ClassDefiner {
      */
     @SuppressWarnings("unchecked")
     Class<?>[] defineClasses(@NonNull MethodHandles.Lookup owner,
-                             @NonNull Pair<@Nullable String, @NotNull byte[]>... bytecodes);
+                             @NonNull Pair<@Nullable String, byte @NotNull []>... bytecodes);
 
     /**
      * Defines multiple classes which may be garbage-collected.
@@ -51,7 +51,7 @@ public interface ClassDefiner {
      * @return defined class in the order their data was passed
      */
     List<Class<?>> defineClasses(@NonNull MethodHandles.Lookup owner,
-                                 @NonNull List<@NotNull byte[]> bytecodes);
+                                 @NonNull List<byte @NotNull []> bytecodes);
 
     /**
      * Defines multiple classes which may be garbage-collected.
@@ -60,5 +60,5 @@ public interface ClassDefiner {
      * @return defined classes by their names
      */
     Map<String, Class<?>> defineClasses(@NonNull MethodHandles.Lookup owner,
-                                        @NonNull Map<@Nullable String, @NotNull byte[]> namedBytecode);
+                                        @NonNull Map<@Nullable String, byte @NotNull []> namedBytecode);
 }
