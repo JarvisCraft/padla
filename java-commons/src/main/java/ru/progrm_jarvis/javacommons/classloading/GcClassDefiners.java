@@ -11,11 +11,10 @@ import ru.progrm_jarvis.javacommons.invoke.FullAccessLookupFactories;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.ObjectUtil;
 import ru.progrm_jarvis.javacommons.pair.Pair;
+import ru.progrm_jarvis.javacommons.unsafe.UnsafeInternals;
 
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandles;
+import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.invoke.MethodType;
 import java.util.*;
 
 /**
@@ -26,9 +25,9 @@ public class GcClassDefiners {
 
     /**
      * {@link ClassDefiner class definer}
-     * based on {@code sun.misc.Unsafe#defineAnonymousClass(Class, byte[], Object[])}.
+     * based on {@code Unsafe#defineAnonymousClass(Class, byte[], Object[])}.
      */
-    private Lazy<@Nullable ClassDefiner> UNSAFE_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
+    private final Lazy<@Nullable ClassDefiner> UNSAFE_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
         try {
             return new UnsafeClassDefiner();
         } catch (final Throwable x) {
@@ -39,7 +38,7 @@ public class GcClassDefiners {
     /**
      * {@link ClassDefiner class definer} based on {@link Lookup}{@code #defineClass(byte[])}.
      */
-    private Lazy<@Nullable ClassDefiner> LOOKUP_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
+    private final Lazy<@Nullable ClassDefiner> LOOKUP_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
         try {
             return new LookupClassDefiner();
         } catch (final Throwable x) {
@@ -50,7 +49,7 @@ public class GcClassDefiners {
     /**
      * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
      */
-    private Lazy<@Nullable ClassDefiner> TMP_CLASS_LOADER_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
+    private final Lazy<@Nullable ClassDefiner> TMP_CLASS_LOADER_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
         try {
             return new TmpClassLoaderClassDefiner();
         } catch (final Throwable x) {
@@ -61,7 +60,7 @@ public class GcClassDefiners {
     /**
      * Default {@link ClassDefiner class definer}
      */
-    private Lazy<Optional<ClassDefiner>> DEFAULT_CLASS_DEFINER = Lazy.createThreadSafe(() -> Optional
+    private final Lazy<Optional<ClassDefiner>> DEFAULT_CLASS_DEFINER = Lazy.createThreadSafe(() -> Optional
             .ofNullable(ObjectUtil.nonNull(UNSAFE_CLASS_DEFINER, LOOKUP_CLASS_DEFINER, TMP_CLASS_LOADER_CLASS_DEFINER))
     );
 
@@ -78,7 +77,7 @@ public class GcClassDefiners {
      * {@link ClassDefiner class definer}
      * based on {@code sun.misc.Unsafe#defineAnonymousClass(Class, byte[], Object[])}.
      */
-    private static final class UnsafeClassDefiner implements ClassDefiner {
+    private final class UnsafeClassDefiner implements ClassDefiner {
 
         /**
          * Reference to {@code sun.misc.Unsafe#defineAnonymousClass(Class, byte[], Object[])}.
@@ -87,39 +86,69 @@ public class GcClassDefiners {
 
         static {
             final Class<?> unsafeClass;
-            try {
-                unsafeClass = Class.forName("sun.misc.Unsafe");
-            } catch (final ClassNotFoundException e) {
-                throw new IllegalStateException("Cannot find `sun.misc.Unsafe` class", e);
-            }
-
+            if ((unsafeClass = UnsafeInternals.UNSAFE_CLASS) == null) throw new Error("No Unsafe is available");
             final Object unsafe;
 
-            try {
-                // cannot use `invokeExact` here as the type of field (and thus return type of indy method) ...
-                // ... is `Object` while it should be `Unsafe` for exact polymorphic signature
-                unsafe = FullAccessLookupFactories.getDefault()
-                        .orElseThrow(() -> new IllegalStateException("LookupFactory is unavailable"))
-                        .create(unsafeClass)
-                        .findStaticGetter(unsafeClass, "theUnsafe", unsafeClass).invoke();
-            } catch (final Throwable x) {
-                throw new IllegalStateException("Could not get `sun.misc.Unsafe#theUnsafe` field's value", x);
+            {
+                final MethodHandle theUnsafeGetter;
+                {
+                    val lookup  = FullAccessLookupFactories.getDefault()
+                            .orElseThrow(() -> new IllegalStateException("LookupFactory is unavailable"))
+                            .create(unsafeClass);
+                    try {
+                        theUnsafeGetter = lookup.findStaticGetter(unsafeClass, "theUnsafe", unsafeClass);
+                    } catch (final IllegalAccessException | NoSuchFieldException e) {
+                        throw new Error(
+                                '`' + unsafeClass.getName() + ".theUnsafe` field's getter cannot be found", e
+                        );
+                    }
+                }
+                try {
+                    unsafe = theUnsafeGetter.invoke();
+                } catch (final Throwable x) {
+                    throw new Error("Could not get value of field `" + unsafeClass.getName() + "`", x);
+                }
             }
 
             val methodType = MethodType.methodType(Class.class, Class.class, byte[].class, Object[].class);
 
             // LookupFactory can't be used as it's associated class-loader doesn't know about `AnonymousClassDefiner`
-            val lookup = MethodHandles.lookup();
+
+            final MethodHandle defineAnonymousClassMethodHandle;
+            {
+                val lookup = MethodHandles.lookup();
+                final MethodHandle methodHandle;
+                try {
+                    methodHandle = lookup.findVirtual(unsafeClass, "defineAnonymousClass", methodType);
+                } catch (final NoSuchMethodException | IllegalAccessException e) {
+                    throw new Error(
+                            "Method " + unsafeClass.getName() + ".defineAnonymousClass(Class, byte[], Object[])` "
+                                    + "cannot be found", e
+                    );
+                }
+                final CallSite callSIte;
+                try {
+                    callSIte = LambdaMetafactory.metafactory(
+                            lookup, "defineAnonymousClass",
+                            MethodType.methodType(AnonymousClassDefiner.class, unsafeClass),
+                            methodType, methodHandle, methodType
+                    );
+                } catch (final LambdaConversionException e) {
+                    throw new Error(
+                            "Cannot create lambda call-site for method `" + unsafeClass.getName()
+                                    + ".defineAnonymousClass(Class, byte[], Object[])`", e
+                    );
+                }
+
+                defineAnonymousClassMethodHandle = callSIte.getTarget();
+            }
+
             try {
-                ANONYMOUS_CLASS_DEFINER = (AnonymousClassDefiner) LambdaMetafactory.metafactory(
-                        lookup, "defineAnonymousClass",
-                        MethodType.methodType(AnonymousClassDefiner.class, unsafeClass),
-                        methodType, lookup.findVirtual(unsafeClass, "defineAnonymousClass", methodType), methodType
-                ).getTarget().invoke(unsafe);
+                ANONYMOUS_CLASS_DEFINER = (AnonymousClassDefiner) defineAnonymousClassMethodHandle.invoke(unsafe);
             } catch (final Throwable x) {
                 throw new IllegalStateException(
-                        "Could not implement AnonymousClassDefiner "
-                                + "via `sun.misc.Unsafe.defineAnonymousClass(Class, byte[], Object)` method"
+                        "Could not implement AnonymousClassDefiner via method `" + unsafeClass.getName()
+                                + ".defineAnonymousClass(Class, byte[], Object)`", x
                 );
             }
         }
@@ -144,7 +173,7 @@ public class GcClassDefiners {
 
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
-                                            @NonNull final List<@NotNull byte[]> bytecodes) {
+                                            @NonNull final List<byte @NotNull []> bytecodes) {
             val classes = new ArrayList<Class<?>>(bytecodes.size());
 
             val lookupClass = owner.lookupClass();
@@ -158,7 +187,7 @@ public class GcClassDefiners {
         @Override
         @SuppressWarnings("unchecked")
         public Class<?>[] defineClasses(@NonNull final Lookup owner,
-                                        @NonNull final Pair<@Nullable String, @NotNull byte[]>... bytecodes) {
+                                        @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
             val length = bytecodes.length;
             val classes = new Class<?>[length];
 
@@ -204,7 +233,7 @@ public class GcClassDefiners {
     /**
      * {@link ClassDefiner class definer} based on {@link Lookup}{@code #defineClass(byte[])}.
      */
-    private static final class LookupClassDefiner implements ClassDefiner {
+    private final class LookupClassDefiner implements ClassDefiner {
 
         /**
          * Reference to {@link Lookup}{@code #defineClass(byte[])}.
@@ -212,22 +241,45 @@ public class GcClassDefiners {
         private static final LookupMethodClassDefiner CLASS_DEFINER;
 
         static {
-            val methodType = MethodType.methodType(Class.class, Lookup.class, byte[].class);
+            final MethodHandle defineClassMethodHandle;
+            {
+                val methodType = MethodType.methodType(Class.class, Lookup.class, byte[].class);
 
-            // LookupFactory can't be used as it's associated class-loader doesn't know about `AnonymousClassDefiner`
-            val lookup = MethodHandles.lookup();
+                // LookupFactory can't be used as it's associated class-loader doesn't know about `AnonymousClassDefiner`
+                val lookup = MethodHandles.lookup();
+                final MethodHandle methodHandle;
+                try {
+                    methodHandle = lookup.findVirtual(
+                            Lookup.class, "defineClass",
+                            MethodType.methodType(Class.class, byte[].class)
+                    );
+                } catch (final NoSuchMethodException | IllegalAccessException e) {
+                    throw new Error(
+                            "Method `" + Lookup.class.getName() + ".defineClass(byte[])` method cannot be found", e
+                    );
+                }
+
+                final CallSite callSite;
+                try {
+                    callSite = LambdaMetafactory.metafactory(
+                            lookup, "defineClass", MethodType.methodType(LookupMethodClassDefiner.class),
+                            methodType, methodHandle, methodType
+                    );
+                } catch (final LambdaConversionException e) {
+                    throw new Error(
+                            "Cannot create lambda call-site for `" + Lookup.class.getName()
+                                    + ".defineClass(byte[])` method", e
+                    );
+                }
+                defineClassMethodHandle = callSite.getTarget();
+            }
+
             try {
-                CLASS_DEFINER = (LookupMethodClassDefiner) LambdaMetafactory.metafactory(
-                        lookup, "defineClass", MethodType.methodType(LookupMethodClassDefiner.class), methodType,
-                        lookup.findVirtual(
-                                Lookup.class, "defineClass",
-                                MethodType.methodType(Class.class, byte[].class)
-                        ), methodType
-                ).getTarget().invokeExact();
+                CLASS_DEFINER = (LookupMethodClassDefiner) defineClassMethodHandle.invokeExact();
             } catch (final Throwable x) {
-                throw new IllegalStateException(
-                        "Could not implement LookupClassDefiner "
-                                + "via `java.lang.invoke.MethodHandles.Lookup.defineClass(byte[])` method"
+                throw new Error(
+                        "Could not implement LookupClassDefiner via method `" + Lookup.class
+                                + ".defineClass(byte[])` method", x
                 );
             }
         }
@@ -250,7 +302,7 @@ public class GcClassDefiners {
 
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
-                                            @NonNull final List<@NotNull byte[]> bytecodes) {
+                                            @NonNull final List<byte @NotNull []> bytecodes) {
             val classes = new ArrayList<Class<?>>(bytecodes.size());
 
             for (val bytecode : bytecodes) classes.add(CLASS_DEFINER.defineClass(owner, bytecode));
@@ -261,7 +313,7 @@ public class GcClassDefiners {
         @Override
         @SuppressWarnings("unchecked")
         public Class<?>[] defineClasses(@NonNull final Lookup owner,
-                                        @NonNull final Pair<@Nullable String, @NotNull byte[]>... bytecodes) {
+                                        @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
             val length = bytecodes.length;
             val classes = new Class<?>[length];
 
@@ -285,6 +337,7 @@ public class GcClassDefiners {
         /**
          * Functional interface for referencing {@link Lookup}{@code #defineClass(byte[])}
          */
+        @FunctionalInterface
         private interface LookupMethodClassDefiner {
 
             /**
@@ -301,7 +354,7 @@ public class GcClassDefiners {
     /**
      * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
      */
-    private static final class TmpClassLoaderClassDefiner implements ClassDefiner {
+    private final class TmpClassLoaderClassDefiner implements ClassDefiner {
 
         @Override
         public Class<?> defineClass(@NonNull final Lookup owner,
@@ -322,7 +375,7 @@ public class GcClassDefiners {
 
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
-                                            @NonNull final List<@NotNull byte[]> bytecodes) {
+                                            @NonNull final List<byte @NotNull []> bytecodes) {
             val classLoader = new TmpClassLoader();
 
             val classes = new ArrayList<Class<?>>(bytecodes.size());
@@ -334,7 +387,7 @@ public class GcClassDefiners {
         @Override
         @SuppressWarnings("unchecked")
         public Class<?>[] defineClasses(@NonNull final Lookup owner,
-                                        @NonNull final Pair<@Nullable String, @NotNull byte[]>... bytecodes) {
+                                        @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
             val classLoader = new TmpClassLoader();
 
             val length = bytecodes.length;
