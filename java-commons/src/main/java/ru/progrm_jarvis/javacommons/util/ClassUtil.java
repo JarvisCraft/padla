@@ -19,13 +19,13 @@ public class ClassUtil {
     /**
      * Comparator for sorting {@link Class classes} by their hash-code
      */
-    private static final Comparator<Class<?>> CLASS_HASH_CODE_COMPARATOR = Comparator.comparing(Class::hashCode);
+    private final Comparator<Class<?>> CLASS_HASH_CODE_COMPARATOR = Comparator.comparing(Class::hashCode);
 
     /* *************************************** Sorted by PROgrammer_JARvis :) *************************************** */
     /**
      * Array of primitive classes (those whose {@link Class#isPrimitive()} returns {@code true})
      */
-    private static final Class<?>[] PRIMITIVE_CLASSES = new Class<?>[]{
+    private final Class<?>[] PRIMITIVE_CLASSES = new Class<?>[]{
             boolean.class, byte.class, char.class, short.class,
             int.class, long.class, float.class, double.class
     },

@@ -1,0 +1,129 @@
+## @vtlvariable name="packageName" type="java.lang.String"
+## @vtlvariable name="className" type="java.lang.String"
+## @vtlvariable name="unsafeClassName" type="java.lang.String"
+## @vtlvariable name="importedClasses" type="java.lang.String[]"
+## @vtlvariable name="unsafeMethods" type="ru.progrm_jarvis.padla.tools.unsafemethodsaccessgenerator.UnsafeMethodData[]"
+#if ($packageName && !$packageName.equals(""))package $packageName;
+
+#end##
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
+import lombok.val;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
+
+#foreach($importedClass in $importedClasses)
+import $importedClass;
+#end
+
+import java.lang.invoke.MethodHandle;
+
+import static java.lang.invoke.MethodType.methodType;
+
+@UtilityClass
+public class $className {
+
+    private final MethodHandle
+#foreach($method in $unsafeMethods)
+    UNSAFE_${method.upperCamelCaseNameWithTypeInfo}_METHOD#if($foreach.hasNext),#else;#end
+
+#end
+
+    private final boolean USE_SUN_MISC_UNSAFE;
+
+    static {
+        final Class<?> unsafeClass;
+        {
+            boolean useSunMiscUnsafe = false;
+            {
+                Class<?> sunMiscUnsafeClass;
+                try {
+                    sunMiscUnsafeClass = Class.forName("sun.misc.Unsafe");
+                    useSunMiscUnsafe = true;
+                } catch (final ClassNotFoundException e) {
+                    sunMiscUnsafeClass = null;
+                }
+
+                if (!useSunMiscUnsafe) try {
+                    unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
+                    useSunMiscUnsafe = false;
+                } catch (final ClassNotFoundException classNotFoundException) {
+                    throw new RuntimeException("Could not find Unsafe class");
+                } else unsafeClass = sunMiscUnsafeClass;
+            }
+            USE_SUN_MISC_UNSAFE = useSunMiscUnsafe;
+        }
+        val unsafeClassLookup = InvokeUtil.lookup(unsafeClass);
+
+        try {
+#foreach($unsafeMethod in $unsafeMethods)
+            UNSAFE_${unsafeMethod.upperCamelCaseNameWithTypeInfo}_METHOD = unsafeClassLookup.findVirtual(
+                        unsafeClass, "$unsafeMethod.method.name",
+                        methodType(unsafeClass##
+#foreach($parameterType in $unsafeMethod.signature), ${parameterType}.class#end)
+            );
+#end##
+        } catch (final NoSuchMethodException | IllegalAccessException e) {
+            throw new IllegalStateException("Could not find Unsafe method", e);
+        }
+    }
+
+## Macro for generating `else` or `return` depending on the method
+#macro(returnOrElse $method)##
+#if($method.returnValue)return#{else}else#{end}
+#end##
+## Macro for generating `, p1, p2...` method call parameters
+#macro(passTrailingParameters $method)##
+#foreach($parameterType in $method.signature), p$foreach.index#end
+#end##
+## Macro for generating `, final T1 p1, final T2 p2...` method parameters
+#macro(methodParameters $method)##
+#foreach($parameterType in $method.signature), final $parameterType p$foreach.index#end
+#end##
+##
+## Public static methods to get calles
+##
+#foreach($method in $unsafeMethods)
+    public $method.returnType ${method.method.name}(Object unsafe#methodParameters($method)) {
+        if (USE_SUN_MISC_UNSAFE) #if($method.returnValue)return #end##
+SunMiscUnsafeWrapper.${method.method.name}(unsafe#passTrailingParameters($method));
+        #returnOrElse($method) ##
+JdkInternalMiscUnsafeWrapper.${method.method.name}(unsafe#passTrailingParameters($method));
+    }
+
+#end
+
+## Macro for generating `UNSAFE_..._METHOD.invokeExact((UnsafeType) unsafe, ...)`
+#macro(castUnsafeMethodCall $unsafeType, $method)##
+UNSAFE_${method.upperCamelCaseNameWithTypeInfo}_METHOD.invokeExact##
+((jdk.internal.misc.Unsafe) unsafe#passTrailingParameters($method))##
+#end##
+## Macro for generating `return (T) ` if needed
+#macro(returnCast $method)
+#if($method.returnValue)return ($method.returnType) #end
+#end
+##
+## Method callers for sun.misc.Unsafe
+##
+    private static final class SunMiscUnsafeWrapper {
+#foreach($method in $unsafeMethods)
+
+        @SneakyThrows
+        public static $method.returnType ${method.method.name}(final Object unsafe#methodParameters($method)) {
+            #returnCast($method)#castUnsafeMethodCall("sun.misc.Unsafe", $method);
+        }
+#end
+    }
+
+##
+## Method callers for jdk.internal.misc
+##
+    private static final class JdkInternalMiscUnsafeWrapper {
+#foreach($method in $unsafeMethods)
+
+        @SneakyThrows
+        public static $method.returnType ${method.method.name}(final Object unsafe#methodParameters($method)) {
+            #returnCast($method)#castUnsafeMethodCall("jdk.internal.misc.Unsafe", $method);
+        }
+#end
+    }
+}
