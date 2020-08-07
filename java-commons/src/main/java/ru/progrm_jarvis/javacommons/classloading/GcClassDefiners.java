@@ -77,7 +77,7 @@ public class GcClassDefiners {
      * {@link ClassDefiner class definer}
      * based on {@code sun.misc.Unsafe#defineAnonymousClass(Class, byte[], Object[])}.
      */
-    private final class UnsafeClassDefiner implements ClassDefiner {
+    private static final class UnsafeClassDefiner implements ClassDefiner {
 
         /**
          * Reference to {@code sun.misc.Unsafe#defineAnonymousClass(Class, byte[], Object[])}.
@@ -233,7 +233,7 @@ public class GcClassDefiners {
     /**
      * {@link ClassDefiner class definer} based on {@link Lookup}{@code #defineClass(byte[])}.
      */
-    private final class LookupClassDefiner implements ClassDefiner {
+    private static final class LookupClassDefiner implements ClassDefiner {
 
         /**
          * Reference to {@link Lookup}{@code #defineClass(byte[])}.
@@ -354,7 +354,7 @@ public class GcClassDefiners {
     /**
      * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
      */
-    private final class TmpClassLoaderClassDefiner implements ClassDefiner {
+    private static final class TmpClassLoaderClassDefiner implements ClassDefiner {
 
         @Override
         public Class<?> defineClass(@NonNull final Lookup owner,
