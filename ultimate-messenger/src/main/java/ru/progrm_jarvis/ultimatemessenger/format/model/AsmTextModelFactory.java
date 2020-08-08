@@ -203,7 +203,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          */
         GET_TEXT_METHOD_NAME = "getText",
         /**
-         * Name of {@link StringBuilder}{@code .append(}<i>?</i>i{@code )} method
+         * Name of {@link StringBuilder}{@code .append(}<i>?</i>{@code )} method
          */
         APPEND_METHOD_NAME = "append",
         /**
