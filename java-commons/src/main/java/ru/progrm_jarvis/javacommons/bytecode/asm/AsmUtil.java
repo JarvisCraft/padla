@@ -1,5 +1,6 @@
 package ru.progrm_jarvis.javacommons.bytecode.asm;
 
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -183,9 +184,13 @@ public class AsmUtil {
      */
     CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(CHAR_TYPE),
     /**
+     * Signature of {@code Object()} method
+     */
+    OBJECT_METHOD_DESCRIPTOR = getMethodDescriptor(OBJECT_TYPE),
+    /**
      * Signature of {@code String()} method
      */
-    STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_TYPE),
+    STRING_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_TYPE),
     /**
      * Signature of {@code void(boolean)} method
      */
@@ -403,6 +408,128 @@ public class AsmUtil {
         if (value == 0) method.visitInsn(DCONST_0);
         else if (value == 1) method.visitInsn(DCONST_1);
         else method.visitLdcInsn(value);
+    }
+
+    /**
+     * Gets the return-{@link Opcodes opcode} corresponding to the given type.
+     *
+     * @param returnType type of the value for which to get the return-opcode
+     * @return return-opcode corresponding to the given type
+     */
+    public int returnOpcode(final Class<?> returnType) {
+        return returnType == void.class ? RETURN : nonVoidReturnOpcode(returnType);
+    }
+
+    /**
+     * Gets the return-{@link Opcodes opcode} corresponding to the given non-void type.
+     *
+     * @param returnType type of the value for which to get the return-opcode
+     * @return return-opcode corresponding to the given type
+     *
+     * @throws IllegalArgumentException if {@code returnType} is of {@code void} type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int nonVoidReturnOpcode(final Class<?> returnType) {
+        Preconditions.checkArgument(returnType != void.class, "returnType should not be of void-type");
+
+        if (returnType == boolean.class || returnType == byte.class
+                || returnType == short.class || returnType == int.class) return ILOAD;
+        else if (returnType == long.class) return LRETURN;
+        else if (returnType == float.class) return FRETURN;
+        else if (returnType == double.class) return DRETURN;
+        else return ARETURN;
+    }
+
+    /**
+     * Gets the load-{@link Opcodes opcode} corresponding to the given type.
+     *
+     * @param loadedType type of the value for which to get the load-opcode
+     * @return load-opcode corresponding to the given type
+     */
+    public int loadOpcode(final Class<?> loadedType) {
+        return loadedType.isArray() ? arrayLoadOpcode(loadedType.getComponentType()) : nonArrayLoadOpcode(loadedType);
+    }
+
+    /**
+     * Gets the load-{@link Opcodes opcode} corresponding to the given type handling arrays as references.
+     *
+     * @param loadedType type of the value for which to get the load-opcode
+     * @return load-opcode corresponding to the given type
+     *
+     * @apiNote if {@code loadedType} is an {@link Class#isArray() array}
+     * then {@link Opcodes#ALOAD ALOAD opcode} will be returned
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int nonArrayLoadOpcode(final Class<?> loadedType) {
+        if (loadedType == boolean.class || loadedType == byte.class
+                || loadedType == short.class || loadedType == int.class) return ILOAD;
+        else if (loadedType == long.class) return LLOAD;
+        else if (loadedType == float.class) return FLOAD;
+        else if (loadedType == double.class) return DLOAD;
+        else return ALOAD;
+    }
+
+    /**
+     * Gets the load-{@link Opcodes opcode} corresponding to the array of given component type.
+     *
+     * @param loadedComponentType component type of the array for which to get the load-opcode
+     * @return load-opcode corresponding to the given array component type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int arrayLoadOpcode(final Class<?> loadedComponentType) {
+        if (loadedComponentType == boolean.class || loadedComponentType == byte.class) return BALOAD;
+        if (loadedComponentType == short.class) return SALOAD;
+        if (loadedComponentType == int.class) return IALOAD;
+        else if (loadedComponentType == long.class) return LALOAD;
+        else if (loadedComponentType == float.class) return FALOAD;
+        else if (loadedComponentType == double.class) return DALOAD;
+        else return ALOAD;
+    }
+
+    /**
+     * Gets the store-{@link Opcodes opcode} corresponding to the given type.
+     *
+     * @param storedType type of the value for which to get the store-opcode
+     * @return store-opcode corresponding to the given type
+     */
+    public int storeOpcode(final Class<?> storedType) {
+        return storedType.isArray() ? arrayStoreOpcode(storedType.getComponentType()) : nonArrayStoreOpcode(storedType);
+    }
+
+    /**
+     * Gets the store-{@link Opcodes opcode} corresponding to the given type handling arrays as references.
+     *
+     * @param storedType type of the value for which to get the store-opcode
+     * @return store-opcode corresponding to the given type
+     *
+     * @apiNote if {@code storedType} is an {@link Class#isArray() array}
+     * then {@link Opcodes#ASTORE ASTORE opcode} will be returned
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int nonArrayStoreOpcode(final Class<?> storedType) {
+        if (storedType == boolean.class || storedType == byte.class
+                || storedType == short.class || storedType == int.class) return ISTORE;
+        else if (storedType == long.class) return LSTORE;
+        else if (storedType == float.class) return FSTORE;
+        else if (storedType == double.class) return DSTORE;
+        else return ASTORE;
+    }
+
+    /**
+     * Gets the store-{@link Opcodes opcode} corresponding to the array of given component type.
+     *
+     * @param storedComponentType component type of the array for which to get the store-opcode
+     * @return store-opcode corresponding to the given array component type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int arrayStoreOpcode(final Class<?> storedComponentType) {
+        if (storedComponentType == boolean.class || storedComponentType == byte.class) return BASTORE;
+        if (storedComponentType == short.class) return SASTORE;
+        if (storedComponentType == int.class) return IASTORE;
+        else if (storedComponentType == long.class) return LASTORE;
+        else if (storedComponentType == float.class) return FASTORE;
+        else if (storedComponentType == double.class) return DASTORE;
+        else return ASTORE;
     }
 
     /**
