@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.bytecode.asm;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -237,6 +238,29 @@ public class AsmUtil {
      * and {@link Opcodes#ACC_SUPER} flags disjunction
      */
     OPCODES_ACC_PUBLIC_FINAL_SUPER = OPCODES_ACC_PUBLIC_FINAL | ACC_SUPER;
+
+    /**
+     * Gets the internal name (aka VM-name) for the given {@link ClassLoader}-unique name.
+     *
+     * @param className name of the class
+     * @return internal name corresponding to the given class name
+     *
+     * @see Class#getName() as an appropriate source of this method's parameter
+     * @see #internalNameOf(Class) alias of this method accepting {@link Class} object
+     */
+    public @NotNull String classNameToInternalName(final @NonNull String className) {
+        return className.replace('.', '/');
+    }
+
+    /**
+     * Gets the internal name (aka VM-name) of the given class.
+     *
+     * @param type class whose internal name should be resolved
+     * @return internal name of the given class
+     */
+    public @NotNull String internalNameOf(final @NonNull Class<?> type) {
+        return classNameToInternalName(type.getName());
+    }
 
     /**
      * Visits the class's static initializer method.
