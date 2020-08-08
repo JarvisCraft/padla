@@ -433,7 +433,7 @@ public class AsmUtil {
         Preconditions.checkArgument(returnType != void.class, "returnType should not be of void-type");
 
         if (returnType == boolean.class || returnType == byte.class
-                || returnType == short.class || returnType == int.class) return ILOAD;
+                || returnType == short.class || returnType == int.class) return IRETURN;
         else if (returnType == long.class) return LRETURN;
         else if (returnType == float.class) return FRETURN;
         else if (returnType == double.class) return DRETURN;
