@@ -300,7 +300,7 @@ public class AsmUtil {
 
         constructor.visitCode();
         // push `this` onto the stack
-        constructor.visitIntInsn(ALOAD, 0);
+        constructor.visitVarInsn(ALOAD, 0);
         // invoke constructor of the super-class
         constructor.visitMethodInsn(
                 INVOKESPECIAL, superClassInternalName, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_DESCRIPTOR, false
