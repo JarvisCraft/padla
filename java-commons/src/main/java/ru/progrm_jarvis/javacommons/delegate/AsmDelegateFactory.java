@@ -99,6 +99,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
             } catch (final NoSuchMethodException e) {
                 throw new Error("Could not get an empty constructor of the generated class" , e);
             }
+            constructor.setAccessible(true);
         }
 
         return supplier -> {
