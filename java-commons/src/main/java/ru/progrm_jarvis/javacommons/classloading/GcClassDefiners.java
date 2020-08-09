@@ -36,7 +36,7 @@ public class GcClassDefiners {
     });
 
     /**
-     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
+     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class-loaders} for defined classes.
      */
     private final Lazy<@Nullable ClassDefiner> TMP_CLASS_LOADER_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
         try {
@@ -220,19 +220,19 @@ public class GcClassDefiners {
     }
 
     /**
-     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
+     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class-loaders} for defined classes.
      */
     private static final class TmpClassLoaderClassDefiner implements ClassDefiner {
 
         @Override
         public Class<?> defineClass(@NonNull final Lookup owner,
                                     @Nullable final String name, @NonNull final byte[] bytecode) {
-            return new TmpClassLoader().define(name, bytecode);
+            return new TmpClassLoader(owner.lookupClass().getClassLoader()).define(name, bytecode);
         }
 
         @Override
         public Class<?>[] defineClasses(final @NonNull Lookup owner, @NonNull final byte[]... bytecodes) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
             val classes = new Class<?>[length];
@@ -244,7 +244,7 @@ public class GcClassDefiners {
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
                                             @NonNull final List<byte @NotNull []> bytecodes) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new ArrayList<Class<?>>(bytecodes.size());
             for (val bytecode : bytecodes) classes.add(classLoader.define(null, bytecode));
@@ -256,7 +256,7 @@ public class GcClassDefiners {
         @SuppressWarnings("unchecked")
         public Class<?>[] defineClasses(@NonNull final Lookup owner,
                                         @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
             val classes = new Class<?>[length];
@@ -271,7 +271,7 @@ public class GcClassDefiners {
         @Override
         public Map<String, Class<?>> defineClasses(@NonNull final Lookup owner,
                                                    @NonNull final Map<String, byte[]> namedBytecode) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new HashMap<String, Class<?>>(namedBytecode.size());
             for (val entry : namedBytecode.entrySet()) {
@@ -283,13 +283,22 @@ public class GcClassDefiners {
         }
 
         /**
-         * Temporary class loader which should be instantiated for groups of related classes which may be unloaded.
+         * Temporary class-loader which should be instantiated for groups of related classes which may be unloaded.
          */
         @Internal(
-                "This class loader is intended only for internal usage and should never be accessed outside "
+                "This class-loader is intended only for internal usage and should never be accessed outside "
                         + "as there should be no strong references to it"
         )
         private static class TmpClassLoader extends ClassLoader {
+
+            /**
+             * Instantiates a new temporary class-loader using the given parent.
+             *
+             * @param parent parent class-loader
+             */
+            private TmpClassLoader(final ClassLoader parent) {
+                super(parent);
+            }
 
             /**
              * Defines a class by the given bytecode.
