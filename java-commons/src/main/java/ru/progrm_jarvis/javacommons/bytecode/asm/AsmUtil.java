@@ -1,8 +1,10 @@
 package ru.progrm_jarvis.javacommons.bytecode.asm;
 
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -182,9 +184,13 @@ public class AsmUtil {
      */
     CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(CHAR_TYPE),
     /**
+     * Signature of {@code Object()} method
+     */
+    OBJECT_METHOD_DESCRIPTOR = getMethodDescriptor(OBJECT_TYPE),
+    /**
      * Signature of {@code String()} method
      */
-    STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_TYPE),
+    STRING_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_TYPE),
     /**
      * Signature of {@code void(boolean)} method
      */
@@ -239,6 +245,29 @@ public class AsmUtil {
     OPCODES_ACC_PUBLIC_FINAL_SUPER = OPCODES_ACC_PUBLIC_FINAL | ACC_SUPER;
 
     /**
+     * Gets the internal name (aka VM-name) for the given {@link ClassLoader}-unique name.
+     *
+     * @param className name of the class
+     * @return internal name corresponding to the given class name
+     *
+     * @see Class#getName() as an appropriate source of this method's parameter
+     * @see #internalNameOf(Class) alias of this method accepting {@link Class} object
+     */
+    public @NotNull String classNameToInternalName(final @NonNull String className) {
+        return className.replace('.', '/');
+    }
+
+    /**
+     * Gets the internal name (aka VM-name) of the given class.
+     *
+     * @param type class whose internal name should be resolved
+     * @return internal name of the given class
+     */
+    public @NotNull String internalNameOf(final @NonNull Class<?> type) {
+        return classNameToInternalName(type.getName());
+    }
+
+    /**
      * Visits the class's static initializer method.
      *
      * @param clazz visitor of the class
@@ -276,7 +305,7 @@ public class AsmUtil {
 
         constructor.visitCode();
         // push `this` onto the stack
-        constructor.visitIntInsn(ALOAD, 0);
+        constructor.visitVarInsn(ALOAD, 0);
         // invoke constructor of the super-class
         constructor.visitMethodInsn(
                 INVOKESPECIAL, superClassInternalName, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_DESCRIPTOR, false
@@ -298,6 +327,128 @@ public class AsmUtil {
      */
     public void addEmptyConstructor(@NonNull final ClassVisitor classVisitor) {
         addEmptyConstructor(classVisitor, OBJECT_INTERNAL_NAME);
+    }
+
+    /**
+     * Gets the return-{@link Opcodes opcode} corresponding to the given non-void type.
+     *
+     * @param returnType type of the value for which to get the return-opcode
+     * @return return-opcode corresponding to the given type
+     *
+     * @apiNote behaviour for {@code returnType == void.type} is undefined
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    private int nonVoidReturnOpcodeNoChecks(final Class<?> returnType) {
+        if (returnType.isPrimitive()) {
+            if (returnType == boolean.class || returnType == byte.class
+                    || returnType == short.class || returnType == int.class) return IRETURN;
+            if (returnType == long.class) return LRETURN;
+            if (returnType == float.class) return FRETURN;
+            if (returnType == double.class) return DRETURN;
+        }
+
+        return ARETURN;
+    }
+
+    /**
+     * Gets the return-{@link Opcodes opcode} corresponding to the given type.
+     *
+     * @param returnType type of the value for which to get the return-opcode
+     * @return return-opcode corresponding to the given type
+     */
+    public int returnOpcode(final Class<?> returnType) {
+        return returnType == void.class ? RETURN : nonVoidReturnOpcodeNoChecks(returnType);
+    }
+
+    /**
+     * Gets the return-{@link Opcodes opcode} corresponding to the given non-void type.
+     *
+     * @param returnType type of the value for which to get the return-opcode
+     * @return return-opcode corresponding to the given type
+     *
+     * @throws IllegalArgumentException if {@code returnType} is of {@code void} type
+     */
+    public int nonVoidReturnOpcode(final Class<?> returnType) {
+        if (returnType == void.class) throw new IllegalStateException("returnType should not be of void-type");
+
+        return nonVoidReturnOpcodeNoChecks(returnType);
+    }
+
+    /**
+     * Gets the load-{@link Opcodes opcode} corresponding to the given type.
+     *
+     * @param loadedType type of the value for which to get the load-opcode
+     * @return load-opcode corresponding to the given type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int loadOpcode(final Class<?> loadedType) {
+        if (loadedType.isPrimitive()) {
+            if (loadedType == boolean.class || loadedType == byte.class
+                    || loadedType == short.class || loadedType == int.class) return ILOAD;
+            if (loadedType == long.class) return LLOAD;
+            if (loadedType == float.class) return FLOAD;
+            if (loadedType == double.class) return DLOAD;
+        }
+
+        return ALOAD;
+    }
+
+    /**
+     * Gets the array-load-{@link Opcodes opcode} corresponding to the array of given component type.
+     *
+     * @param loadedComponentType component type of the array for which to get the array-load-opcode
+     * @return array-load-opcode corresponding to the given array component type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int arrayLoadOpcode(final Class<?> loadedComponentType) {
+        if (loadedComponentType.isPrimitive()) {
+            if (loadedComponentType == boolean.class || loadedComponentType == byte.class) return BALOAD;
+            if (loadedComponentType == short.class) return SALOAD;
+            if (loadedComponentType == int.class) return IALOAD;
+            if (loadedComponentType == long.class) return LALOAD;
+            if (loadedComponentType == float.class) return FALOAD;
+            if (loadedComponentType == double.class) return DALOAD;
+        }
+
+        return AALOAD;
+    }
+
+    /**
+     * Gets the store-{@link Opcodes opcode} corresponding to the given type
+     *
+     * @param storedType type of the value for which to get the store-opcode
+     * @return store-opcode corresponding to the given type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int storeOpcode(final Class<?> storedType) {
+        if (storedType.isPrimitive()) {
+            if (storedType == boolean.class || storedType == byte.class
+                    || storedType == short.class || storedType == int.class) return ISTORE;
+            if (storedType == long.class) return LSTORE;
+            if (storedType == float.class) return FSTORE;
+            if (storedType == double.class) return DSTORE;
+        }
+
+        return ASTORE;
+    }
+
+    /**
+     * Gets the array-store-{@link Opcodes opcode} corresponding to the array of given component type.
+     *
+     * @param storedComponentType component type of the array for which to get the array-store-opcode
+     * @return array-store-opcode corresponding to the given array component type
+     */
+    @SuppressWarnings("ChainOfInstanceofChecks")
+    public int arrayStoreOpcode(final Class<?> storedComponentType) {
+        if (storedComponentType.isPrimitive()) {
+            if (storedComponentType == boolean.class || storedComponentType == byte.class) return BASTORE;
+            if (storedComponentType == short.class) return SASTORE;
+            if (storedComponentType == int.class) return IASTORE;
+            if (storedComponentType == long.class) return LASTORE;
+            if (storedComponentType == float.class) return FASTORE;
+            if (storedComponentType == double.class) return DASTORE;
+        }
+        return AASTORE;
     }
 
     /**

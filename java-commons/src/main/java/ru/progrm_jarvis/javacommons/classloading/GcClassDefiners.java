@@ -36,18 +36,7 @@ public class GcClassDefiners {
     });
 
     /**
-     * {@link ClassDefiner class definer} based on {@link Lookup}{@code #defineClass(byte[])}.
-     */
-    private final Lazy<@Nullable ClassDefiner> LOOKUP_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
-        try {
-            return new LookupClassDefiner();
-        } catch (final Throwable x) {
-            return null;
-        }
-    });
-
-    /**
-     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
+     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class-loaders} for defined classes.
      */
     private final Lazy<@Nullable ClassDefiner> TMP_CLASS_LOADER_CLASS_DEFINER = Lazy.createThreadSafe(() -> {
         try {
@@ -61,7 +50,7 @@ public class GcClassDefiners {
      * Default {@link ClassDefiner class definer}
      */
     private final Lazy<Optional<ClassDefiner>> DEFAULT_CLASS_DEFINER = Lazy.createThreadSafe(() -> Optional
-            .ofNullable(ObjectUtil.nonNull(UNSAFE_CLASS_DEFINER, LOOKUP_CLASS_DEFINER, TMP_CLASS_LOADER_CLASS_DEFINER))
+            .ofNullable(ObjectUtil.nonNull(UNSAFE_CLASS_DEFINER, TMP_CLASS_LOADER_CLASS_DEFINER))
     );
 
     /**
@@ -231,140 +220,19 @@ public class GcClassDefiners {
     }
 
     /**
-     * {@link ClassDefiner class definer} based on {@link Lookup}{@code #defineClass(byte[])}.
-     */
-    private static final class LookupClassDefiner implements ClassDefiner {
-
-        /**
-         * Reference to {@link Lookup}{@code #defineClass(byte[])}.
-         */
-        private static final LookupMethodClassDefiner CLASS_DEFINER;
-
-        static {
-            final MethodHandle defineClassMethodHandle;
-            {
-                val methodType = MethodType.methodType(Class.class, Lookup.class, byte[].class);
-
-                // LookupFactory can't be used as it's associated class-loader doesn't know about `AnonymousClassDefiner`
-                val lookup = MethodHandles.lookup();
-                final MethodHandle methodHandle;
-                try {
-                    methodHandle = lookup.findVirtual(
-                            Lookup.class, "defineClass",
-                            MethodType.methodType(Class.class, byte[].class)
-                    );
-                } catch (final NoSuchMethodException | IllegalAccessException e) {
-                    throw new Error(
-                            "Method `" + Lookup.class.getName() + ".defineClass(byte[])` method cannot be found", e
-                    );
-                }
-
-                final CallSite callSite;
-                try {
-                    callSite = LambdaMetafactory.metafactory(
-                            lookup, "defineClass", MethodType.methodType(LookupMethodClassDefiner.class),
-                            methodType, methodHandle, methodType
-                    );
-                } catch (final LambdaConversionException e) {
-                    throw new Error(
-                            "Cannot create lambda call-site for `" + Lookup.class.getName()
-                                    + ".defineClass(byte[])` method", e
-                    );
-                }
-                defineClassMethodHandle = callSite.getTarget();
-            }
-
-            try {
-                CLASS_DEFINER = (LookupMethodClassDefiner) defineClassMethodHandle.invokeExact();
-            } catch (final Throwable x) {
-                throw new Error(
-                        "Could not implement LookupClassDefiner via method `" + Lookup.class
-                                + ".defineClass(byte[])` method", x
-                );
-            }
-        }
-
-        @Override
-        public Class<?> defineClass(@NonNull final Lookup owner,
-                                    @Nullable final String name, @NonNull final byte[] bytecode) {
-            return CLASS_DEFINER.defineClass(owner, bytecode);
-        }
-
-        @Override
-        public Class<?>[] defineClasses(final @NonNull Lookup owner, @NonNull final byte[]... bytecodes) {
-            val length = bytecodes.length;
-            val classes = new Class<?>[length];
-
-            for (var i = 0; i < length; i++) classes[i] = CLASS_DEFINER.defineClass(owner, bytecodes[i]);
-
-            return classes;
-        }
-
-        @Override
-        public List<Class<?>> defineClasses(final @NonNull Lookup owner,
-                                            @NonNull final List<byte @NotNull []> bytecodes) {
-            val classes = new ArrayList<Class<?>>(bytecodes.size());
-
-            for (val bytecode : bytecodes) classes.add(CLASS_DEFINER.defineClass(owner, bytecode));
-
-            return classes;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public Class<?>[] defineClasses(@NonNull final Lookup owner,
-                                        @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
-            val length = bytecodes.length;
-            val classes = new Class<?>[length];
-
-            for (var i = 0; i < length; i++) classes[i] = CLASS_DEFINER.defineClass(owner, bytecodes[i].getSecond());
-
-            return classes;
-        }
-
-        @Override
-        public Map<String, Class<?>> defineClasses(@NonNull final Lookup owner,
-                                                   @NonNull final Map<String, byte[]> namedBytecode) {
-            val classes = new HashMap<String, Class<?>>(namedBytecode.size());
-
-            for (val entry : namedBytecode.entrySet()) classes.put(
-                    entry.getKey(), CLASS_DEFINER.defineClass(owner, entry.getValue())
-            );
-
-            return classes;
-        }
-
-        /**
-         * Functional interface for referencing {@link Lookup}{@code #defineClass(byte[])}
-         */
-        @FunctionalInterface
-        private interface LookupMethodClassDefiner {
-
-            /**
-             * Defines a class via the given {@link Lookup lookup}.
-             *
-             * @param lookup lookup to use for class definition
-             * @param bytecode bytecode of the class
-             * @return defined class
-             */
-            Class<?> defineClass(Lookup lookup, byte[] bytecode);
-        }
-    }
-
-    /**
-     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class loaders} for defined classes.
+     * {@link ClassDefiner class definer} creating temporary {@link ClassLoader class-loaders} for defined classes.
      */
     private static final class TmpClassLoaderClassDefiner implements ClassDefiner {
 
         @Override
         public Class<?> defineClass(@NonNull final Lookup owner,
                                     @Nullable final String name, @NonNull final byte[] bytecode) {
-            return new TmpClassLoader().define(name, bytecode);
+            return new TmpClassLoader(owner.lookupClass().getClassLoader()).define(name, bytecode);
         }
 
         @Override
         public Class<?>[] defineClasses(final @NonNull Lookup owner, @NonNull final byte[]... bytecodes) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
             val classes = new Class<?>[length];
@@ -376,7 +244,7 @@ public class GcClassDefiners {
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
                                             @NonNull final List<byte @NotNull []> bytecodes) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new ArrayList<Class<?>>(bytecodes.size());
             for (val bytecode : bytecodes) classes.add(classLoader.define(null, bytecode));
@@ -388,7 +256,7 @@ public class GcClassDefiners {
         @SuppressWarnings("unchecked")
         public Class<?>[] defineClasses(@NonNull final Lookup owner,
                                         @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
             val classes = new Class<?>[length];
@@ -403,7 +271,7 @@ public class GcClassDefiners {
         @Override
         public Map<String, Class<?>> defineClasses(@NonNull final Lookup owner,
                                                    @NonNull final Map<String, byte[]> namedBytecode) {
-            val classLoader = new TmpClassLoader();
+            val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new HashMap<String, Class<?>>(namedBytecode.size());
             for (val entry : namedBytecode.entrySet()) {
@@ -415,13 +283,22 @@ public class GcClassDefiners {
         }
 
         /**
-         * Temporary class loader which should be instantiated for groups of related classes which may be unloaded.
+         * Temporary class-loader which should be instantiated for groups of related classes which may be unloaded.
          */
         @Internal(
-                "This class loader is intended only for internal usage and should never be accessed outside "
+                "This class-loader is intended only for internal usage and should never be accessed outside "
                         + "as there should be no strong references to it"
         )
         private static class TmpClassLoader extends ClassLoader {
+
+            /**
+             * Instantiates a new temporary class-loader using the given parent.
+             *
+             * @param parent parent class-loader
+             */
+            private TmpClassLoader(final ClassLoader parent) {
+                super(parent);
+            }
 
             /**
              * Defines a class by the given bytecode.

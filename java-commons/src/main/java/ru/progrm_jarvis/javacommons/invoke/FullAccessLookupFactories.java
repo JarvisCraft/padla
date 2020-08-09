@@ -93,9 +93,9 @@ public class FullAccessLookupFactories {
     /**
      * Default lookup factory to use
      */
-    private final Lazy<Optional<LookupFactory>> DEFAULT_LOOKUP_FACTORY = Lazy.createThreadSafe(() -> Optional.ofNullable(
-            ObjectUtil.nonNull(TRUSTED_LOOKUP_FACTORY, INSTANTIATING_LOOKUP_FACTORY)
-    ));
+    private final Lazy<Optional<LookupFactory>> DEFAULT_LOOKUP_FACTORY = Lazy.createThreadSafe(() -> Optional
+            .ofNullable(ObjectUtil.nonNull(TRUSTED_LOOKUP_FACTORY, INSTANTIATING_LOOKUP_FACTORY))
+    );
 
     /**
      * Gets the default {@link LookupFactory lookup factory}.
