@@ -47,7 +47,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<AsmTextModelFactory<?, ?>> INSTANCE = Lazy.createThreadSafe(AsmTextModelFactory::create);
+    private static final Lazy<TextModelFactory<?>> INSTANCE = Lazy.createThreadSafe(AsmTextModelFactory::create);
 
     /**
      * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
@@ -78,7 +78,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
         STRING_CONCAT_FACTORY_AVAILABLE = stringConcatFactoryAvailable;
 
-        log.log(Level.FINE, // debug StrinConcatFactory availability
+        log.log(Level.FINE, // debug StringConcatFactory availability
                 () -> "java.lang.invoke.StringConcatFactory is "
                         + (STRING_CONCAT_FACTORY_AVAILABLE ? "available" : "unavailable")
         );
@@ -98,7 +98,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * @param <T> type of object according to which the created text models are formatted
      * @return created {@link AsmTextModelFactory ASM-based text model factory} with the given configuration
      */
-    public static <T> AsmTextModelFactory<T, ?> create(@NonNull final Configuration configuration) {
+    public static <T> @NotNull TextModelFactory<T> create(@NonNull final Configuration configuration) {
         return new AsmTextModelFactory<>(configuration);
     }
 
@@ -108,7 +108,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * @param <T> type of object according to which the created text models are formatted
      * @return created {@link AsmTextModelFactory ASM-based text model factory} with the default configuration
      */
-    public static <T> AsmTextModelFactory<T, ?> create() {
+    public static <T> @NotNull TextModelFactory<T> create() {
         return create(SimpleConfiguration.getDefault());
     }
 
@@ -119,8 +119,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> @NotNull AsmTextModelFactory<T, ?> get() {
-        return (AsmTextModelFactory<T, ?>) INSTANCE.get();
+    public static <T> @NotNull TextModelFactory<T> get() {
+        return (TextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
@@ -144,15 +144,16 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Lookup of this class.
          */
-        protected static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        protected static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
-        public static final String STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE_CONCURRENCY_SYSTEM_PROPERTY_NAME
+        public static final @NotNull String STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE_CONCURRENCY_SYSTEM_PROPERTY_NAME
                 = TextModelBuilder.class.getCanonicalName() + ".strings-to-string-method-descriptor-cache-concurrency";
 
         /**
          * Cache of descriptors of methods accepting {@link String string arguments} returning {@link String a string}.
          */
-        protected static Cache<Integer, String> STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = CacheBuilder
+        protected static final @NotNull Cache<@NotNull Integer, @NotNull String>
+                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = CacheBuilder
                 .newBuilder()
                 .softValues()
                 .concurrencyLevel(Math.max(1, Integer.getInteger(
@@ -163,7 +164,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        @NonNull protected static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+        protected static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
                 TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
@@ -176,7 +177,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * ASM type of {@link TextModelBuilder}
          */
-        @NonNull protected static final Type TEXT_MODEL_BUILDER_TYPE = getType(TextModelBuilder.class),
+        protected static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(TextModelBuilder.class),
         /**
          * ASM type of {@link StringBuilder}
          */
@@ -192,7 +193,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Prefix of generated fields after which the index will go
          */
-        @NonNull protected static final String GENERATED_FIELD_NAME_PREFIX = "D",
+        protected static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D",
         /**
          * Name of parent generic in current context
          */
@@ -252,23 +253,23 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Signature of {@code String()} method
          */
-        STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_TYPE),
+        STRING_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_TYPE),
         /**
          * Signature of {@code StringBuilder(String)} method
          */
-        STRING_BUILDER_STRING_METHOD_SIGNATURE = getMethodDescriptor(STRING_BUILDER_TYPE, STRING_TYPE),
+        STRING_BUILDER_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_BUILDER_TYPE, STRING_TYPE),
         /**
          * Signature of {@code TextModel(String)} method
          */
-        TEXT_MODEL_STRING_METHOD_SIGNATURE = getMethodDescriptor(TEXT_MODEL_TYPE, STRING_TYPE),
+        TEXT_MODEL_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(TEXT_MODEL_TYPE, STRING_TYPE),
         /**
          * Signature of {@code StringBuilder(char)} method
          */
-        STRING_BUILDER_CHAR_METHOD_SIGNATURE = getMethodDescriptor(STRING_BUILDER_TYPE, CHAR_TYPE),
+        STRING_BUILDER_CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_BUILDER_TYPE, CHAR_TYPE),
         /**
          * Generic signature of {@link TextModel#getText(Object)} method
          */
-        STRING_GENERIC_T_METHOD_SIGNATURE = '(' + PARENT_T_GENERIC_DESCRIPTOR + ')' + STRING_DESCRIPTOR,
+        STRING_GENERIC_T_METHOD_DESCRIPTOR = '(' + PARENT_T_GENERIC_DESCRIPTOR + ')' + STRING_DESCRIPTOR,
         /* ******************************************* Generic signatures ******************************************* */
         /**
          * Generic descriptor of {@link TextModel}
@@ -302,7 +303,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Length of {@link #TEXT_MODEL_SIGNATURE}
          */
-        TEXT_MODEL_GENERIC_DESCRIPTOR_LENGTH = TEXT_MODEL_SIGNATURE.length();
+        TEXT_MODEL_SIGNATURE_LENGTH = TEXT_MODEL_SIGNATURE.length();
 
         /**
          * Natural logarithm of {@link #STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS}
@@ -317,11 +318,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * ASM type of {@code java.lang.invoke.StringConcatFactory}
          */
-        @Nullable private static final Type STRING_CONCAT_FACTORY_TYPE;
+        private static final @Nullable Type STRING_CONCAT_FACTORY_TYPE;
         /**
          * Name of {@code java.lang.invoke.StringConcatFactory.concat(Lookup, String, MethodType)}
          */
-        @NonNull private static final String MAKE_CONCAT_METHOD_NAME = "makeConcat",
+        private static final @NotNull String MAKE_CONCAT_METHOD_NAME = "makeConcat",
         /**
          * Name of {@code java.lang.invoke.StringConcatFactory .makeConcatWithConstants(Lookup, String, MethodType,
          * String, Object[])}
@@ -330,7 +331,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Handle of {@code java.lang.invoke.StringConcatFactory.concat(Lookup, String, MethodType)}
          */
-        @Nullable private static final Handle MAKE_CONCAT_HANDLE,
+        private static final @Nullable Handle MAKE_CONCAT_HANDLE,
         /**
          * Handle of {@code java.lang.invoke.StringConcatFactory .makeConcatWithConstants(Lookup, String, MethodType,
          * String, Object[])}
@@ -341,7 +342,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Internal name of {@link TextModel}
          */
-        @Nullable private static final String STRING_CONCAT_FACTORY_INTERNAL_NAME,
+        private static final @Nullable String STRING_CONCAT_FACTORY_INTERNAL_NAME,
         /**
          * Descriptor of {@link TextModel}
          */
@@ -379,7 +380,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Array whose only value is {@link #TEXT_MODEL_INTERNAL_NAME}.
          */
-        protected static final String[] TEXT_MODEL_INTERNAL_NAME_ARRAY = new String[]{TEXT_MODEL_INTERNAL_NAME};
+        protected static final @NotNull String @NotNull [] TEXT_MODEL_INTERNAL_NAME_ARRAY = {TEXT_MODEL_INTERNAL_NAME};
 
         //</editor-fold>
 
@@ -416,26 +417,22 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
 
         @Override
-        protected void endModification(@NotNull final Node.StaticNode<T> staticNode) {
+        protected void endModification(final @NotNull Node.StaticNode<T> staticNode) {
             super.endModification(staticNode);
 
-            if (isStringConcatFactoryEnabled()) {
-                if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
-                    staticNodeHandledAsDynamicCount++;
-                    staticSpecialNodeLength += staticNode.getTextLength();
-                }
+            if (isStringConcatFactoryEnabled() &&staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+                staticNodeHandledAsDynamicCount++;
+                staticSpecialNodeLength += staticNode.getTextLength();
             }
         }
 
         @Override
-        @NotNull
-        protected Node<T> newStaticNode(@NotNull final String text) {
+        protected @NotNull Node<T> newStaticNode(final @NotNull String text) {
             return new Node.StaticNode<>(text);
         }
 
         @Override
-        @NotNull
-        protected Node<T> newDynamicNode(@NotNull final TextModel<T> content) {
+        protected @NotNull Node<T> newDynamicNode(final @NotNull TextModel<T> content) {
             return new Node.DynamicNode<>(content);
         }
 
@@ -450,7 +447,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          */
         @Deprecated
         @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
-        public static TextModel<?> internal$getDynamicTextModel(@NotNull final String uniqueKey) {
+        public static @NotNull TextModel<?> internal$getDynamicTextModel(final @NotNull String uniqueKey) {
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }
 
@@ -462,7 +459,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return descriptor of the name with the specified signature
          */
         @SneakyThrows(ExecutionException.class)
-        protected static String stringsToStringDescriptor(@Nonnegative final int stringArgumentsCount) {
+        protected static @NotNull String stringsToStringDescriptor(final @Nonnegative int stringArgumentsCount) {
             return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, () -> {
                 val result = new StringBuilder(
                         STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */
@@ -510,7 +507,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                 return (TextModel<T>) constructor.newInstance();
             } catch (final NoSuchMethodException | InstantiationException
                     | IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException("Could not compile and instantiate TextModel from the given nodes");
+                throw new IllegalStateException("Could not compile and instantiate TextModel from the given nodes", e);
             }
         }
 
@@ -521,12 +518,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param clazz class-writer used for generating the implementation
          * @param internalClassName internal name of the generated class
          */
-        protected void asm$implementGetTextMethodViaStringBuilder(@NotNull final ClassWriter clazz,
-                                                                  @NotNull final String internalClassName) {
+        protected void asm$implementGetTextMethodViaStringBuilder(final @NotNull ClassWriter clazz,
+                                                                  final @NotNull String internalClassName) {
             // Implement `TextModel#getText(T)` method and add fields
             val method = clazz.visitMethod(
                     ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
-                    STRING_GENERIC_T_METHOD_SIGNATURE, null
+                    STRING_GENERIC_T_METHOD_DESCRIPTOR, null
             );
 
             method.visitCode();
@@ -637,7 +634,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             // invoke `StringBuilder#toString()`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
-                    TO_STRING_METHOD_NAME, STRING_METHOD_SIGNATURE, false
+                    TO_STRING_METHOD_NAME, STRING_METHOD_DESCRIPTOR, false
             );
             // Return String from method
             method.visitInsn(ARETURN);
@@ -653,8 +650,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param clazz class-writer used for generating the implementation
          * @param internalClassName internal name of the generated class
          */
-        protected void asm$implementGetTextMethodViaStringConcatFactory(@NotNull final ClassWriter clazz,
-                                                                        @NotNull final String internalClassName
+        protected void asm$implementGetTextMethodViaStringConcatFactory(final @NotNull ClassWriter clazz,
+                                                                        final @NotNull String internalClassName
         ) {
             // The Lookup will be needed by the runtime for `invokedynamic` usage
             AsmUtil.addLookup(clazz);
@@ -662,7 +659,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             // Implement `TextModel#getText(T)` method and add fields
             val method = clazz.visitMethod(
                     ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
-                    STRING_GENERIC_T_METHOD_SIGNATURE, null
+                    STRING_GENERIC_T_METHOD_DESCRIPTOR, null
             );
 
             method.visitCode();
@@ -994,9 +991,9 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param fieldName name of the field of type {@link TextModel}
          */
         protected static void asm$pushStaticTextModelFieldGetTextInvocationResult(
-                @NotNull final MethodVisitor method,
-                @NotNull final String internalClassName,
-                @NotNull final String fieldName) {
+                final @NotNull MethodVisitor method,
+                final @NotNull String internalClassName,
+                final @NotNull String fieldName) {
             // Get value of field storing dynamic value
             method.visitFieldInsn(GETSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
             // Push target
@@ -1013,11 +1010,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param method method visitor through which the code should be updated
          */
-        protected static void asm$invokeStringBuilderAppendString(@NotNull final MethodVisitor method) {
+        protected static void asm$invokeStringBuilderAppendString(final @NotNull MethodVisitor method) {
             // Invoke `StringBuilder.append(String)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
-                    APPEND_METHOD_NAME, STRING_BUILDER_STRING_METHOD_SIGNATURE, false
+                    APPEND_METHOD_NAME, STRING_BUILDER_STRING_METHOD_DESCRIPTOR, false
             );
         }
 
@@ -1030,7 +1027,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             // Invoke `StringBuilder.append(char)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
-                    APPEND_METHOD_NAME, STRING_BUILDER_CHAR_METHOD_SIGNATURE, false
+                    APPEND_METHOD_NAME, STRING_BUILDER_CHAR_METHOD_DESCRIPTOR, false
             );
         }
 
@@ -1044,11 +1041,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param fieldName name of the field to store value
          * @param value value of the field (dynamic text model)
          */
-        protected static void asm$addStaticFieldWithInitializer(@NotNull final ClassVisitor clazz,
-                                                                @NotNull final String internalClassName,
-                                                                @NotNull final MethodVisitor staticInitializer,
-                                                                @NotNull final String fieldName,
-                                                                @NotNull final TextModel<?> value) {
+        protected static void asm$addStaticFieldWithInitializer(final @NotNull ClassVisitor clazz,
+                                                                final @NotNull String internalClassName,
+                                                                final @NotNull MethodVisitor staticInitializer,
+                                                                final @NotNull String fieldName,
+                                                                final @NotNull TextModel<?> value) {
             // add field
             clazz.visitField(
                     OPCODES_ACC_PUBLIC_STATIC_FINAL /* less access checks & possible JIT folding */,
@@ -1061,7 +1058,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             // invoke `TextModel internal$getDynamicTextModel(String)`
             staticInitializer.visitMethodInsn(
                     INVOKESTATIC, TEXT_MODEL_BUILDER_INTERNAL_NAME,
-                    INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME, TEXT_MODEL_STRING_METHOD_SIGNATURE, false
+                    INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME, TEXT_MODEL_STRING_METHOD_DESCRIPTOR, false
             );
 
             // set the field to the computed value
@@ -1112,13 +1109,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                 }
 
                 @Override
-                public StaticNode<T> asStatic() {
+                public @NotNull StaticNode<T> asStatic() {
                     return this;
                 }
 
                 @Override
-                @NotNull
-                public String getText() {
+                public @NotNull String getText() {
                     return text.toString();
                 }
 
@@ -1128,7 +1124,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                 }
 
                 @Override
-                public void appendText(@NotNull final String text) {
+                public void appendText(final @NotNull String text) {
                     this.text.append(text);
 
                     // operator `|=` cannot be used here as it is not lazy (the right side of expression is always used)
@@ -1145,13 +1141,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
              * @param <T> type of object according to which the created text models are formatted
              */
             @Value
-            @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
             class DynamicNode<T> implements AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>, Node<T> {
 
                 /**
                  * Dynamic content of this node
                  */
-                @NotNull final TextModel<T> content;
+                @NotNull TextModel<T> content;
 
                 @Override
                 public boolean isDynamic() {
@@ -1201,7 +1196,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      *
      * @return builder of a {@link Configuration}
      */
-    public static SimpleConfiguration.SimpleConfigurationBuilder configuration() {
+    public static @NotNull SimpleConfiguration.SimpleConfigurationBuilder configuration() {
         return SimpleConfiguration.builder();
     }
 
