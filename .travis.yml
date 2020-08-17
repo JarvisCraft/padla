@@ -15,7 +15,7 @@ jobs:
       name: Default JDK
       install: source ./install-jdk.sh --verbose
     - name: JDK 8 # LTS
-      jdk: openjdk8
+      install: source ./install-jdk.sh --verbose --feature 11
     - name: JDK 11 # LTS
       install: source ./install-jdk.sh --verbose --feature 11
     - name: JDK 14 # Latest GA experimental
