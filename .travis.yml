@@ -1,54 +1,32 @@
 # Programming language
 language: java
 
-before_script:
+before_install:
   # Install the tool to switch between JDK versions
   - wget https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh
 
+script: mvn verify -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+
 ### Maven basic build ###
-# Build project, installing to local repo (skip testing and javadoc generation (if those exist))
-install:
-  # Normal build part
-  - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
     # 1. Test project against various JDKs
     - stage: Test against various JDKs
-      # Current stable version whatever it is
-      env: JDK=ea
-      script:
-        - source ./install-jdk.sh --verbose --feature ea
-        - mvn -q verify
-    - # Java 14 (very experimental)
-      env: JDK=14
-      script:
-        - source ./install-jdk.sh --verbose --feature 14
-        - mvn -q verify
-    - # Java 13 (upcoming stable (experimental))
-      env: JDK=13
-      script:
-        - source ./install-jdk.sh --verbose --feature 13
-        - mvn -q verify
-    - # Java 12 (latest stable)
-      env: JDK=12
-      script:
-        - source ./install-jdk.sh --verbose --feature 12
-        - mvn -q verify
-    - # Java 11 (LTS)
-      env: JDK=11
-      script:
-        - source ./install-jdk.sh --verbose --feature 11
-        - mvn -q verify
-    - # Java 8 (good == old == stable)
-      env: JDK=8
+      name: Default JDK
+      install: source ./install-jdk.sh --verbose
+    - name: JDK 8 # LTS
       jdk: openjdk8
-      script: mvn -q verify
+    - name: JDK 11 # LTS
+      install: source ./install-jdk.sh --verbose --feature 11
+    - name: JDK 14 # Latest GA experimental
+      install: source ./install-jdk.sh --verbose --feature 14
+    - name: JDK 15 # Latest non-GA experimental
+      install: source ./install-jdk.sh --verbose --feature 15
     # 2. Deploy
     - stage: deploy
       jdk: openjdk8 # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
       if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
-      script:
-        - bash attempt-travis-deploy.sh
+      deploy: source ./attempt-travis-deploy.sh
 
 # Cached directories
 cache:
