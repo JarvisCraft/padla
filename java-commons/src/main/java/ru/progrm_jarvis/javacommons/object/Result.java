@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * @param <T> type of successful result
  * @param <E> type of error result
  */
-public interface Result<T, E> {
+public interface Result<T, E> extends Supplier<T> {
 
     /* ************************************************* Factories ************************************************* */
 
@@ -121,6 +121,11 @@ public interface Result<T, E> {
 
     /* ********************************************* Unwrapping methods ********************************************* */
 
+    @Override
+    default T get() {
+        return unwrap();
+    }
+
     /**
      * Gets the value of this result throwing a {@link NotSuccessException}
      * if this is an {@link #isError() error result}.
@@ -210,7 +215,7 @@ public interface Result<T, E> {
      * @see #errorOrElseThrow(Supplier) analog with exception specification
      * @see #errorOrElseSneakyThrow(Supplier) analog with unchecked exception specification
      */
-    E error();
+    E unwrapError();
 
     /**
      * Gets the error of this result throwing a {@link NotErrorException}
@@ -220,7 +225,7 @@ public interface Result<T, E> {
      * @return error value of this result
      *
      * @throws NotErrorException if this is a {@link #isSuccess() successful result}
-     * @see #error() analog with default message
+     * @see #unwrapError() analog with default message
      * @see #errorOrElseThrow(Supplier) analog with exception specification
      * @see #errorOrElseSneakyThrow(Supplier) analog with unchecked exception specification
      */
@@ -234,7 +239,7 @@ public interface Result<T, E> {
      * @return error value of this result
      *
      * @throws X if this is an {@link #isError() error result}
-     * @see #error() default message {@link NotErrorException} analog
+     * @see #unwrapError() default message {@link NotErrorException} analog
      * @see #expectError(String) {@link NotErrorException} analog
      * @see #errorOrElseSneakyThrow(Supplier) unchecked equivalent
      */
@@ -249,7 +254,7 @@ public interface Result<T, E> {
      * @return error value of this result
      *
      * @throws X if this is an {@link #isError() error result}
-     * @see #error() default message {@link NotErrorException} analog
+     * @see #unwrapError() default message {@link NotErrorException} analog
      * @see #expectError(String) {@link NotErrorException} analog
      * @see #errorOrElseThrow(Supplier) checked equivalent
      */
@@ -309,7 +314,7 @@ public interface Result<T, E> {
     /* ********************************************* Conversion methods ********************************************* */
 
     /**
-     * Converts this result to an {@link Optional}.
+     * Converts this result to an {@link Optional} of its successful value.
      *
      * @return {@link Optional optional} containing the successful result's value
      * if this is a {@link #isSuccess() successful result}
@@ -318,13 +323,31 @@ public interface Result<T, E> {
     @NotNull Optional<T> asOptional();
 
     /**
-     * Converts this result to a {@link ValueContainer}.
+     * Converts this result to an {@link Optional} of its error.
+     *
+     * @return {@link Optional optional} containing the error result's error
+     * if this is an {@link #isError() error result}
+     * and an {@link Optional#empty() empty optional} otherwise
+     */
+    @NotNull Optional<E> asErrorOptional();
+
+    /**
+     * Converts this result to a {@link ValueContainer} of its successful value.
      *
      * @return {@link ValueContainer value container} containing the successful result's value
      * if this is a {@link #isSuccess() successful result}
-     * and an {@link ValueContainer#empty() empty value-container} otherwise
+     * or an {@link ValueContainer#empty() empty value-container} otherwise
      */
     @NotNull ValueContainer<T> asValueContainer();
+
+    /**
+     * Converts this result to a {@link ValueContainer} of its error value.
+     *
+     * @return {@link ValueContainer value container} containing the error result's error
+     * if this is an {@link #isError() error result}
+     * or an {@link ValueContainer#empty() empty value-container} otherwise
+     */
+    @NotNull ValueContainer<E> asErrorValueContainer();
 
     /**
      * Representation of a {@link #isSuccess() successful} {@link Result result}.
@@ -393,7 +416,7 @@ public interface Result<T, E> {
         }
 
         @Override
-        public E error() {
+        public E unwrapError() {
             throw new NotErrorException("This is not an error result");
         }
 
@@ -441,8 +464,18 @@ public interface Result<T, E> {
         }
 
         @Override
+        public @NotNull Optional<E> asErrorOptional() {
+            return Optional.empty();
+        }
+
+        @Override
         public @NotNull ValueContainer<T> asValueContainer() {
             return ValueContainer.of(value);
+        }
+
+        @Override
+        public @NotNull ValueContainer<E> asErrorValueContainer() {
+            return ValueContainer.empty();
         }
 
         //</editor-fold>
@@ -515,7 +548,7 @@ public interface Result<T, E> {
         }
 
         @Override
-        public E error() {
+        public E unwrapError() {
             return error;
         }
 
@@ -563,8 +596,18 @@ public interface Result<T, E> {
         }
 
         @Override
+        public @NotNull Optional<E> asErrorOptional() {
+            return Optional.ofNullable(error);
+        }
+
+        @Override
         public @NotNull ValueContainer<T> asValueContainer() {
             return ValueContainer.empty();
+        }
+
+        @Override
+        public @NotNull ValueContainer<E> asErrorValueContainer() {
+            return ValueContainer.of(error);
         }
 
         //</editor-fold>
@@ -646,7 +689,7 @@ public interface Result<T, E> {
     }
 
     /**
-     * An exception thrown whenever {@link #error()} is called on a successful result.
+     * An exception thrown whenever {@link #unwrapError()} is called on a successful result.
      */
     @NoArgsConstructor
     class NotErrorException extends RuntimeException {
