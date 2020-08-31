@@ -7,7 +7,7 @@ import java.util.Deque;
 import java.util.Iterator;
 
 public class ConcurrentDequeWrapper<E, T extends Deque<E>>
-        extends ConcurrentCollectionWrapper<E, T> implements Deque<E> {
+        extends ConcurrentQueueWrapper<E, T> implements Deque<E> {
 
     public ConcurrentDequeWrapper(@NonNull final T wrapped) {
         super(wrapped);
@@ -150,56 +150,6 @@ public class ConcurrentDequeWrapper<E, T extends Deque<E>>
             return wrapped.removeLastOccurrence(o);
         } finally {
             writeLock.unlock();
-        }
-    }
-
-    @Override
-    public boolean offer(final E e) {
-        writeLock.lock();
-        try {
-            return wrapped.offer(e);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public E remove() {
-        writeLock.lock();
-        try {
-            return wrapped.remove();
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public E poll() {
-        writeLock.lock();
-        try {
-            return wrapped.poll();
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public E element() {
-        readLock.lock();
-        try {
-            return wrapped.element();
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    @Override
-    public E peek() {
-        readLock.lock();
-        try {
-            return wrapped.peek();
-        } finally {
-            readLock.unlock();
         }
     }
 
