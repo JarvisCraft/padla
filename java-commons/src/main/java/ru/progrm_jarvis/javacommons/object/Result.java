@@ -1,7 +1,9 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -294,9 +296,14 @@ public interface Result<T, E> {
      */
     @NotNull ValueContainer<T> asValueContainer();
 
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    final class Success<T, E> implements Result<T, E> {
+    /**
+     * Representation of a {@link #isSuccess() successful} {@link Result result}.
+     *
+     * @param <T> type of successful result
+     * @param <E> type of error result
+     */
+    @Value
+    class Success<T, E> implements Result<T, E> {
 
         /**
          * Value wrapped by this result
@@ -411,9 +418,14 @@ public interface Result<T, E> {
         //</editor-fold>
     }
 
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    final class Error<T, E> implements Result<T, E> {
+    /**
+     * Representation of an {@link #isError() error} {@link Result result}.
+     *
+     * @param <T> type of successful result
+     * @param <E> type of error result
+     */
+    @Value
+    class Error<T, E> implements Result<T, E> {
 
         /**
          * Error wrapped by this result
