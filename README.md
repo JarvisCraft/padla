@@ -26,5 +26,5 @@ As its dependencies PADLA uses:
   - [Hamcrest](https://github.com/hamcrest/JavaHamcrest) for more creating more readable tests
   - [Mockito](https://github.com/mockito/mockito) for mocking in tests
 - Additional (these are not inherited by default and are required only if using specific classes):
-  - [ASM](https://gitlab.ow2.org/asm/asm) for runtime class generation (if using classes annotated with `BytecodeLibrary(ASM)`)
-  - [Javassist](https://github.com/jboss-javassist/javassist) for runtime class generation (if using classes annotated with `BytecodeLibrary(JAVASSIST)`)
+  - [ASM](https://gitlab.ow2.org/asm/asm) for runtime class generation (if using classes annotated with `@UsesBytecodeModification(CommonBytecodeLibrary.ASM)`)
+  - [Javassist](https://github.com/jboss-javassist/javassist) for runtime class generation (if using classes annotated with `@UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)`)
