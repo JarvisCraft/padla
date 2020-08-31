@@ -28,7 +28,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return created successful result
      */
     static <T, E> @NotNull Result<T, E> success(final T value) {
-        return new Success<>(value);
+        return value == null ? nullSuccess() : new Success<>(value);
     }
 
     /**
@@ -52,7 +52,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return created error result
      */
     static <T, E> @NotNull Result<T, E> error(final E error) {
-        return new Error<>(error);
+        return error == null ? nullError() : new Error<>(error);
     }
 
     /**
@@ -439,7 +439,7 @@ public interface Result<T, E> extends Supplier<T> {
 
         @Override
         public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
-            return new Success<>(mappingFunction.apply(value));
+            return success(mappingFunction.apply(value));
         }
 
         @Override
@@ -464,7 +464,7 @@ public interface Result<T, E> extends Supplier<T> {
 
         @Override
         public @NotNull Result<E, T> swap() {
-            return new Error<>(value);
+            return error(value);
         }
 
         //</editor-fold>
@@ -606,7 +606,7 @@ public interface Result<T, E> extends Supplier<T> {
 
         @Override
         public @NotNull Result<E, T> swap() {
-            return new Success<>(error);
+            return success(error);
         }
 
         //</editor-fold>
