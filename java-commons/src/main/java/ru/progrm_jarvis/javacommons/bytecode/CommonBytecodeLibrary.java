@@ -44,7 +44,7 @@ public enum CommonBytecodeLibrary implements BytecodeLibrary {
     /**
      * Lazy marker indicating whether this bytecode library seems to be available (according to last check) or not
      */
-    Lazy<AtomicBoolean> AVAILABLE = Lazy.createThreadSafe(() -> new AtomicBoolean(forceCheckAvailability()));
+    Lazy<AtomicBoolean> available = Lazy.createThreadSafe(() -> new AtomicBoolean(forceCheckAvailability()));
 
     /**
      * Checks if this bytecode library seems to be available at runtime.
@@ -59,16 +59,16 @@ public enum CommonBytecodeLibrary implements BytecodeLibrary {
 
     @Override
     public boolean isAvailable() {
-        return AVAILABLE.get().get();
+        return available.get().get();
     }
 
     @Override
     public boolean checkAvailability() {
-        if (AVAILABLE.isInitialized()) {
+        if (available.isInitialized()) {
             val available = forceCheckAvailability();
-            AVAILABLE.get().set(available);
+            this.available.get().set(available);
 
             return available;
-        } else return AVAILABLE.get().get(); // simply perform lazy initialization
+        } else return available.get().get(); // simply perform lazy initialization
     }
 }
