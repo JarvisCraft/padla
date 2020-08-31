@@ -133,8 +133,8 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @throws NotSuccessException if this is an {@link #isError() error result}
      * @see #expect(String) analog with exception message specification
-     * @see #orElseThrow(Supplier) analog with exception specification
-     * @see #orElseSneakyThrow(Supplier) analog with unchecked exception specification
+     * @see #orElseThrow(Function) analog with exception specification
+     * @see #orElseSneakyThrow(Function) analog with unchecked exception specification
      */
     T unwrap();
 
@@ -147,8 +147,8 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @throws NotSuccessException if this is an {@link #isError() error result}
      * @see #unwrap() analog with default message
-     * @see #orElseThrow(Supplier) analog with exception specification
-     * @see #orElseSneakyThrow(Supplier) analog with unchecked exception specification
+     * @see #orElseThrow(Function) analog with exception specification
+     * @see #orElseSneakyThrow(Function) analog with unchecked exception specification
      */
     T expect(String message);
 
@@ -156,33 +156,33 @@ public interface Result<T, E> extends Supplier<T> {
      * Gets the value of this result throwing {@code X} got by using the specified supplier
      * if this is an {@link #isError() error result}.
      *
-     * @param exceptionSupplier supplier of a thrown exception
+     * @param exceptionFactory factory of a thrown exception consuming the error value of this result
      * @param <X> type of exception thrown if this is an {@link #isError()} () error result}
      * @return successful value of this result
      *
      * @throws X if this is an {@link #isError() error result}
      * @see #expect(String) {@link NotSuccessException} analog
      * @see #unwrap() default message {@link NotSuccessException} analog
-     * @see #orElseSneakyThrow(Supplier) unchecked equivalent
+     * @see #orElseSneakyThrow(Function) unchecked equivalent
      */
-    <X extends Throwable> T orElseThrow(@NonNull Supplier<X> exceptionSupplier) throws X;
+    <X extends Throwable> T orElseThrow(@NonNull Function<E, X> exceptionFactory) throws X;
 
     /**
      * Gets the value of this result throwing {@code X} got by using the specified supplier
      * if this is an {@link #isError() error result}. Throws {@code X} if this is an {@link #isError() error result}.
-     * This differs from {@link #orElseThrow(Supplier)} as this does not declare {@code X} as a thrown exception.
+     * This differs from {@link #orElseThrow(Function)} as this does not declare {@code X} as a thrown exception.
      *
-     * @param exceptionSupplier supplier of a thrown exception
+     * @param exceptionFactory factory of a thrown exception consuming the error value of this result
      * @param <X> type of exception thrown if this is an {@link #isError()} () error result}
      * @return successful value of this result
      *
      * @see #expect(String) {@link NotSuccessException} analog
      * @see #unwrap() default message {@link NotSuccessException} analog
-     * @see #orElseThrow(Supplier) checked equivalent
+     * @see #orElseThrow(Function) checked equivalent
      */
     @SneakyThrows
-    default <X extends Throwable> T orElseSneakyThrow(@NonNull Supplier<X> exceptionSupplier) {
-        return orElseThrow(exceptionSupplier);
+    default <X extends Throwable> T orElseSneakyThrow(@NonNull Function<E, X> exceptionFactory) {
+        return orElseThrow(exceptionFactory);
     }
 
     /**
@@ -212,8 +212,8 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @throws NotErrorException if this is a {@link #isSuccess() successful result}
      * @see #expectError(String) analog with exception message specification
-     * @see #errorOrElseThrow(Supplier) analog with exception specification
-     * @see #errorOrElseSneakyThrow(Supplier) analog with unchecked exception specification
+     * @see #errorOrElseThrow(Function) analog with exception specification
+     * @see #errorOrElseSneakyThrow(Function) analog with unchecked exception specification
      */
     E unwrapError();
 
@@ -226,8 +226,8 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @throws NotErrorException if this is a {@link #isSuccess() successful result}
      * @see #unwrapError() analog with default message
-     * @see #errorOrElseThrow(Supplier) analog with exception specification
-     * @see #errorOrElseSneakyThrow(Supplier) analog with unchecked exception specification
+     * @see #errorOrElseThrow(Function) analog with exception specification
+     * @see #errorOrElseSneakyThrow(Function) analog with unchecked exception specification
      */
     E expectError(String message);
 
@@ -235,33 +235,33 @@ public interface Result<T, E> extends Supplier<T> {
      * Gets the error of this result throwing {@code X} got by using the specified supplier
      * if this is a {@link #isSuccess() successful result}.
      *
-     * @param exceptionSupplier supplier of a thrown exception
+     * @param exceptionFactory factory of a thrown exception consuming the successful value of this result
      * @param <X> type of exception thrown if this is a {@link #isSuccess() successful result}
      * @return error value of this result
      *
      * @throws X if this is an {@link #isError() error result}
      * @see #unwrapError() default message {@link NotErrorException} analog
      * @see #expectError(String) {@link NotErrorException} analog
-     * @see #errorOrElseSneakyThrow(Supplier) unchecked equivalent
+     * @see #errorOrElseSneakyThrow(Function) unchecked equivalent
      */
-    <X extends Throwable> E errorOrElseThrow(@NonNull Supplier<X> exceptionSupplier) throws X;
+    <X extends Throwable> E errorOrElseThrow(@NonNull Function<T, X> exceptionFactory) throws X;
 
     /**
      * Gets the error of this result throwing {@code X} got by using the specified supplier
      * if this is a {@link #isSuccess() successful result}. Throws {@code X} if this is an {@link #isError() error result}.
-     * This differs from {@link #orElseThrow(Supplier)} as this does not declare {@code X} as a thrown exception.
+     * This differs from {@link #orElseThrow(Function)} as this does not declare {@code X} as a thrown exception.
      *
-     * @param exceptionSupplier supplier of a thrown exception
+     * @param exceptionFactory factory of a thrown exception consuming the successful value of this result
      * @param <X> type of exception thrown if this is a {@link #isSuccess() successful result}
      * @return error value of this result
      *
      * @see #unwrapError() default message {@link NotErrorException} analog
      * @see #expectError(String) {@link NotErrorException} analog
-     * @see #errorOrElseThrow(Supplier) checked equivalent
+     * @see #errorOrElseThrow(Function) checked equivalent
      */
     @SneakyThrows
-    default <X extends Throwable> E errorOrElseSneakyThrow(final @NonNull Supplier<X> exceptionSupplier) {
-        return errorOrElseThrow(exceptionSupplier);
+    default <X extends Throwable> E errorOrElseSneakyThrow(final @NonNull Function<T, X> exceptionFactory) {
+        return errorOrElseThrow(exceptionFactory);
     }
 
     /* ********************************************** Mapping methods ********************************************** */
@@ -406,7 +406,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) {
+        public <X extends Throwable> T orElseThrow(final @NonNull Function<E, X> exceptionFactory) {
             return value;
         }
 
@@ -431,8 +431,8 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> E errorOrElseThrow(@NonNull final Supplier<X> exceptionSupplier) throws X {
-            throw exceptionSupplier.get();
+        public <X extends Throwable> E errorOrElseThrow(final @NonNull Function<T, X> exceptionSupplier) throws X {
+            throw exceptionSupplier.apply(value);
         }
 
         //</editor-fold>
@@ -548,8 +548,8 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) throws X {
-            throw exceptionSupplier.get();
+        public <X extends Throwable> T orElseThrow(final @NonNull Function<E, X> exceptionFactory) throws X {
+            throw exceptionFactory.apply(error);
         }
 
         @Override
@@ -573,7 +573,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> E errorOrElseThrow(@NonNull final Supplier<X> exceptionSupplier) {
+        public <X extends Throwable> E errorOrElseThrow(@NonNull final Function<T, X> exceptionFactory) {
             return error;
         }
 
