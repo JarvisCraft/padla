@@ -40,7 +40,7 @@ public interface ValueContainer<T> extends Supplier<T> {
      * @return empty value container
      */
     @SuppressWarnings("unchecked")
-    static <T> ValueContainer<T> empty() {
+    static <T> @NotNull ValueContainer<T> empty() {
         return (ValueContainer<T>) Empty.INSTANCE;
     }
 
@@ -51,7 +51,7 @@ public interface ValueContainer<T> extends Supplier<T> {
      * @return value container containing {@code null}
      */
     @SuppressWarnings("unchecked")
-    static <T> ValueContainer<T> ofNull() {
+    static <T> @NotNull ValueContainer<T> ofNull() {
         return (ValueContainer<T>) OfNull.INSTANCE;
     }
 
@@ -63,7 +63,7 @@ public interface ValueContainer<T> extends Supplier<T> {
      * @return non-empty value container containing the specified value
      */
     @SuppressWarnings("unchecked")
-    static <T> ValueContainer<T> of(@Nullable final T value) {
+    static <T> @NotNull ValueContainer<T> of(final @Nullable T value) {
         return value == null ? (ValueContainer<T>) OfNull.INSTANCE : new Containing<>(value);
     }
 
@@ -76,18 +76,19 @@ public interface ValueContainer<T> extends Supplier<T> {
      * if it is not {@code null} and an empty one otherwise
      */
     @SuppressWarnings("unchecked")
-    static <T> ValueContainer<T> nonnullOrEmpty(@Nullable final T value) {
+    static <T> @NotNull ValueContainer<T> nonnullOrEmpty(final @Nullable T value) {
         return value == null ? (ValueContainer<T>) Empty.INSTANCE : new Containing<>(value);
     }
 
     /**
-     * {@inheritDoc}
+     * Gets the value stored in this value container.
      *
-     * @return {@inheritDoc}
+     * @return stored value if it is {@link #isPresent() present}
+     *
      * @throws EmptyValueException if this value container is empty
      */
     @Override
-    T get() throws EmptyValueException;
+    T get();
 
     /**
      * Checks whether the object is present ot not.
@@ -102,19 +103,15 @@ public interface ValueContainer<T> extends Supplier<T> {
      * @param value value to use if this value container is empty
      * @return this value container's value if it is not empty or the specified value otherwise
      */
-    @Nullable default T orElse(@Nullable final T value) {
-        return isPresent() ? get() : value;
-    }
+    @Nullable T orElse(@Nullable T value);
 
     /**
      * Gets the value if it is present otherwise using the one got from the specified supplier.
      *
-     * @param valueSupplier supplier to be used for getting the value if this value container is empty
+     * @param defaultValueSupplier supplier to be used for getting the value if this value container is empty
      * @return this value container's value if it is not empty or the one got from the supplier otherwise
      */
-    @Nullable default T orElseGet(@NonNull final Supplier<T> valueSupplier) {
-        return isPresent() ? get() : valueSupplier.get();
-    }
+    @Nullable T orElseGet(@NonNull Supplier<T> defaultValueSupplier);
 
     /**
      * Gets the value if it is present otherwise throwing an exception.
@@ -122,32 +119,62 @@ public interface ValueContainer<T> extends Supplier<T> {
      * @param exceptionSupplier supplier to be used for getting the exception if this value container is empty
      * @param <X> type of an exception thrown if this value container is empty
      * @return this value container's value if it is not empty
+     *
      * @throws X if this value container is empty
      */
-    @Nullable default <X extends Throwable> T orElseThrow(@NonNull final Supplier<@NotNull X> exceptionSupplier)
-            throws X {
-        if (isPresent()) {
-            return get();
-        }
+    <X extends Throwable> @Nullable T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) throws X;
 
-        throw exceptionSupplier.get();
+    /**
+     * Gets the value if it is present otherwise throwing an exception.
+     *
+     * @param exceptionSupplier supplier to be used for getting the exception if this value container is empty
+     * @param <X> type of an exception thrown if this value container is empty
+     * @return this value container's value if it is not empty
+     *
+     * @throws X if this value container is empty
+     */
+    @SneakyThrows
+    default <X extends Throwable> @Nullable T orElseSneakyThrow(final @NonNull Supplier<X> exceptionSupplier) {
+        return orElseThrow(exceptionSupplier);
     }
+
+    /**
+     * Converts this value container into a {@link Result#nullError() null-error result}.
+     *
+     * @param <E> type of the result error
+     * @return {@link Result#success(Object) successful result} containing the value contained by this value container
+     * if is is {@link #isPresent() present} or a {@link Result#nullError() null-error result} otherwise
+     *
+     * @see #asResult(Supplier) alternative with customizable error value
+     */
+    <E> @NotNull Result<T, @Nullable E> asResult();
+
+    /**
+     * Converts this value container into a {@link Result}.
+     *
+     * @param errorSupplier supplier of the error in case of this value container being empty
+     * @param <E> type of the result error
+     * @return {@link Result#success(Object) successful result} containing the value contained by this value container
+     * if is is {@link #isPresent() present} or an {@link Result#error(Object) error result}
+     * with the error got by using the specified supplier
+     *
+     * @see #asResult() alternative with default (i.e. {@code null}) error
+     */
+    <E> @NotNull Result<T, E> asResult(Supplier<E> errorSupplier);
 
     /**
      * Empty value-container.
      *
      * @param <T> type of stored value
      */
-    // use default equals and hashCode
+    // use identity equals and hashCode
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class Empty<T> implements ValueContainer<T> {
 
-        private static final Empty<?> INSTANCE = new Empty<>();
-
-        @Override
-        public T get() throws EmptyValueException {
-            throw new EmptyValueException("There is no value associated with this value container");
-        }
+        /**
+         * Singleton instance of this empty {@link ValueContainer value-container}
+         */
+        private static final ValueContainer<?> INSTANCE = new Empty<>();
 
         @Override
         public boolean isPresent() {
@@ -155,29 +182,88 @@ public interface ValueContainer<T> extends Supplier<T> {
         }
 
         @Override
+        public T get() {
+            throw new EmptyValueException("There is no value associated with this value container");
+        }
+
+        @Override
+        public @Nullable T orElse(final @Nullable T value) {
+            return value;
+        }
+
+        @Override
+        public @Nullable T orElseGet(final @NonNull Supplier<T> defaultValueSupplier) {
+            return defaultValueSupplier.get();
+        }
+
+        @Override
+        public <X extends Throwable> @Nullable T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) throws X {
+            throw exceptionSupplier.get();
+        }
+
+        @Override
+        public @NotNull <E> Result<T, @Nullable E> asResult() {
+            return Result.nullError();
+        }
+
+        @Override
+        public @NotNull <E> Result<T, E> asResult(final Supplier<E> errorSupplier) {
+            return Result.error(errorSupplier.get());
+        }
+
+        @Override
         public String toString() {
             return "Empty ValueContainer";
         }
     }
+
     /**
      * Non-empty value-container containing {@code null}.
      *
      * @param <T> type of stored value
      */
-    // use default equals and hashCode
+    // use identity equals and hashCode
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     final class OfNull<T> implements ValueContainer<T> {
 
-        private static final OfNull<?> INSTANCE = new OfNull<>();
-
-        @Override
-        public T get() throws EmptyValueException {
-            return null;
-        }
+        /**
+         * Singleton instance of this {@link ValueContainer value-container} containing {@code null}
+         */
+        private static final ValueContainer<?> INSTANCE = new OfNull<>();
 
         @Override
         public boolean isPresent() {
             return true;
+        }
+
+        @Override
+        public T get() {
+            return null;
+        }
+
+        @Override
+        public @Nullable T orElse(final @Nullable T value) {
+            return null;
+        }
+
+        @Override
+        public @Nullable T orElseGet(final @NonNull Supplier<T> defaultValueSupplier) {
+            return null;
+        }
+
+        @Override
+        public <X extends Throwable> @Nullable T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) {
+            return null;
+        }
+
+        @Override
+        public @NotNull <E> Result<T, @Nullable E> asResult() {
+            return Result.nullSuccess();
+        }
+
+        @Override
+        public @NotNull <E> Result<T, E> asResult(final Supplier<E> errorSupplier) {
+            return Result.nullSuccess();
         }
 
         @Override
@@ -195,16 +281,44 @@ public interface ValueContainer<T> extends Supplier<T> {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     class Containing<T> implements ValueContainer<T> {
 
-        @NonNull private final T value;
-
-        @Override
-        public T get() throws EmptyValueException {
-            return value;
-        }
+        /**
+         * Value stored by this value container
+         */
+        @NonNull T value;
 
         @Override
         public boolean isPresent() {
             return true;
+        }
+
+        @Override
+        public T get() {
+            return value;
+        }
+
+        @Override
+        public @Nullable T orElse(final @Nullable T value) {
+            return value;
+        }
+
+        @Override
+        public @Nullable T orElseGet(final @NonNull Supplier<T> defaultValueSupplier) {
+            return value;
+        }
+
+        @Override
+        public <X extends Throwable> @Nullable T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) {
+            return value;
+        }
+
+        @Override
+        public @NotNull <E> Result<T, @Nullable E> asResult() {
+            return Result.success(value);
+        }
+
+        @Override
+        public @NotNull <E> Result<T, E> asResult(final Supplier<E> errorSupplier) {
+            return Result.success(value);
         }
     }
 
@@ -217,11 +331,39 @@ public interface ValueContainer<T> extends Supplier<T> {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     class Supplying<T> implements ValueContainer<T> {
 
-        @NonNull @Delegate private final Supplier<T> valueSupplier;
+        /**
+         * Supplier responsible for supplying new values on each value request
+         */
+        @Getter(AccessLevel.NONE) @Delegate @NotNull Supplier<T> valueSupplier;
 
         @Override
         public boolean isPresent() {
             return true;
+        }
+
+        @Override
+        public @Nullable T orElse(final @Nullable T value) {
+            return valueSupplier.get();
+        }
+
+        @Override
+        public @Nullable T orElseGet(final @NonNull Supplier<T> defaultValueSupplier) {
+            return valueSupplier.get();
+        }
+
+        @Override
+        public <X extends Throwable> @Nullable T orElseThrow(final @NonNull Supplier<X> exceptionSupplier) {
+            return valueSupplier.get();
+        }
+
+        @Override
+        public @NotNull <E> Result<T, @Nullable E> asResult() {
+            return Result.success(valueSupplier.get());
+        }
+
+        @Override
+        public @NotNull <E> Result<T, E> asResult(final Supplier<E> errorSupplier) {
+            return Result.success(valueSupplier.get());
         }
     }
 
@@ -231,22 +373,50 @@ public interface ValueContainer<T> extends Supplier<T> {
     @NoArgsConstructor
     class EmptyValueException extends RuntimeException {
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
+
+        /**
+         * Constructs a new exception with the specified message.
+         *
+         * @param message message describing the exception cause
+         */
         public EmptyValueException(final String message) {
             super(message);
         }
 
+        /**
+         * Constructs a new exception with the specified message and cause.
+         *
+         * @param message message describing the exception cause
+         * @param cause cause of this exception
+         */
         public EmptyValueException(final String message, final Throwable cause) {
             super(message, cause);
         }
 
+        /**
+         * Constructs a new exception with the specified cause.
+         *
+         * @param cause cause of this exception
+         */
         public EmptyValueException(final Throwable cause) {
             super(cause);
         }
 
+        /**
+         * Constructs a new exception with the specified message and cause.
+         *
+         * @param message message describing the exception cause
+         * @param cause cause of this exception
+         * @param enableSuppression flag indicating whether or not suppression
+         * is enabled or disabled for this exception
+         * @param writableStackTrace flag indicating whether or not not the stack trace
+         * should be writable for this exception
+         */
         public EmptyValueException(final String message, final Throwable cause, final boolean enableSuppression,
                                    final boolean writableStackTrace) {
             super(message, cause, enableSuppression, writableStackTrace);
         }
+
         //</editor-fold>
     }
 }
