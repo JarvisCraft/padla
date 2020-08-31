@@ -1,9 +1,6 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
+import lombok.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +26,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      * @return created successful result
      */
-    static <T, E> Result<T, E> success(final T value) {
+    static <T, E> @NotNull Result<T, E> success(final T value) {
         return new Success<>(value);
     }
 
@@ -41,7 +38,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return created successful result
      */
     @SuppressWarnings("unchecked")
-    static <T, E> Result<@Nullable T, E> nullSuccess() {
+    static <T, E> @NotNull Result<@Nullable T, E> nullSuccess() {
         return (Result<T, E>) NullSuccess.INSTANCE;
     }
 
@@ -53,7 +50,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      * @return created error result
      */
-    static <T, E> Result<T, E> error(final E error) {
+    static <T, E> @NotNull Result<T, E> error(final E error) {
         return new Error<>(error);
     }
 
@@ -65,7 +62,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return created error result
      */
     @SuppressWarnings("unchecked")
-    static <T, E> Result<T, @Nullable E> nullError() {
+    static <T, E> @NotNull Result<T, @Nullable E> nullError() {
         return (Result<T, E>) NullError.INSTANCE;
     }
 
@@ -81,7 +78,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #from(Optional, Supplier) alternative with customizable error value
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
-    static <T, E> Result<T, @Nullable E> from(final @NonNull Optional<T> optional) {
+    static <T, E> @NotNull Result<T, @Nullable E> from(final @NonNull Optional<T> optional) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(Result::nullError);
     }
 
@@ -99,7 +96,8 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #from(Optional) alternative with default (i.e. {@code null}) error
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
-    static <T, E> Result<T, E> from(final @NonNull Optional<T> optional, final @NonNull Supplier<E> errorSupplier) {
+    static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<T> optional,
+                                             final @NonNull Supplier<E> errorSupplier) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(() -> error(errorSupplier.get()));
     }
 
@@ -192,7 +190,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param defaultValue default value to be returned if this is an {@link #isError()} error value}
      * @return successful value if this a {@link #isSuccess() successful result} or {@code defaultValue} otherwise
      */
-    T or(T defaultValue);
+    T orDefault(T defaultValue);
 
     /**
      * Gets the value of this result if this is a {@link #isSuccess() successful}
@@ -202,7 +200,7 @@ public interface Result<T, E> extends Supplier<T> {
      * to be returned if this is an {@link #isError()} error value}
      * @return successful value if this a {@link #isSuccess() successful result} or {@code defaultValue} otherwise
      */
-    T orGet(@NonNull Supplier<T> defaultValueSupplier);
+    T orGetDefault(@NonNull Supplier<T> defaultValueSupplier);
 
     /**
      * Gets the error of this result throwing a {@link NotErrorException}
@@ -274,33 +272,37 @@ public interface Result<T, E> extends Supplier<T> {
      * @return mapped successful result if it was a {@link #isSuccess() successful result}
      * or an error result if it was an {@link #isError() error result}
      */
-    <R> Result<R, E> map(@NonNull Function<T, R> mappingFunction);
+    <R> @NotNull Result<R, E> map(@NonNull Function<T, R> mappingFunction);
 
     /**
      * Returns the given result if this is a {@link #isSuccess() successful result}
      * otherwise keeping the {@link #isError() error result}.
      *
-     * @param result result to be returned if this is a {@link #isSuccess() successful result}
+     * @param nextResult result to be returned if this is a {@link #isSuccess() successful result}
      * @param <R> type of the resulting successful value
      * @return {@code result} if this is a {@link #isSuccess() successful result} and
      * or keeps the {@link #isError() error result}
      *
      * @see #flatMap(Function) lazy analog
      */
-    <R> Result<R, E> and(@NonNull Result<R, E> result);
+    <R> @NotNull Result<R, E> and(@NonNull Result<R, E> nextResult);
 
     /**
      * Flat-maps the result if it is {@link #isSuccess() successful} returning the result of mapping
      * otherwise keeping the {@link #isError() error result}.
      *
-     * @param mappingFunction function to flat-map the successful result
+     * @param nextResultFactory function to create a new result based on the current
      * @param <R> type of the resulting successful value
      * @return flat-mapped successful result if it was a {@link #isSuccess() successful result}
      * or an error result if this was an {@link #isError() error result}
      *
      * @see #and(Result) non-lazy analog
      */
-    <R> Result<R, E> flatMap(@NonNull Function<T, Result<R, E>> mappingFunction);
+    <R> @NotNull Result<R, E> flatMap(@NonNull Function<T, Result<R, E>> nextResultFactory);
+
+    @NotNull Result<T, E> or(@NonNull Result<T, E> alternateResult);
+
+    @NotNull Result<T, E> orElse(@NonNull Supplier<Result<T, E>> alternateResultSupplier);
 
     /**
      * Swaps this result making an {@link #error(Object) error result} from a {@link #isSuccess() successful result}
@@ -309,7 +311,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return {@link #error(Object) error result} if this was a {@link #isSuccess() successful result}
      * and a {@link #success(Object) successful result} if this was an {@link #isError() error result}
      */
-    Result<E, T> swap();
+    @NotNull Result<E, T> swap();
 
     /* ********************************************* Conversion methods ********************************************* */
 
@@ -406,12 +408,12 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public T or(final T defaultValue) {
+        public T orDefault(final T defaultValue) {
             return value;
         }
 
         @Override
-        public T orGet(final @NonNull Supplier<T> defaultValueSupplier) {
+        public T orGetDefault(final @NonNull Supplier<T> defaultValueSupplier) {
             return value;
         }
 
@@ -435,22 +437,32 @@ public interface Result<T, E> extends Supplier<T> {
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
 
         @Override
-        public <R> Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
+        public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
             return new Success<>(mappingFunction.apply(value));
         }
 
         @Override
-        public <R> Result<R, E> and(final @NonNull Result<R, E> result) {
-            return result;
+        public <R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
+            return nextResult;
         }
 
         @Override
-        public <R> Result<R, E> flatMap(final @NonNull Function<T, Result<R, E>> mappingFunction) {
-            return mappingFunction.apply(value);
+        public <R> @NotNull Result<R, E> flatMap(final @NonNull Function<T, Result<R, E>> nextResultFactory) {
+            return nextResultFactory.apply(value);
         }
 
         @Override
-        public Result<E, T> swap() {
+        public @NotNull Result<T, E> or(final @NonNull Result<T, E> alternateResult) {
+            return this;
+        }
+
+        @Override
+        public @NotNull Result<T, E> orElse(final @NonNull Supplier<Result<T, E>> alternateResultSupplier) {
+            return this;
+        }
+
+        @Override
+        public @NotNull Result<E, T> swap() {
             return new Error<>(value);
         }
 
@@ -538,12 +550,12 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public T or(final T defaultValue) {
+        public T orDefault(final T defaultValue) {
             return defaultValue;
         }
 
         @Override
-        public T orGet(final @NonNull Supplier<T> defaultValueSupplier) {
+        public T orGetDefault(final @NonNull Supplier<T> defaultValueSupplier) {
             return defaultValueSupplier.get();
         }
 
@@ -567,22 +579,32 @@ public interface Result<T, E> extends Supplier<T> {
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
 
         @Override
-        public <R> Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
+        public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
             return changeResultType();
         }
 
         @Override
-        public <R> Result<R, E> and(final @NonNull Result<R, E> result) {
+        public <R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
             return changeResultType();
         }
 
         @Override
-        public <R> Result<R, E> flatMap(final @NonNull Function<T, Result<R, E>> mappingFunction) {
+        public <R> @NotNull Result<R, E> flatMap(final @NonNull Function<T, Result<R, E>> nextResultFactory) {
             return changeResultType();
         }
 
         @Override
-        public Result<E, T> swap() {
+        public @NotNull Result<T, E> or(final @NonNull Result<T, E> alternateResult) {
+            return alternateResult;
+        }
+
+        @Override
+        public @NotNull Result<T, E> orElse(final @NonNull Supplier<Result<T, E>> alternateResultSupplier) {
+            return alternateResultSupplier.get();
+        }
+
+        @Override
+        public @NotNull Result<E, T> swap() {
             return new Success<>(error);
         }
 
@@ -616,6 +638,7 @@ public interface Result<T, E> extends Supplier<T> {
     /**
      * Holder of a {@code null}-success result.
      */
+    @NoArgsConstructor(access = AccessLevel.NONE)
     final class NullSuccess {
 
         /**
@@ -627,6 +650,7 @@ public interface Result<T, E> extends Supplier<T> {
     /**
      * Holder of a {@code null}-error result.
      */
+    @NoArgsConstructor(access = AccessLevel.NONE)
     final class NullError {
 
         /**
@@ -639,6 +663,7 @@ public interface Result<T, E> extends Supplier<T> {
      * An exception thrown whenever {@link #unwrap()} is called on an error result.
      */
     @NoArgsConstructor
+    @SuppressWarnings("PublicConstructor")
     class NotSuccessException extends RuntimeException {
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
