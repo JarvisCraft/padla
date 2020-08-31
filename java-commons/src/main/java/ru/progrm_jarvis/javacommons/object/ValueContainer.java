@@ -31,6 +31,7 @@ import java.util.function.Supplier;
  *
  * @param <T> type of stored value
  */
+@SuppressWarnings("PublicInnerClass")
 public interface ValueContainer<T> extends Supplier<T> {
 
     /**
@@ -371,6 +372,7 @@ public interface ValueContainer<T> extends Supplier<T> {
      * An exception thrown whenever {@link #get()} is called on an empty value container.
      */
     @NoArgsConstructor
+    @SuppressWarnings("PublicConstructor")
     class EmptyValueException extends RuntimeException {
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 

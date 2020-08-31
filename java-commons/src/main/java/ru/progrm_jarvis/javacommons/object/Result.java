@@ -14,6 +14,7 @@ import java.util.function.Supplier;
  * @param <T> type of successful result
  * @param <E> type of error result
  */
+@SuppressWarnings("PublicInnerClass")
 public interface Result<T, E> extends Supplier<T> {
 
     /* ************************************************* Factories ************************************************* */
@@ -717,6 +718,7 @@ public interface Result<T, E> extends Supplier<T> {
      * An exception thrown whenever {@link #unwrapError()} is called on a successful result.
      */
     @NoArgsConstructor
+    @SuppressWarnings("PublicConstructor")
     class NotErrorException extends RuntimeException {
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
