@@ -127,12 +127,11 @@ public interface ValueContainer<T> extends Supplier<T> {
 
     /**
      * Gets the value if it is present otherwise throwing an exception.
+     * Throws {@code X} if this value container is empty.
      *
      * @param exceptionSupplier supplier to be used for getting the exception if this value container is empty
      * @param <X> type of an exception thrown if this value container is empty
      * @return this value container's value if it is not empty
-     *
-     * @throws X if this value container is empty
      */
     @SneakyThrows
     default <X extends Throwable> @Nullable T orElseSneakyThrow(final @NonNull Supplier<X> exceptionSupplier) {

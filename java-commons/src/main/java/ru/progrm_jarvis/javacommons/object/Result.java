@@ -88,7 +88,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @param optional optional to be converted into the result
      * @param errorSupplier supplier to create an error
-     * if the given {@link Optional} {@link Optional#isEmpty() is empty}
+     * if the given {@link Optional} is {@link Optional#empty() empty}
      * @param <T> type of successful result
      * @param <E> type of error result
      * @return {@link #success(Object) successful result} if the value {@link Optional#isPresent()} in the optional
@@ -157,6 +157,7 @@ public interface Result<T, E> extends Supplier<T> {
      * if this is an {@link #isError() error result}.
      *
      * @param exceptionSupplier supplier of a thrown exception
+     * @param <X> type of exception thrown if this is an {@link #isError()} () error result}
      * @return successful value of this result
      *
      * @throws X if this is an {@link #isError() error result}
@@ -168,13 +169,13 @@ public interface Result<T, E> extends Supplier<T> {
 
     /**
      * Gets the value of this result throwing {@code X} got by using the specified supplier
-     * if this is an {@link #isError() error result}.
+     * if this is an {@link #isError() error result}. Throws {@code X} if this is an {@link #isError() error result}.
      * This differs from {@link #orElseThrow(Supplier)} as this does not declare {@code X} as a thrown exception.
      *
      * @param exceptionSupplier supplier of a thrown exception
+     * @param <X> type of exception thrown if this is an {@link #isError()} () error result}
      * @return successful value of this result
      *
-     * @throws X if this is an {@link #isError() error result}
      * @see #expect(String) {@link NotSuccessException} analog
      * @see #unwrap() default message {@link NotSuccessException} analog
      * @see #orElseThrow(Supplier) checked equivalent
@@ -235,6 +236,7 @@ public interface Result<T, E> extends Supplier<T> {
      * if this is a {@link #isSuccess() successful result}.
      *
      * @param exceptionSupplier supplier of a thrown exception
+     * @param <X> type of exception thrown if this is a {@link #isSuccess() successful result}
      * @return error value of this result
      *
      * @throws X if this is an {@link #isError() error result}
@@ -246,19 +248,19 @@ public interface Result<T, E> extends Supplier<T> {
 
     /**
      * Gets the error of this result throwing {@code X} got by using the specified supplier
-     * if this is a {@link #isSuccess() successful result}.
+     * if this is a {@link #isSuccess() successful result}. Throws {@code X} if this is an {@link #isError() error result}.
      * This differs from {@link #orElseThrow(Supplier)} as this does not declare {@code X} as a thrown exception.
      *
      * @param exceptionSupplier supplier of a thrown exception
+     * @param <X> type of exception thrown if this is a {@link #isSuccess() successful result}
      * @return error value of this result
      *
-     * @throws X if this is an {@link #isError() error result}
      * @see #unwrapError() default message {@link NotErrorException} analog
      * @see #expectError(String) {@link NotErrorException} analog
      * @see #errorOrElseThrow(Supplier) checked equivalent
      */
     @SneakyThrows
-    default <X extends Throwable> E errorOrElseSneakyThrow(@NonNull Supplier<X> exceptionSupplier) {
+    default <X extends Throwable> E errorOrElseSneakyThrow(final @NonNull Supplier<X> exceptionSupplier) {
         return errorOrElseThrow(exceptionSupplier);
     }
 
