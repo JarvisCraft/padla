@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -33,6 +34,18 @@ public interface Result<T, E> {
     }
 
     /**
+     * Creates a new successful result with {@code null} value.
+     *
+     * @param <T> type of successful result
+     * @param <E> type of error result
+     * @return created successful result
+     */
+    @SuppressWarnings("unchecked")
+    static <T, E> Result<@Nullable T, E> nullSuccess() {
+        return (Result<T, E>) NullSuccess.INSTANCE;
+    }
+
+    /**
      * Creates a new error result.
      *
      * @param error value of the error result
@@ -45,16 +58,31 @@ public interface Result<T, E> {
     }
 
     /**
-     * Converts the given {@link Optional} into a {@code void} {@link #error(Object) error result}.
+     * Creates a new {@code void}-error result.
+     *
+     * @param <T> type of successful result
+     * @param <E> type of error result
+     * @return created error result
+     */
+    @SuppressWarnings("unchecked")
+    static <T, E> Result<T, @Nullable E> nullError() {
+        return (Result<T, E>) NullError.INSTANCE;
+    }
+
+    /**
+     * Converts the given {@link Optional} into a {@link #nullError() null-error result}.
      *
      * @param optional optional to be converted into the result
      * @param <T> type of successful result
+     * @param <E> type of error result
      * @return {@link #success(Object) successful result} if the value {@link Optional#isPresent()} in the optional
-     * and a {@code void} {@link #error(Object) error result} otherwise
+     * and a {@link #nullError() null-error result} otherwise
+     *
+     * @see #from(Optional, Supplier) alternative with customizable error value
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
-    static <T> Result<T, Void> from(final @NonNull Optional<T> optional) {
-        return optional.isPresent() ? new Success<>(optional.get()) : new Error<>(null);
+    static <T, E> Result<T, @Nullable E> from(final @NonNull Optional<T> optional) {
+        return optional.<Result<T, E>>map(Result::success).orElseGet(Result::nullError);
     }
 
     /**
@@ -67,10 +95,12 @@ public interface Result<T, E> {
      * @param <E> type of error result
      * @return {@link #success(Object) successful result} if the value {@link Optional#isPresent()} in the optional
      * and an {@link #error(Object) error result} with an error supplied from {@code error supplier} otherwise
+     *
+     * @see #from(Optional) alternative with default (i.e. {@code null}) error
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
     static <T, E> Result<T, E> from(final @NonNull Optional<T> optional, final @NonNull Supplier<E> errorSupplier) {
-        return optional.isPresent() ? new Success<>(optional.get()) : new Error<>(errorSupplier.get());
+        return optional.<Result<T, E>>map(Result::success).orElseGet(() -> error(errorSupplier.get()));
     }
 
     /* ********************************************** Checking methods ********************************************** */
@@ -538,6 +568,28 @@ public interface Result<T, E> {
         }
 
         //</editor-fold>
+    }
+
+    /**
+     * Holder of a {@code null}-success result.
+     */
+    final class NullSuccess {
+
+        /**
+         * Instance of a {@code null}-error
+         */
+        private static final Result<@Nullable ?, ?> INSTANCE = new Success<>(null);
+    }
+
+    /**
+     * Holder of a {@code null}-error result.
+     */
+    final class NullError {
+
+        /**
+         * Instance of a {@code null}-error
+         */
+        private static final Result<?, @Nullable ?> INSTANCE = new Error<>(null);
     }
 
     /**
