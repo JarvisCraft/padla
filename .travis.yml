@@ -26,7 +26,7 @@ jobs:
     - stage: deploy
       jdk: openjdk8 # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
       if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
-      deploy: source ./attempt-travis-deploy.sh
+      script: source ./attempt-travis-deploy.sh
 
 # Cached directories
 cache:
