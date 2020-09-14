@@ -20,7 +20,6 @@ As its dependencies PADLA uses:
   - [Jetbrains Annotations](https://github.com/JetBrains/java-annotations) for documenting code logic
 - Runtime:
   - [Guava](https://github.com/google/guava) for some general-purpose needs
-  - [GSON](https://github.com/google/gson) for manipulating JSON
 - Testing:
   - [Junit5](https://github.com/junit-team/junit5/) with related sub-tools for testing
   - [Hamcrest](https://github.com/hamcrest/JavaHamcrest) for more creating more readable tests
