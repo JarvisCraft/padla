@@ -111,11 +111,10 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this copies {@code values} not preserving order
+     * @apiNote this takes ownership over {@code values}
      */
-    @SafeVarargs
-    static <T> @NotNull Range<T> onlyCopy(final @Own T @Ref @NonNull ... values) {
-        return only(Arrays.copyOf(values, values.length));
+    static <T> @NotNull Range<T> only(final @Ref @NonNull Collection<T> values) {
+        return values::contains;
     }
 
     /**
@@ -124,10 +123,11 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this takes ownership over {@code values}
+     * @apiNote this copies {@code values} not preserving order
      */
-    static <T> @NotNull Range<T> only(final @Ref @NonNull Collection<T> values) {
-        return values::contains;
+    @SafeVarargs
+    static <T> @NotNull Range<T> onlyCopy(final @Own T @Ref @NonNull ... values) {
+        return only(Arrays.copyOf(values, values.length));
     }
 
     /**
@@ -195,11 +195,10 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this copies {@code values} not preserving order
+     * @apiNote this takes ownership over {@code values}
      */
-    @SafeVarargs
-    static <T> @NotNull Range<T> exceptCopy(final @Own T @Own @NonNull ... values) {
-        return except(Arrays.copyOf(values, values.length));
+    static <T> @NotNull Range<T> except(final @Ref @NonNull Collection<T> values) {
+        return value -> !values.contains(value);
     }
 
     /**
@@ -208,10 +207,11 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this takes ownership over {@code values}
+     * @apiNote this copies {@code values} not preserving order
      */
-    static <T> @NotNull Range<T> except(final @Ref @NonNull Collection<T> values) {
-        return value -> !values.contains(value);
+    @SafeVarargs
+    static <T> @NotNull Range<T> exceptCopy(final @Own T @Own @NonNull ... values) {
+        return except(Arrays.copyOf(values, values.length));
     }
 
     /**
@@ -349,19 +349,6 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this copies {@code ranges} preserving order
-     */
-    @SafeVarargs
-    static <T> @NotNull Range<T> anyOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
-        return anyOf(Arrays.copyOf(ranges, ranges.length));
-    }
-
-    /**
-     * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
-     *
-     * @param <T> type of range's elements
-     * @return created range
-     *
      * @apiNote this takes ownership over {@code ranges}
      */
     static <T> @NotNull Range<T> anyOf(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
@@ -370,6 +357,19 @@ public interface Range<T> extends Predicate<T> {
 
             return false;
         };
+    }
+
+    /**
+     * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
+     *
+     * @param <T> type of range's elements
+     * @return created range
+     *
+     * @apiNote this copies {@code ranges} preserving order
+     */
+    @SafeVarargs
+    static <T> @NotNull Range<T> anyOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
+        return anyOf(Arrays.copyOf(ranges, ranges.length));
     }
 
     /**
@@ -419,19 +419,6 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this copies {@code ranges} preserving order
-     */
-    @SafeVarargs
-    static <T> @NotNull Range<T> allOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
-        return allOf(Arrays.copyOf(ranges, ranges.length));
-    }
-
-    /**
-     * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
-     *
-     * @param <T> type of range's elements
-     * @return created range
-     *
      * @apiNote this takes ownership over {@code ranges}
      */
     static <T> @NotNull Range<T> allOf(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
@@ -440,6 +427,19 @@ public interface Range<T> extends Predicate<T> {
 
             return true;
         };
+    }
+
+    /**
+     * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
+     *
+     * @param <T> type of range's elements
+     * @return created range
+     *
+     * @apiNote this copies {@code ranges} preserving order
+     */
+    @SafeVarargs
+    static <T> @NotNull Range<T> allOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
+        return allOf(Arrays.copyOf(ranges, ranges.length));
     }
 
     /**
@@ -489,19 +489,6 @@ public interface Range<T> extends Predicate<T> {
      * @param <T> type of range's elements
      * @return created range
      *
-     * @apiNote this copies {@code ranges} preserving order
-     */
-    @SafeVarargs
-    static <T> @NotNull Range<T> noneOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
-        return noneOf(Arrays.copyOf(ranges, ranges.length));
-    }
-
-    /**
-     * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
-     *
-     * @param <T> type of range's elements
-     * @return created range
-     *
      * @apiNote this takes ownership over {@code ranges}
      */
     static <T> @NotNull Range<T> noneOf(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
@@ -510,6 +497,19 @@ public interface Range<T> extends Predicate<T> {
 
             return true;
         };
+    }
+
+    /**
+     * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
+     *
+     * @param <T> type of range's elements
+     * @return created range
+     *
+     * @apiNote this copies {@code ranges} preserving order
+     */
+    @SafeVarargs
+    static <T> @NotNull Range<T> noneOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
+        return noneOf(Arrays.copyOf(ranges, ranges.length));
     }
 
     /**
