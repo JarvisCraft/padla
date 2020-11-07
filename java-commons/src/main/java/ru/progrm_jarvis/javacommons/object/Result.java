@@ -150,14 +150,14 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #orElseThrow(Function) analog with exception specification
      * @see #orElseSneakyThrow(Function) analog with unchecked exception specification
      */
-    T expect(String message);
+    T expect(@NonNull String message);
 
     /**
      * Gets the value of this result throwing {@code X} got by using the specified supplier
      * if this is an {@link #isError() error result}.
      *
      * @param exceptionFactory factory of a thrown exception consuming the error value of this result
-     * @param <X> type of exception thrown if this is an {@link #isError()} () error result}
+     * @param <X> type of exception thrown if this is an {@link #isError() error result}
      * @return successful value of this result
      *
      * @throws X if this is an {@link #isError() error result}
@@ -173,7 +173,7 @@ public interface Result<T, E> extends Supplier<T> {
      * This differs from {@link #orElseThrow(Function)} as this does not declare {@code X} as a thrown exception.
      *
      * @param exceptionFactory factory of a thrown exception consuming the error value of this result
-     * @param <X> type of exception thrown if this is an {@link #isError()} () error result}
+     * @param <X> type of exception thrown if this is an {@link #isError() error result}
      * @return successful value of this result
      *
      * @see #expect(String) {@link NotSuccessException} analog
@@ -181,7 +181,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #orElseThrow(Function) checked equivalent
      */
     @SneakyThrows
-    default <X extends Throwable> T orElseSneakyThrow(@NonNull Function<E, X> exceptionFactory) {
+    default <X extends Throwable> T orElseSneakyThrow(final @NonNull Function<E, X> exceptionFactory) {
         return orElseThrow(exceptionFactory);
     }
 
@@ -401,7 +401,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public T expect(final String message) {
+        public T expect(final @NonNull String message) {
             return value;
         }
 
@@ -543,7 +543,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public T expect(final String message) {
+        public T expect(final @NonNull String message) {
             throw new NotSuccessException(message);
         }
 
@@ -573,7 +573,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> E errorOrElseThrow(@NonNull final Function<T, X> exceptionFactory) {
+        public <X extends Throwable> E errorOrElseThrow(final @NonNull Function<T, X> exceptionFactory) {
             return error;
         }
 
