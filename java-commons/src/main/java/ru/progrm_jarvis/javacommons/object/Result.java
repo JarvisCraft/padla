@@ -266,6 +266,28 @@ public interface Result<T, E> extends Supplier<T> {
         return errorOrElseThrow(exceptionFactory);
     }
 
+    /**
+     * Invokes the given function if this result is a {@link #isSuccess() successful result}.
+     *
+     * @param successConsumer consumer accepting the {@link T successful value}
+     */
+    void ifSuccess(@NonNull Consumer<T> successConsumer);
+
+    /**
+     * Invokes the given function if this result is an {@link #isError() error result}.
+     *
+     * @param errorConsumer consumer accepting the {@link E error value}
+     */
+    void ifError(@NonNull Consumer<E> errorConsumer);
+
+    /**
+     * Invokes the corresponding function depending on this result's type.
+     *
+     * @param successConsumer consumer accepting the {@link T successful value}
+     * @param errorConsumer consumer accepting the {@link E error value}
+     */
+    void handle(@NonNull Consumer<T> successConsumer, @NonNull Consumer<E> errorConsumer);
+
     /* ********************************************** Mapping methods ********************************************** */
 
     /**
@@ -457,6 +479,19 @@ public interface Result<T, E> extends Supplier<T> {
             throw exceptionSupplier.apply(value);
         }
 
+        @Override
+        public void ifSuccess(final @NonNull Consumer<T> successConsumer) {
+            successConsumer.accept(value);
+        }
+
+        @Override
+        public void ifError(final @NonNull Consumer<E> errorConsumer) {}
+
+        @Override
+        public void handle(final @NonNull Consumer<T> successConsumer, final @NonNull Consumer<E> errorConsumer) {
+            successConsumer.accept(value);
+        }
+
         //</editor-fold>
 
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
@@ -599,6 +634,18 @@ public interface Result<T, E> extends Supplier<T> {
             return error;
         }
 
+        @Override
+        public void ifSuccess(final @NonNull Consumer<T> successConsumer) {}
+
+        @Override
+        public void ifError(final @NonNull Consumer<E> errorConsumer) {
+            errorConsumer.accept(error);
+        }
+
+        @Override
+        public void handle(final @NonNull Consumer<T> successConsumer, final @NonNull Consumer<E> errorConsumer) {
+            errorConsumer.accept(error);
+        }
         //</editor-fold>
 
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
