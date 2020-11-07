@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.javacommons.object;
 
 import lombok.*;
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -641,25 +642,25 @@ public interface Result<T, E> extends Supplier<T> {
     /**
      * Holder of a {@code null}-success result.
      */
-    @NoArgsConstructor(access = AccessLevel.NONE)
+    @UtilityClass
     final class NullSuccess {
 
         /**
          * Instance of a {@code null}-error
          */
-        private static final Result<@Nullable ?, ?> INSTANCE = new Success<>(null);
+        private final Result<@Nullable ?, ?> INSTANCE = new Success<>(null);
     }
 
     /**
      * Holder of a {@code null}-error result.
      */
-    @NoArgsConstructor(access = AccessLevel.NONE)
+    @UtilityClass
     final class NullError {
 
         /**
          * Instance of a {@code null}-error
          */
-        private static final Result<?, @Nullable ?> INSTANCE = new Error<>(null);
+        private final Result<?, @Nullable ?> INSTANCE = new Error<>(null);
     }
 
     /**
