@@ -1,64 +1,78 @@
 package ru.progrm_jarvis.javacommons.util;
 
 import lombok.val;
-import lombok.var;
-import org.junit.jupiter.api.Test;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import ru.progrm_jarvis.javacommons.primitive.NumberUtil;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 class NumberUtilTest {
 
-    @Test
-    void testParseInt() {
-        val random = ThreadLocalRandom.current();
+    // number of random items tested
+    private static final long RANDOM_NUMBERS = 4096;
 
-        val radixDelta = Character.MAX_RADIX - Character.MIN_RADIX;
-        int number, radix;
-        StringBuilder numberAsString;
-        for (var i = 0; i < 0xFFFF; i++) { // a lot of tests :)
-            number = random.nextInt();
-            radix = Character.MIN_RADIX + random.nextInt(radixDelta);
-
-            // generate random number
-            numberAsString = new StringBuilder(Integer.toString(number, radix));
-            if (random.nextBoolean()) { // append sign with ~50% chance
-                if (number == 0) numberAsString.append(random.nextBoolean() ? '+' : '-');
-                else if (number > 0) numberAsString.insert(0, '+');
-            }
-
-            assertThat(
-                    NumberUtil.parseInt(numberAsString.toString(), radix).orElseThrow(AssertionError::new),
-                    is(number)
-            );
-        }
+    static @NotNull Stream<@NotNull Arguments> intsWithRadixes() {
+        @SuppressWarnings("SharedThreadLocalRandom") val random = ThreadLocalRandom.current();
+        return IntStream.generate(() -> random.nextInt() + random.nextInt() /* twice to allow negative numbers */)
+                .limit(RANDOM_NUMBERS)
+                .mapToObj(number -> {
+                    val radix = random.nextInt(Character.MIN_RADIX, Character.MAX_RADIX + 1);
+                    return Arguments.of(number, Integer.toString(number, radix), radix);
+                });
     }
 
-    @Test
-    void testParseLong() {
-        val random = ThreadLocalRandom.current();
+    static @NotNull Stream<@NotNull Arguments> longsWithRadixes() {
+        @SuppressWarnings("SharedThreadLocalRandom") val random = ThreadLocalRandom.current();
+        return LongStream.generate(() -> random.nextInt() + random.nextInt() /* twice to allow negative numbers */)
+                .limit(RANDOM_NUMBERS)
+                .mapToObj(number -> {
+                    val radix = random.nextInt(Character.MIN_RADIX, Character.MAX_RADIX + 1);
+                    return Arguments.of(number, Long.toString(number, radix), radix);
+                });
+    }
 
-        val radixDelta = Character.MAX_RADIX - Character.MIN_RADIX;
-        long number;
-        int radix;
-        StringBuilder numberAsString;
-        for (var i = 0; i < 0xFFFF; i++) { // a lot of tests :)
-            number = random.nextLong();
-            radix = Character.MIN_RADIX + random.nextInt(radixDelta);
+    @ParameterizedTest
+    @MethodSource("intsWithRadixes")
+    void testParseInt(final int number, final @NotNull CharSequence numberAsString, final int radix) {
+        assertThat(
+                NumberUtil.parseInt(numberAsString.toString(), radix).orElseThrow(AssertionError::new),
+                is(number)
+        );
+    }
 
-            // generate random number
-            numberAsString = new StringBuilder(Long.toString(number, radix));
-            if (random.nextBoolean()) { // append sign with ~50% chance
-                if (number == 0) numberAsString.append(random.nextBoolean() ? '+' : '-');
-                else if (number > 0) numberAsString.insert(0, '+');
-            }
+    @ParameterizedTest
+    @MethodSource("intsWithRadixes")
+    void testParseIntResult(final int number, final @NotNull CharSequence numberAsString, final int radix) {
+        assertThat(
+                NumberUtil.parseIntResult(numberAsString.toString(), radix).orElseThrow(AssertionError::new),
+                is(number)
+        );
+    }
 
-            assertThat(
-                    NumberUtil.parseLong(numberAsString.toString(), radix).orElseThrow(AssertionError::new),
-                    is(number)
-            );
-        }
+    @ParameterizedTest
+    @MethodSource("intsWithRadixes")
+    void testParseLong(final long number, final @NotNull CharSequence numberAsString, final int radix) {
+        assertThat(
+                NumberUtil.parseLong(numberAsString.toString(), radix).orElseThrow(AssertionError::new),
+                is(number)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("intsWithRadixes")
+    void testParseLongResult(final long number, final @NotNull CharSequence numberAsString, final int radix) {
+        assertThat(
+                NumberUtil.parseLongResult(numberAsString.toString(), radix).orElseThrow(AssertionError::new),
+                is(number)
+        );
     }
 }
