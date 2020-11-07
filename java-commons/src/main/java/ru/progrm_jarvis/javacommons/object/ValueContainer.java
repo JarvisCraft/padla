@@ -158,7 +158,7 @@ public interface ValueContainer<T> extends Supplier<T> {
      * if is is {@link #isPresent() present} or an {@link Result#error(Object) error result}
      * with the error got by using the specified supplier
      *
-     * @see #asResult() alternative with default (i.e. {@code null}) error
+     * @see #asResult() alternative with default (i.e. null) error
      */
     <E> @NotNull Result<T, E> asResult(Supplier<E> errorSupplier);
 
