@@ -1,4 +1,7 @@
-# Programming language
+os: linux
+dist: focal
+virt: lxd
+
 language: java
 
 before_install:
