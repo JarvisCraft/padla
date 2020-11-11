@@ -45,7 +45,7 @@ jobs:
             branch: master
             tags: true
             condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
-      script: source ./attempt-travis-deploy.sh
+      script: ./.travis/scripts/maven_deploy.sh
 
 cache:
   directories:
