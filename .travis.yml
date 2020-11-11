@@ -2,28 +2,16 @@ os: linux
 dist: bionic
 language: java
 
-before_install: wget https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh
-
-script: mvn verify -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
 ### Maven basic build ###
 jobs:
   include:
     # 1. Test
     - stage: Test
-      name: Default JDK
-      install: source ./install-jdk.sh --verbose
-    - name: JDK 8 # LTS
-      install: source ./install-jdk.sh --verbose --feature 11
-    - name: JDK 11 # LTS
-      install: source ./install-jdk.sh --verbose --feature 11
-    - name: JDK 15 # Latest non-LTS GA
-      install: source ./install-jdk.sh --verbose --feature 14
-    - name: JDK 16 # Latest non-LTS non-GA
-      install: source ./install-jdk.sh --verbose --feature 15
+      jdk: openjdk8
+    - jdk: openjdk11
 
     # 2. Deploy
-    - stage: deploy
+    - stage: Deploy
       # Don't trigger deployment on forks, also skip it if deployment conditions will surely not get be met
       if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
       # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
@@ -45,7 +33,6 @@ jobs:
             branch: master
             tags: true
             condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
-      script: source ./attempt-travis-deploy.sh
 
 cache:
   directories:
