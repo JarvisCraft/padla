@@ -95,7 +95,7 @@ JdkInternalMiscUnsafeWrapper.${method.method.name}(unsafe#passTrailingParameters
 ## Macro for generating `UNSAFE_..._METHOD.invokeExact((UnsafeType) unsafe, ...)`
 #macro(castUnsafeMethodCall $unsafeType, $method)##
 UNSAFE_${method.upperCamelCaseNameWithTypeInfo}_METHOD.invokeExact##
-((jdk.internal.misc.Unsafe) unsafe#passTrailingParameters($method))##
+(($unsafeType) unsafe#passTrailingParameters($method))##
 #end##
 ## Macro for generating `return (T) ` if needed
 #macro(returnCast $method)
