@@ -18,9 +18,9 @@ jobs:
     - name: JDK 11 # LTS
       install: source ./install-jdk.sh --verbose --feature 11
     - name: JDK 15 # Latest non-LTS GA
-      install: source ./install-jdk.sh --verbose --feature 14
-    - name: JDK 16 # Latest non-LTS non-GA
       install: source ./install-jdk.sh --verbose --feature 15
+    - name: JDK 16 # Latest non-LTS non-GA
+      install: source ./install-jdk.sh --verbose --feature 16
 
     # 2. Deploy
     - stage: deploy
@@ -45,7 +45,7 @@ jobs:
             branch: master
             tags: true
             condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
-      script: source ./attempt-travis-deploy.sh
+      script: ./.travis/scripts/maven_deploy.sh
 
 cache:
   directories:
