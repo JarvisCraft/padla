@@ -33,7 +33,6 @@ jobs:
       deploy:
         # Deploy snapshot to Sonatype OSSRH
         - provider: script
-          skip_cleanup: true
           script: ./.travis/scripts/maven_deploy.sh
           on:
             branch: development
@@ -41,7 +40,6 @@ jobs:
 
         # Deploy release to Maven Central
         - provider: script
-          skip_cleanup: true
           script: ./.travis/scripts/maven_deploy.sh release
           on:
             branch: master
