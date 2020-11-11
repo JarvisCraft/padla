@@ -96,7 +96,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return {@link #success(Object) successful result} if the value {@link Optional#isPresent()} in the optional
      * and an {@link #error(Object) error result} with an error supplied from {@code error supplier} otherwise
      *
-     * @see #from(Optional) alternative with default (i.e. {@code null}) error
+     * @see #from(Optional) alternative with default (i.e. null) error
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
     static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<T> optional,
