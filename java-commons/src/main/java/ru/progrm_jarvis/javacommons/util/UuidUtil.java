@@ -16,7 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class UuidUtil {
 
     /**
-     * Converts {@link UUID} into an array of 16 {@link byte}s.
+     * Converts {@link UUID} into an array of 16 {@code byte}s.
      *
      * @param uuid UUID to convert
      * @return result of conversion as array of 16 bytes
@@ -32,7 +32,7 @@ public class UuidUtil {
     }
 
     /**
-     * Converts a 16-{@link byte}s array into a {@link UUID}.
+     * Converts a 16-{@code byte}s array into a {@link UUID}.
      *
      * @param bytes array of 16 bytes to convert
      * @return result of conversion as UUID
