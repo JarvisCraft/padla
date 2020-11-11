@@ -5,7 +5,7 @@
 
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
@@ -277,7 +277,7 @@
             </build>
         </profile>
         <profile>
-            <id>sign-binaries</id>
+            <id>sign-artifacts</id>
             <build>
                 <plugins>
                     <plugin>
@@ -317,6 +317,12 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>sonatype-ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -333,3 +339,4 @@
         </profile>
     </profiles>
 </project>
+
