@@ -8,7 +8,9 @@ script: mvn verify -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 ### Maven basic build ###
 jobs:
   include:
-    - name: Default JDK
+    # 1. Test
+    - stage: Test
+      name: Default JDK
       install: source ./install-jdk.sh --verbose
     - name: JDK 8 # LTS
       install: source ./install-jdk.sh --verbose --feature 11
@@ -19,25 +21,32 @@ jobs:
     - name: JDK 15 # Latest non-GA experimental
       install: source ./install-jdk.sh --verbose --feature 15
 
-before_deploy: ./.travis/scripts/import_code_signing_keys.sh
+    # 2. Deploy
+    - stage: deploy
+      # Don't trigger deployment on forks, also skip it if deployment conditions will surely not get be met
+      if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
+      # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
+      jdk: openjdk8
+      before_deploy: ./.travis/scripts/import_code_signing_keys.sh
+      # Use deployment strategy corresponding to current
+      deploy:
+        # Deploy snapshot to Sonatype OSSRH
+        - provider: script
+          skip_cleanup: true
+          script: ./.travis/scripts/maven_deploy.sh
+          on:
+            branch: development
+            condition: "\"$(./.travis/scripts/get_version.sh)\" == *-SNAPSHOT"
 
-deploy:
-  # Deploy snapshot to Sonatype OSSRH
-  - provider: script
-    edge: true
-    script: ./.travis/scripts/maven_deploy.sh
-    on:
-      branch: development
-      condition: "\"$(./.travis/scripts/get_version.sh)\" == *-SNAPSHOT"
-
-  # Deploy release to Maven Central
-  - provider: script
-    edge: true
-    script: ./.travis/scripts/maven_deploy.sh release
-    on:
-      branch: master
-      tags: true
-      condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
+        # Deploy release to Maven Central
+        - provider: script
+          skip_cleanup: true
+          script: ./.travis/scripts/maven_deploy.sh release
+          on:
+            branch: master
+            tags: true
+            condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
+      script: source ./attempt-travis-deploy.sh
 
 cache:
   directories:
