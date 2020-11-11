@@ -16,9 +16,9 @@ jobs:
       install: source ./install-jdk.sh --verbose --feature 11
     - name: JDK 11 # LTS
       install: source ./install-jdk.sh --verbose --feature 11
-    - name: JDK 14 # Latest GA experimental
+    - name: JDK 15 # Latest non-LTS GA
       install: source ./install-jdk.sh --verbose --feature 14
-    - name: JDK 15 # Latest non-GA experimental
+    - name: JDK 16 # Latest non-LTS non-GA
       install: source ./install-jdk.sh --verbose --feature 15
 
     # 2. Deploy
