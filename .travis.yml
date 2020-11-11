@@ -21,14 +21,14 @@ jobs:
       deploy:
         # Deploy snapshot to Sonatype OSSRH
         - provider: script
-          script: ./.travis/scripts/import_code_signing_keys.sh && ./.travis/scripts/maven_deploy.sh
+          script: ./.travis/scripts/maven_deploy.sh
           on:
             branch: development
             condition: "\"$(./.travis/scripts/get_version.sh)\" == *-SNAPSHOT"
 
         # Deploy release to Maven Central
         - provider: script
-          script: ./.travis/scripts/import_code_signing_keys.sh && ./.travis/scripts/maven_deploy.sh release
+          script: ./.travis/scripts/maven_deploy.sh release
           on:
             branch: master
             tags: true
