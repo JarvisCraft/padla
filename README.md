@@ -1,7 +1,7 @@
 # PADLA
 
 [![License](https://img.shields.io/github/license/JarvisCraft/padla)](/LICENSE)
-[![Build Status](https://travis-ci.org/JarvisCraft/padla.svg?branch=development)](https://travis-ci.org/JarvisCraft/padla)
+[![Build Status](https://travis-ci.com/JarvisCraft/padla.svg?branch=development)](https://travis-ci.com/JarvisCraft/padla)
 [![CodeFactor](https://www.codefactor.io/repository/github/jarviscraft/padla/badge)](https://www.codefactor.io/repository/github/jarviscraft/padla)
 
 ###### Plain And Direct Language Additions for Java
