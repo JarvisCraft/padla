@@ -6,9 +6,6 @@ pull_request_rules:
       merge:
         method: merge
         strict: smart+fasttrack
-      label:
-        remove:
-          - merge when ready
 
   - name: Automatic merge for Dependabot pull requests
     conditions:
@@ -18,3 +15,11 @@ pull_request_rules:
       merge:
         method: merge
         strict: smart+fasttrack
+
+  - name: Remove Mergify temporary labels
+    conditions:
+      - merged
+    actions:
+      label:
+        remove:
+          - merge when ready
