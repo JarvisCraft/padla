@@ -15,30 +15,25 @@ import java.util.function.Function;
 
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
-        extends ConcurrentWrapper<T> implements Map<K, V> {
+        extends AbstractConcurrentSizedCollectionWrapper<T> implements Map<K, V> {
 
     public ConcurrentMapWrapper(@NonNull final T wrapped) {
         super(wrapped);
     }
 
     @Override
-    public int size() {
-        readLock.lock();
-        try {
-            return wrapped.size();
-        } finally {
-            readLock.unlock();
-        }
+    protected int internalSize() {
+        return wrapped.size();
     }
 
     @Override
-    public boolean isEmpty() {
-        readLock.lock();
-        try {
-            return wrapped.isEmpty();
-        } finally {
-            readLock.unlock();
-        }
+    protected boolean internalIsEmpty() {
+        return wrapped.isEmpty();
+    }
+
+    @Override
+    protected void internalClear() {
+        wrapped.clear();
     }
 
     @Override
@@ -106,16 +101,6 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
         writeLock.lock();
         try {
             wrapped.putAll(m);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public void clear() {
-        writeLock.lock();
-        try {
-            wrapped.clear();
         } finally {
             writeLock.unlock();
         }

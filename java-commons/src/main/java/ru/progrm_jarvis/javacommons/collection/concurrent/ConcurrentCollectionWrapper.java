@@ -12,30 +12,25 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
-        extends ConcurrentWrapper<T> implements Collection<E> {
+        extends AbstractConcurrentSizedCollectionWrapper<T> implements Collection<E> {
 
     public ConcurrentCollectionWrapper(@NonNull final T wrapped) {
         super(wrapped);
     }
 
     @Override
-    public int size() {
-        readLock.lock();
-        try {
-            return wrapped.size();
-        } finally {
-            readLock.unlock();
-        }
+    protected int internalSize() {
+        return wrapped.size();
     }
 
     @Override
-    public boolean isEmpty() {
-        readLock.lock();
-        try {
-            return wrapped.isEmpty();
-        } finally {
-            readLock.unlock();
-        }
+    protected boolean internalIsEmpty() {
+        return wrapped.isEmpty();
+    }
+
+    @Override
+    protected void internalClear() {
+        wrapped.clear();
     }
 
     @Override
@@ -155,16 +150,6 @@ public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
         writeLock.lock();
         try {
             return wrapped.removeIf(filter);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public void clear() {
-        writeLock.lock();
-        try {
-            wrapped.clear();
         } finally {
             writeLock.unlock();
         }
