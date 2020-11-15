@@ -25,7 +25,8 @@ jobs:
           on:
             branch: development
             condition: "\"$(./.travis/scripts/get_version.sh)\" == *-SNAPSHOT"
-          edge: true
+          skip_cleanup: true
+          #edge: true
 
         # Deploy release to Maven Central
         - provider: script
@@ -34,7 +35,8 @@ jobs:
             branch: master
             tags: true
             condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
-          edge: true
+          skip_cleanup: true
+          #edge: true
 
 cache:
   directories:
