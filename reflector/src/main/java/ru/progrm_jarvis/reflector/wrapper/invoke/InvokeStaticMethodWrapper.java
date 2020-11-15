@@ -10,8 +10,10 @@ import ru.progrm_jarvis.javacommons.pair.Pair;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
+import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 import ru.progrm_jarvis.reflector.wrapper.StaticMethodWrapper;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.ExecutionException;
@@ -94,107 +96,24 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return (StaticMethodWrapper<T, R>) STATIC_WRAPPER_CACHE.get(method, () -> {
             checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
 
+            val noReturn = method.getReturnType() == void.class;
             switch (method.getParameterCount()) {
-                case 0: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        val runnable
-                                = generateImplementation(Runnable.class, method);
-
-                        return new InvokeStaticMethodWrapper<>(
-                                method.getDeclaringClass(), method,
-                                parameters -> {
-                                    if (parameters.length != 0) throw new IllegalArgumentException(
-                                            "This static method requires no parameters"
-                                    );
-                                    runnable.run();
-
-                                    return null;
-                                });
-                    }
-                    final Supplier<R> supplier
-                            = generateImplementation(Supplier.class, method);
-
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            parameters -> {
-                                if (parameters.length != 0) throw new IllegalArgumentException(
-                                        "This static method requires no parameters"
-                                );
-
-                                return supplier.get();
-                            });
-                }
-                case 1: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        final Consumer<Object> consumer
-                                = generateImplementation(Consumer.class, method);
-
-                        return new InvokeStaticMethodWrapper<>(
-                                method.getDeclaringClass(), method,
-                                parameters -> {
-                                    if (parameters.length != 1) throw new IllegalArgumentException(
-                                            "This static method requires 1 parameter"
-                                    );
-                                    consumer.accept(parameters[0]);
-
-                                    return null;
-                                });
-                    }
-                    final Function<Object, R> function
-                            = generateImplementation(Function.class, method);
-
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            parameters -> {
-                                if (parameters.length != 1) throw new IllegalArgumentException(
-                                        "This static method requires 1 parameter"
-                                );
-
-                                return function.apply(parameters[0]);
-                            });
-                }
-                case 2: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        final BiConsumer<Object, Object> biConsumer
-                                = generateImplementation(BiConsumer.class, method);
-
-                        return new InvokeStaticMethodWrapper<>(
-                                method.getDeclaringClass(), method,
-                                parameters -> {
-                                    if (parameters.length != 2) throw new IllegalArgumentException(
-                                            "This static method requires 2 parameters"
-                                    );
-                                    biConsumer.accept(parameters[0], parameters[1]);
-
-                                    return null;
-                                });
-                    }
-                    final BiFunction<Object, Object, R> biFunction
-                            = generateImplementation(BiFunction.class, method);
-
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            parameters -> {
-                                if (parameters.length != 2) throw new IllegalArgumentException(
-                                        "This static method requires 2 parameters"
-                                );
-
-                                return biFunction.apply(parameters[0], parameters[1]);
-                            });
-                }
-                default: {
-                    val declaringClass = method.getDeclaringClass();
-                    // initialized here not to do it inside lambda body
-                    val methodHandle = InvokeUtil.lookup(declaringClass).unreflect(method);
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            (ThrowingFunction<Object[], T, ?>) parameters -> (T) methodHandle
-                                    .invokeWithArguments(parameters)
-                    );
-                }
+                case 0: return noReturn ? from(
+                        method, generateFrom(Runnable.class, method)
+                ) : from(
+                        method, (Supplier<T>) generateFrom(Supplier.class, method)
+                );
+                case 1: return noReturn ? from(
+                        method, (Consumer<Object>) generateFrom(Consumer.class, method)
+                ) : from(
+                        method, (Function<Object, R>) generateFrom(Function.class, method)
+                );
+                case 2: return noReturn ? from(
+                        method, (BiConsumer<Object, Object>) generateFrom(BiConsumer.class, method)
+                ) : from(
+                        method, (BiFunction<Object, Object, R>) generateFrom(BiFunction.class, method)
+                );
+                default: return from(method, InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method));
             }
         });
     }
@@ -217,108 +136,135 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return (StaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(SimplePair.of(method, target), () -> {
             checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
+            val noReturn = method.getReturnType() == void.class;
             switch (method.getParameterCount()) {
-                case 0: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        val runnable
-                                = generateImplementation(Runnable.class, method, target);
-
-                        return new InvokeStaticMethodWrapper<>(
-                                method.getDeclaringClass(), method,
-                                parameters -> {
-                                    if (parameters.length != 0) throw new IllegalArgumentException(
-                                            "This static method requires no parameters"
-                                    );
-                                    runnable.run();
-
-                                    return null;
-                                });
-                    }
-                    final Supplier<R> supplier
-                            = generateImplementation(Supplier.class, method, target);
-
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            parameters -> {
-                                if (parameters.length != 0) throw new IllegalArgumentException(
-                                        "This static method requires no parameters"
-                                );
-
-                                return supplier.get();
-                            });
-                }
-                case 1: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        final Consumer<Object> consumer
-                                = generateImplementation(Consumer.class, method, target);
-
-                        return new InvokeStaticMethodWrapper<>(
-                                method.getDeclaringClass(), method,
-                                parameters -> {
-                                    if (parameters.length != 1) throw new IllegalArgumentException(
-                                            "This static method requires 1 parameter"
-                                    );
-                                    consumer.accept(parameters[0]);
-
-                                    return null;
-                                });
-                    }
-                    final Function<Object, R> function
-                            = generateImplementation(Function.class, method, target);
-
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            parameters -> {
-                                if (parameters.length != 1) throw new IllegalArgumentException(
-                                        "This static method requires 1 parameter"
-                                );
-
-                                return function.apply(parameters[0]);
-                            });
-                }
-                case 2: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        final BiConsumer<Object, Object> biConsumer
-                                = generateImplementation(BiConsumer.class, method, target);
-
-                        return new InvokeStaticMethodWrapper<>(
-                                method.getDeclaringClass(), method,
-                                parameters -> {
-                                    if (parameters.length != 2) throw new IllegalArgumentException(
-                                            "This static method requires 2 parameters"
-                                    );
-                                    biConsumer.accept(parameters[0], parameters[1]);
-
-                                    return null;
-                                });
-                    }
-                    final BiFunction<Object, Object, R> biFunction
-                            = generateImplementation(BiFunction.class, method, target);
-
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            parameters -> {
-                                if (parameters.length != 2) throw new IllegalArgumentException(
-                                        "This static method requires 2 parameters"
-                                );
-
-                                return biFunction.apply(parameters[0], parameters[1]);
-                            });
-                }
-                default: {
-                    // initialized here not to do it inside lambda body
-                    val methodHandle = InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method).bindTo(target);
-                    return new InvokeStaticMethodWrapper<>(
-                            method.getDeclaringClass(), method,
-                            (ThrowingFunction<Object[], T, ?>) parameters -> (T) methodHandle
-                                    .invokeWithArguments(parameters)
-                    );
-                }
+                case 0: return noReturn
+                        ? from(method, generateFrom(Runnable.class, method, target))
+                        : from(method, (Supplier<R>) generateFrom(Supplier.class, method, target));
+                case 1: return noReturn
+                        ? from(method, (Consumer<Object>) generateFrom(Consumer.class, method, target))
+                        : from(method, (Function<Object, R>) generateFrom(Function.class, method, target));
+                case 2: return noReturn
+                        ? from(method, (BiConsumer<Object, Object>) generateFrom(BiConsumer.class, method, target))
+                        : from(method, (BiFunction<Object, Object, R>) generateFrom(BiFunction.class, method, target));
+                default: return from(
+                        method, InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method).bindTo(target)
+                );
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull Runnable generatedRunnable
+    ) {
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                parameters -> {
+                    ReflectorWrappers.validateParameterCount(0, parameters);
+
+                    generatedRunnable.run();
+
+                    return null;
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull Consumer<Object> generatedConsumer
+    ) {
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                parameters -> {
+                    ReflectorWrappers.validateParameterCount(1, parameters);
+
+                    generatedConsumer.accept(parameters[0]);
+
+                    return null;
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull BiConsumer<Object, Object> generatedBiConsumer
+    ) {
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                parameters -> {
+                    ReflectorWrappers.validateParameterCount(2, parameters);
+
+                    generatedBiConsumer.accept(parameters[0], parameters[1]);
+
+                    return null;
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull Supplier<R> generatedSupplier
+    ) {
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                parameters -> {
+                    ReflectorWrappers.validateParameterCount(0, parameters);
+
+                    return generatedSupplier.get();
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull Function<Object, R> generatedFunction
+    ) {
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                parameters -> {
+                    ReflectorWrappers.validateParameterCount(1, parameters);
+
+                    return generatedFunction.apply(parameters[0]);
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull BiFunction<Object, Object, R> generatedBiFunction
+    ) {
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                parameters -> {
+                    ReflectorWrappers.validateParameterCount(2, parameters);
+
+                    return generatedBiFunction.apply(parameters[0], parameters[1]);
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull MethodHandle methodHandle
+    ) {
+        val parameterCount = method.getParameterCount();
+
+        return new InvokeStaticMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                (ThrowingFunction<Object[], R, ?>) parameters -> {
+                    ReflectorWrappers.validateParameterCount(parameterCount, parameters);
+
+                    return (R) methodHandle.invokeWithArguments(parameters);
+                }
+        );
     }
 
     @Override
@@ -326,8 +272,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return invoker.apply(parameters);
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
-            final @NotNull Class<? super F> functionalType,
+    private static <@NotNull F, @NotNull T> @NotNull F generateFrom(
+            final @NotNull Class<F> functionalType,
             final @NotNull Method method
     ) {
         return InvokeUtil.<F, T>invokeFactory()
@@ -336,8 +282,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
                 .createUnsafely();
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
-            final @NotNull Class<? super F> functionalType,
+    private static <@NotNull F, @NotNull T> @NotNull F generateFrom(
+            final @NotNull Class<F> functionalType,
             final @NotNull Method method, final T target
     ) {
         return InvokeUtil.<F, T>invokeFactory()

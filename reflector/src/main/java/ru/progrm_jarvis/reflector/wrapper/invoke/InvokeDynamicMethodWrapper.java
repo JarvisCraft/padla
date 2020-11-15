@@ -9,7 +9,9 @@ import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.DynamicMethodWrapper;
+import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +41,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
     /**
      * Weak cache of allocated instance of this constructor wrapper
      */
-    private static final @NotNull Cache<@NotNull Method, @NotNull InvokeDynamicMethodWrapper<?, ?>> CACHE
+    private static final @NotNull Cache<@NotNull Method, @NotNull DynamicMethodWrapper<?, ?>> CACHE
             = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(Math.max(1, Integer.getInteger(CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
@@ -80,95 +82,119 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         return (DynamicMethodWrapper<T, R>) CACHE.get(method, () -> {
             checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
+            val noReturn = method.getReturnType() == void.class;
             switch (method.getParameterCount()) {
-                case 0: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        final Consumer<Object> consumer
-                                = generateImplementation(Consumer.class, method);
-
-                        return new InvokeDynamicMethodWrapper<>(
-                                method.getDeclaringClass(), method, (target, parameters) -> {
-                            if (parameters.length != 0) throw new IllegalArgumentException(
-                                    "This method requires no parameters"
-                            );
-                            consumer.accept(target);
-
-                            return null;
-                        });
-                    }
-
-                    final Function<Object, R> function
-                            = generateImplementation(Function.class, method);
-
-                    return new InvokeDynamicMethodWrapper<>(
-                            (Class<T>) method.getDeclaringClass(), method, (target, parameters) -> {
-                        if (parameters.length != 0) throw new IllegalArgumentException(
-                                "This method requires no parameters"
-                        );
-                        return function.apply(target);
-                    });
-                }
-                case 1: {
-                    // handle void specifically as it can't be cast to Object
-                    if (method.getReturnType() == void.class) {
-                        final BiConsumer<Object, Object> consumer
-                                = generateImplementation(BiConsumer.class, method);
-
-                        return new InvokeDynamicMethodWrapper<>(
-                                method.getDeclaringClass(), method, (target, parameters) -> {
-                            if (parameters.length != 1) throw new IllegalArgumentException(
-                                    "This method requires 1 parameter"
-                            );
-                            consumer.accept(target, parameters[0]);
-
-                            return null;
-                        });
-                    }
-
-                    final BiFunction<Object, Object, R> biFunction
-                            = generateImplementation(BiFunction.class, method);
-
-                    return new InvokeDynamicMethodWrapper<>(
-                            method.getDeclaringClass(), method, (target, parameters) -> {
-                        if (parameters.length != 1) throw new IllegalArgumentException(
-                                "This method requires 1 parameter"
-                        );
-
-                        return biFunction.apply(target, parameters[0]);
-                    });
-                }
-                default: {
-                    // initialized here not to do it inside lambda body
-                    val methodHandle = InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method);
-
-                    return new InvokeDynamicMethodWrapper<>(
-                            (Class<T>) method.getDeclaringClass(), method,
-                            (ThrowingBiFunction<T, Object[], R, Throwable>) (target, parameters) -> {
-                                val length = parameters.length;
-                                val arguments = new Object[length + 1];
-                                arguments[0] = target;
-                                System.arraycopy(parameters, 0, arguments, 1, length);
-                                return (R) methodHandle.invokeWithArguments(arguments);
-                            }
-                    );
-                }
+                case 0: return noReturn
+                        ? from(method, (Consumer<Object>) generateImplementation(Consumer.class, method))
+                        : from(method, (Function<Object, R>) generateImplementation(Function.class, method));
+                case 1: return noReturn
+                        ? from(method, (BiConsumer<Object, Object>) generateImplementation(BiConsumer.class, method))
+                        : from(method, (BiFunction<Object, Object, R>) generateImplementation(BiFunction.class, method)
+                );
+                default: return from(method, InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method));
             }
         });
     }
 
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull Consumer<Object> generatedConsumer
+    ) {
+        return new InvokeDynamicMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                (target, parameters) -> {
+                    ReflectorWrappers.validateParameterCount(0, parameters);
+
+                    generatedConsumer.accept(target);
+
+                    return null;
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull BiConsumer<Object, Object> generatedBiConsumer
+    ) {
+        return new InvokeDynamicMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                (target, parameters) -> {
+                    ReflectorWrappers.validateParameterCount(1, parameters);
+
+                    generatedBiConsumer.accept(target, parameters[0]);
+
+                    return null;
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull Function<Object, R> generatedFunction
+    ) {
+        return new InvokeDynamicMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                (target, parameters) -> {
+                    ReflectorWrappers.validateParameterCount(0, parameters);
+
+                    return generatedFunction.apply(target);
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull BiFunction<Object, Object, R> generatedBiFunction
+    ) {
+        return new InvokeDynamicMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                (target, parameters) -> {
+                    ReflectorWrappers.validateParameterCount(1, parameters);
+
+                    return generatedBiFunction.apply(target, parameters[0]);
+                }
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+            final @NotNull Method method,
+            final @NotNull MethodHandle methodHandle
+    ) {
+        val parameterCount = method.getParameterCount();
+
+        return new InvokeDynamicMethodWrapper<>(
+                (Class<? extends T>) method.getDeclaringClass(), method,
+                (ThrowingBiFunction<T, Object[], R, Throwable>) (target, parameters) -> {
+                    final int parametersLength;
+                    ReflectorWrappers.validateParameterCount(parameterCount, parametersLength = parameters.length);
+
+                    final int length;
+                    final Object[] arguments;
+                    (arguments = new Object[(length = parametersLength) + 1])[0] = target;
+                    System.arraycopy(parameters, 0, arguments, 1, length);
+
+                    return (R) methodHandle.invokeWithArguments(arguments);
+                }
+        );
+    }
+
+    @Override
+    public R invoke(final @NotNull T target, final Object @NotNull ... parameters) {
+        return invoker.apply(target, parameters);
+    }
+
     private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
-            final @NotNull Class<? super F> functionalType,
+            final @NotNull Class<F> functionalType,
             final @NotNull Method method
     ) {
         return InvokeUtil.<F, T>invokeFactory()
                 .implementing(functionalType)
                 .via(method)
                 .createUnsafely();
-    }
-
-    @Override
-    public R invoke(final @NotNull T target, final Object @NotNull ... parameters) {
-        return invoker.apply(target, parameters);
     }
 }
