@@ -199,16 +199,6 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         });
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
-            final @NotNull Class<? super F> functionalType,
-            final @NotNull Method method
-    ) {
-        return InvokeUtil.<F, T>invokeFactory()
-                .implementing(functionalType)
-                .via(method)
-                .createUnsafely();
-    }
-
     /**
      * Creates a new cached static method wrapper for the given non-static method bound to the object.
      *
@@ -331,6 +321,21 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         });
     }
 
+    @Override
+    public R invoke(final Object @NotNull ... parameters) {
+        return invoker.apply(parameters);
+    }
+
+    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
+            final @NotNull Class<? super F> functionalType,
+            final @NotNull Method method
+    ) {
+        return InvokeUtil.<F, T>invokeFactory()
+                .implementing(functionalType)
+                .via(method)
+                .createUnsafely();
+    }
+
     private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
             final @NotNull Class<? super F> functionalType,
             final @NotNull Method method, final T target
@@ -340,10 +345,5 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
                 .via(method)
                 .boundTo(target)
                 .createUnsafely();
-    }
-
-    @Override
-    public R invoke(final Object @NotNull ... parameters) {
-        return invoker.apply(parameters);
     }
 }
