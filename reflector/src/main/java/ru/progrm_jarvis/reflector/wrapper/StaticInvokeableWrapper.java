@@ -9,7 +9,8 @@ import org.jetbrains.annotations.NotNull;
  * @param <W> type of the wrapped object
  * @param <R> return-type of the invocation
  */
-public interface StaticInvokeableWrapper<T, W, R> extends ReflectorWrapper<T, W> {
+public interface StaticInvokeableWrapper<@NotNull T, @NotNull W, R>
+        extends ReflectorWrapper<T, W> {
 
     /**
      * Performs the invocation.
@@ -17,5 +18,5 @@ public interface StaticInvokeableWrapper<T, W, R> extends ReflectorWrapper<T, W>
      * @param parameters parameters of the invocation
      * @return result of the invocation
      */
-    R invoke(@NotNull Object... parameters);
+    R invoke(Object @NotNull ... parameters);
 }

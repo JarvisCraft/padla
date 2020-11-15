@@ -5,8 +5,8 @@ import com.google.common.cache.CacheBuilder;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.DynamicMethodWrapper;
 
@@ -28,18 +28,18 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeDynamicMethodWrapper<T, R>
+public class InvokeDynamicMethodWrapper<@NotNull T, R>
         extends AbstractMethodWrapper<T, R> implements DynamicMethodWrapper<T, R> {
 
     /**
      * Name of the property responsible for concurrency level of {@link #CACHE}
      */
-    @NonNull protected static final String CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
+    protected static final @NotNull String CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeDynamicMethodWrapper.class.getCanonicalName() + ".cache-concurrency-level";
     /**
      * Weak cache of allocated instance of this constructor wrapper
      */
-    private static final Cache<Method, InvokeDynamicMethodWrapper<?, ?>> CACHE
+    private static final @NotNull Cache<@NotNull Method, @NotNull InvokeDynamicMethodWrapper<?, ?>> CACHE
             = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(Math.max(1, Integer.getInteger(CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
@@ -48,7 +48,7 @@ public class InvokeDynamicMethodWrapper<T, R>
     /**
      * Bi-function performing the method invocation
      */
-    @NonNull BiFunction<T, Object[], R> invoker;
+    @NonNull BiFunction<T, Object @NotNull [], R> invoker;
 
     /**
      * Creates a new dynamic method wrapper.
@@ -57,16 +57,11 @@ public class InvokeDynamicMethodWrapper<T, R>
      * @param wrapped wrapped object
      * @param invoker bi-function performing the method invocation
      */
-    protected InvokeDynamicMethodWrapper(@NonNull final Class<? extends T> containingClass,
-                                         @NonNull final Method wrapped,
-                                         @NonNull final BiFunction<T, Object[], R> invoker) {
+    protected InvokeDynamicMethodWrapper(final @NotNull Class<? extends T> containingClass,
+                                         final @NotNull Method wrapped,
+                                         final @NotNull BiFunction<@NotNull T, Object @NotNull [], R> invoker) {
         super(containingClass, wrapped);
         this.invoker = invoker;
-    }
-
-    @Override
-    public R invoke(@NotNull final T target, @NotNull final Object... parameters) {
-        return invoker.apply(target, parameters);
     }
 
     /**
@@ -79,18 +74,18 @@ public class InvokeDynamicMethodWrapper<T, R>
      */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    public static <T, R> InvokeDynamicMethodWrapper<T, R> from(@NonNull final Method method) {
-        return (InvokeDynamicMethodWrapper<T, R>) CACHE.get(method, () -> {
+    public static <@NotNull T, R> DynamicMethodWrapper<T, R> from(
+            final @NonNull Method method
+    ) {
+        return (DynamicMethodWrapper<T, R>) CACHE.get(method, () -> {
             checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
             switch (method.getParameterCount()) {
                 case 0: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val consumer = InvokeUtil.<Consumer<Object>, T>invokeFactory()
-                                .implementing(Consumer.class)
-                                .via(method)
-                                .createUnsafely();
+                        final Consumer<Object> consumer
+                                = generateImplementation(Consumer.class, method);
 
                         return new InvokeDynamicMethodWrapper<>(
                                 method.getDeclaringClass(), method, (target, parameters) -> {
@@ -103,10 +98,8 @@ public class InvokeDynamicMethodWrapper<T, R>
                         });
                     }
 
-                    val function = InvokeUtil.<Function<Object, R>, T>invokeFactory()
-                            .implementing(Function.class)
-                            .via(method)
-                            .createUnsafely();
+                    final Function<Object, R> function
+                            = generateImplementation(Function.class, method);
 
                     return new InvokeDynamicMethodWrapper<>(
                             (Class<T>) method.getDeclaringClass(), method, (target, parameters) -> {
@@ -119,10 +112,8 @@ public class InvokeDynamicMethodWrapper<T, R>
                 case 1: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val consumer = InvokeUtil.<BiConsumer<Object, Object>, T>invokeFactory()
-                                .implementing(BiConsumer.class)
-                                .via(method)
-                                .createUnsafely();
+                        final BiConsumer<Object, Object> consumer
+                                = generateImplementation(BiConsumer.class, method);
 
                         return new InvokeDynamicMethodWrapper<>(
                                 method.getDeclaringClass(), method, (target, parameters) -> {
@@ -135,10 +126,8 @@ public class InvokeDynamicMethodWrapper<T, R>
                         });
                     }
 
-                    val biFunction = InvokeUtil.<BiFunction<Object, Object, R>, T>invokeFactory()
-                            .implementing(BiFunction.class)
-                            .via(method)
-                            .createUnsafely();
+                    final BiFunction<Object, Object, R> biFunction
+                            = generateImplementation(BiFunction.class, method);
 
                     return new InvokeDynamicMethodWrapper<>(
                             method.getDeclaringClass(), method, (target, parameters) -> {
@@ -166,5 +155,20 @@ public class InvokeDynamicMethodWrapper<T, R>
                 }
             }
         });
+    }
+
+    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
+            final @NotNull Class<? super F> functionalType,
+            final @NotNull Method method
+    ) {
+        return InvokeUtil.<F, T>invokeFactory()
+                .implementing(functionalType)
+                .via(method)
+                .createUnsafely();
+    }
+
+    @Override
+    public R invoke(final @NotNull T target, final Object @NotNull ... parameters) {
+        return invoker.apply(target, parameters);
     }
 }

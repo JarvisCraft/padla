@@ -5,9 +5,10 @@ import com.google.common.cache.CacheBuilder;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractConstructorWrapper;
+import ru.progrm_jarvis.reflector.wrapper.ConstructorWrapper;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.ExecutionException;
@@ -22,17 +23,18 @@ import java.util.function.Supplier;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeConstructorWrapper<T> extends AbstractConstructorWrapper<T> {
+public class InvokeConstructorWrapper<@NotNull T>
+        extends AbstractConstructorWrapper<T> {
 
     /**
      * Name of the property responsible for concurrency level of {@link #WRAPPER_CACHE}
      */
-    @NonNull public static final String WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
+    public static final @NotNull String WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeConstructorWrapper.class.getCanonicalName() + ".wrapper-cache-concurrency-level";
     /**
      * Weak cache of allocated instance of this constructor wrapper
      */
-    protected static final Cache<Constructor<?>, InvokeConstructorWrapper<?>> WRAPPER_CACHE
+    protected static final @NotNull Cache<@NotNull Constructor<?>, @NotNull ConstructorWrapper<?>> WRAPPER_CACHE
             = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(Math.max(1, Integer.getInteger(WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
@@ -41,7 +43,7 @@ public class InvokeConstructorWrapper<T> extends AbstractConstructorWrapper<T> {
     /**
      * Function performing the constructor invocation
      */
-    @NonNull Function<Object[], T> invoker;
+    @NotNull Function<Object @NotNull [], @NotNull T> invoker;
 
     /**
      * Creates a new constructor wrapper.
@@ -50,16 +52,11 @@ public class InvokeConstructorWrapper<T> extends AbstractConstructorWrapper<T> {
      * @param wrapped wrapped object
      * @param invoker function performing the constructor invocation
      */
-    protected InvokeConstructorWrapper(@NonNull final Class<? extends T> containingClass,
-                                       @NonNull final Constructor<? extends T> wrapped,
-                                       @NonNull final Function<Object[], T> invoker) {
+    protected InvokeConstructorWrapper(final @NotNull Class<? extends T> containingClass,
+                                       final @NotNull Constructor<? extends T> wrapped,
+                                       final @NotNull Function<@NotNull Object[], @NotNull T> invoker) {
         super(containingClass, wrapped);
         this.invoker = invoker;
-    }
-
-    @Override
-    public T invoke(@NotNull final Object... parameters) {
-        return invoker.apply(parameters);
     }
 
     /**
@@ -71,8 +68,10 @@ public class InvokeConstructorWrapper<T> extends AbstractConstructorWrapper<T> {
      */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    public static <T> InvokeConstructorWrapper<T> from(@NonNull final Constructor<? extends T> constructor) {
-        return (InvokeConstructorWrapper<T>) WRAPPER_CACHE.get(constructor, () -> {
+    public static <@NotNull T> @NotNull ConstructorWrapper<T> from(
+            final @NonNull Constructor<? extends T> constructor
+    ) {
+        return (ConstructorWrapper<T>) WRAPPER_CACHE.get(constructor, () -> {
             switch (constructor.getParameterCount()) {
                 case 0: {
                     final Supplier<T> supplier;
@@ -143,10 +142,16 @@ public class InvokeConstructorWrapper<T> extends AbstractConstructorWrapper<T> {
                     val methodHandle = InvokeUtil.lookup(declaringClass).unreflectConstructor(constructor);
                     return new InvokeConstructorWrapper<>(
                             constructor.getDeclaringClass(), constructor,
-                            (ThrowingFunction) parameters -> (T) methodHandle.invokeWithArguments((Object[]) parameters)
+                            (ThrowingFunction<Object[], T, ?>) parameters -> (T) methodHandle
+                                    .invokeWithArguments(parameters)
                     );
                 }
             }
         });
+    }
+
+    @Override
+    public @NotNull T invoke(final Object @NotNull ... parameters) {
+        return invoker.apply(parameters);
     }
 }

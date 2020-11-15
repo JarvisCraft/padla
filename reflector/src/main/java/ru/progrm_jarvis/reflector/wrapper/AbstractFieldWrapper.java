@@ -1,8 +1,8 @@
 package ru.progrm_jarvis.reflector.wrapper;
 
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 
@@ -14,11 +14,11 @@ import java.lang.reflect.Field;
  */
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public abstract class AbstractFieldWrapper<T, V>
+public abstract class AbstractFieldWrapper<@NotNull T, V>
         extends AbstractReflectorWrapper<T, Field> implements FieldWrapper<T, V> {
 
-    protected AbstractFieldWrapper(@NonNull final Class<? extends T> containingClass,
-                                   @NonNull final Field wrapped) {
+    protected AbstractFieldWrapper(final @NotNull Class<? extends T> containingClass,
+                                   final @NotNull Field wrapped) {
         super(containingClass, wrapped);
     }
 }

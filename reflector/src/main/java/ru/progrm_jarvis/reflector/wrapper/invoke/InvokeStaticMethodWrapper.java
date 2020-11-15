@@ -5,10 +5,10 @@ import com.google.common.cache.CacheBuilder;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.pair.Pair;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
-import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.StaticMethodWrapper;
 
@@ -27,12 +27,13 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R> implements StaticMethodWrapper<T, R> {
+public class InvokeStaticMethodWrapper<@NotNull T, R>
+        extends AbstractMethodWrapper<T, R> implements StaticMethodWrapper<T, R> {
 
     /**
      * Name of the property responsible for concurrency level of {@link #STATIC_WRAPPER_CACHE}
      */
-    @NonNull public static final String STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
+    public static final @NotNull String STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeStaticMethodWrapper.class.getCanonicalName() + ".static-wrapper-cache-concurrency-level",
     /**
      * Name of the property responsible for concurrency level of {@link #BOUND_WRAPPER_CACHE}
@@ -42,7 +43,7 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
     /**
      * Weak cache of allocated instance of this static method wrappers of static methods
      */
-    protected static final Cache<Method, InvokeStaticMethodWrapper<?, ?>> STATIC_WRAPPER_CACHE
+    protected static final @NotNull Cache<@NotNull Method, @NotNull StaticMethodWrapper<?, ?>> STATIC_WRAPPER_CACHE
             = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(
@@ -52,8 +53,9 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
     /**
      * Weak cache of allocated instance of this static method wrappers of non-static bound methods
      */
-    protected static final Cache<Pair<Method, ?>, InvokeStaticMethodWrapper<?, ?>> BOUND_WRAPPER_CACHE
-            = CacheBuilder.newBuilder()
+    protected static final @NotNull Cache<
+            @NotNull Pair<@NotNull Method, @NotNull ?>, @NotNull StaticMethodWrapper<?, ?>
+            > BOUND_WRAPPER_CACHE = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(
                     Math.max(1, Integer.getInteger(BOUND_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
@@ -62,7 +64,7 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
     /**
      * Function performing the method invocation
      */
-    @NonNull Function<Object[], R> invoker;
+    @NonNull Function<Object @NotNull [], R> invoker;
 
     /**
      * Creates a new static method wrapper.
@@ -71,16 +73,11 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
      * @param wrapped wrapped object
      * @param invoker function performing the method invocation
      */
-    protected InvokeStaticMethodWrapper(@NonNull final Class<? extends T> containingClass,
-                                        @NonNull final Method wrapped,
-                                        @NonNull final Function<Object[], R> invoker) {
+    protected InvokeStaticMethodWrapper(final @NotNull Class<? extends T> containingClass,
+                                        final @NotNull Method wrapped,
+                                        final @NotNull Function<Object @NotNull [], R> invoker) {
         super(containingClass, wrapped);
         this.invoker = invoker;
-    }
-
-    @Override
-    public R invoke(@NotNull final Object... parameters) {
-        return invoker.apply(parameters);
     }
 
     /**
@@ -93,18 +90,16 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
      */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    public static <T, R> InvokeStaticMethodWrapper<T, R> from(@NonNull final Method method) {
-        return (InvokeStaticMethodWrapper<T, R>) STATIC_WRAPPER_CACHE.get(method, () -> {
+    public static <@NonNull T, R> @NotNull StaticMethodWrapper<T, R> from(final @NonNull Method method) {
+        return (StaticMethodWrapper<T, R>) STATIC_WRAPPER_CACHE.get(method, () -> {
             checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
 
             switch (method.getParameterCount()) {
                 case 0: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val runnable = InvokeUtil.<Runnable, T>invokeFactory()
-                                .implementing(Runnable.class)
-                                .via(method)
-                                .createUnsafely();
+                        val runnable
+                                = generateImplementation(Runnable.class, method);
 
                         return new InvokeStaticMethodWrapper<>(
                                 method.getDeclaringClass(), method,
@@ -117,10 +112,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                                     return null;
                                 });
                     }
-                    val supplier = InvokeUtil.<Supplier<R>, T>invokeFactory()
-                            .implementing(Supplier.class)
-                            .via(method)
-                            .createUnsafely();
+                    final Supplier<R> supplier
+                            = generateImplementation(Supplier.class, method);
 
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
@@ -135,10 +128,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                 case 1: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val consumer = InvokeUtil.<Consumer<Object>, T>invokeFactory()
-                                .implementing(Consumer.class)
-                                .via(method)
-                                .createUnsafely();
+                        final Consumer<Object> consumer
+                                = generateImplementation(Consumer.class, method);
 
                         return new InvokeStaticMethodWrapper<>(
                                 method.getDeclaringClass(), method,
@@ -151,10 +142,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                                     return null;
                                 });
                     }
-                    val function = InvokeUtil.<Function<Object, R>, T>invokeFactory()
-                            .implementing(Function.class)
-                            .via(method)
-                            .createUnsafely();
+                    final Function<Object, R> function
+                            = generateImplementation(Function.class, method);
 
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
@@ -169,10 +158,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                 case 2: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val biConsumer = InvokeUtil.<BiConsumer<Object, Object>, T>invokeFactory()
-                                .implementing(BiConsumer.class)
-                                .via(method)
-                                .createUnsafely();
+                        final BiConsumer<Object, Object> biConsumer
+                                = generateImplementation(BiConsumer.class, method);
 
                         return new InvokeStaticMethodWrapper<>(
                                 method.getDeclaringClass(), method,
@@ -185,10 +172,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                                     return null;
                                 });
                     }
-                    val biFunction = InvokeUtil.<BiFunction<Object, Object, R>, T>invokeFactory()
-                            .implementing(BiFunction.class)
-                            .via(method)
-                            .createUnsafely();
+                    final BiFunction<Object, Object, R> biFunction
+                            = generateImplementation(BiFunction.class, method);
 
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
@@ -206,11 +191,22 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                     val methodHandle = InvokeUtil.lookup(declaringClass).unreflect(method);
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
-                            (ThrowingFunction) parameters -> (T) methodHandle.invokeWithArguments((Object[]) parameters)
+                            (ThrowingFunction<Object[], T, ?>) parameters -> (T) methodHandle
+                                    .invokeWithArguments(parameters)
                     );
                 }
             }
         });
+    }
+
+    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
+            final @NotNull Class<? super F> functionalType,
+            final @NotNull Method method
+    ) {
+        return InvokeUtil.<F, T>invokeFactory()
+                .implementing(functionalType)
+                .via(method)
+                .createUnsafely();
     }
 
     /**
@@ -224,20 +220,19 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
      */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    public static <T, R> InvokeStaticMethodWrapper<T, R> from(@NonNull final Method method,
-                                                              @NonNull final T target) {
-        return (InvokeStaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(SimplePair.of(method, target), () -> {
+    public static <@NonNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+            final @NonNull Method method,
+            final @NonNull T target
+    ) {
+        return (StaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(SimplePair.of(method, target), () -> {
             checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
             switch (method.getParameterCount()) {
                 case 0: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val runnable = InvokeUtil.<Runnable, T>invokeFactory()
-                                .implementing(Runnable.class)
-                                .via(method)
-                                .boundTo(target)
-                                .createUnsafely();
+                        val runnable
+                                = generateImplementation(Runnable.class, method, target);
 
                         return new InvokeStaticMethodWrapper<>(
                                 method.getDeclaringClass(), method,
@@ -250,11 +245,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                                     return null;
                                 });
                     }
-                    val supplier = InvokeUtil.<Supplier<R>, T>invokeFactory()
-                            .implementing(Supplier.class)
-                            .via(method)
-                            .boundTo(target)
-                            .createUnsafely();
+                    final Supplier<R> supplier
+                            = generateImplementation(Supplier.class, method, target);
 
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
@@ -269,11 +261,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                 case 1: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val consumer = InvokeUtil.<Consumer<Object>, T>invokeFactory()
-                                .implementing(Consumer.class)
-                                .via(method)
-                                .boundTo(target)
-                                .createUnsafely();
+                        final Consumer<Object> consumer
+                                = generateImplementation(Consumer.class, method, target);
 
                         return new InvokeStaticMethodWrapper<>(
                                 method.getDeclaringClass(), method,
@@ -286,11 +275,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                                     return null;
                                 });
                     }
-                    val function = InvokeUtil.<Function<Object, R>, T>invokeFactory()
-                            .implementing(Function.class)
-                            .via(method)
-                            .boundTo(target)
-                            .createUnsafely();
+                    final Function<Object, R> function
+                            = generateImplementation(Function.class, method, target);
 
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
@@ -305,11 +291,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                 case 2: {
                     // handle void specifically as it can't be cast to Object
                     if (method.getReturnType() == void.class) {
-                        val biConsumer = InvokeUtil.<BiConsumer<Object, Object>, T>invokeFactory()
-                                .implementing(BiConsumer.class)
-                                .via(method)
-                                .boundTo(target)
-                                .createUnsafely();
+                        final BiConsumer<Object, Object> biConsumer
+                                = generateImplementation(BiConsumer.class, method, target);
 
                         return new InvokeStaticMethodWrapper<>(
                                 method.getDeclaringClass(), method,
@@ -322,11 +305,8 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                                     return null;
                                 });
                     }
-                    val biFunction = InvokeUtil.<BiFunction<Object, Object, R>, T>invokeFactory()
-                            .implementing(BiFunction.class)
-                            .via(method)
-                            .boundTo(target)
-                            .createUnsafely();
+                    final BiFunction<Object, Object, R> biFunction
+                            = generateImplementation(BiFunction.class, method, target);
 
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
@@ -343,10 +323,27 @@ public class InvokeStaticMethodWrapper<T, R> extends AbstractMethodWrapper<T, R>
                     val methodHandle = InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method).bindTo(target);
                     return new InvokeStaticMethodWrapper<>(
                             method.getDeclaringClass(), method,
-                            (ThrowingFunction) parameters -> (T) methodHandle.invokeWithArguments((Object[]) parameters)
+                            (ThrowingFunction<Object[], T, ?>) parameters -> (T) methodHandle
+                                    .invokeWithArguments(parameters)
                     );
                 }
             }
         });
+    }
+
+    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
+            final @NotNull Class<? super F> functionalType,
+            final @NotNull Method method, final T target
+    ) {
+        return InvokeUtil.<F, T>invokeFactory()
+                .implementing(functionalType)
+                .via(method)
+                .boundTo(target)
+                .createUnsafely();
+    }
+
+    @Override
+    public R invoke(final Object @NotNull ... parameters) {
+        return invoker.apply(parameters);
     }
 }

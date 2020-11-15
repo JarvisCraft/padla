@@ -7,9 +7,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.pair.Pair;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
-import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.reflector.wrapper.AbstractFieldWrapper;
 import ru.progrm_jarvis.reflector.wrapper.StaticFieldWrapper;
 
@@ -29,12 +30,13 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> implements StaticFieldWrapper<T, V> {
+public class InvokeStaticFieldWrapper<@NotNull T, V>
+        extends AbstractFieldWrapper<T, V> implements StaticFieldWrapper<T, V> {
 
     /**
      * Name of the property responsible for concurrency level of {@link #STATIC_WRAPPER_CACHE}
      */
-    @NonNull public static final String STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
+    public static final @NotNull String STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = InvokeStaticFieldWrapper.class.getCanonicalName() + ".static-wrapper-cache-concurrency-level",
     /**
      * Name of the property responsible for concurrency level of {@link #BOUND_WRAPPER_CACHE}
@@ -44,7 +46,7 @@ public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> i
     /**
      * Weak cache of allocated instance of this static field wrappers of static fields
      */
-    protected static final Cache<Field, InvokeStaticFieldWrapper<?, ?>> STATIC_WRAPPER_CACHE
+    protected static final @NotNull Cache<@NotNull Field, @NotNull StaticFieldWrapper<?, ?>> STATIC_WRAPPER_CACHE
             = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(
@@ -54,8 +56,9 @@ public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> i
     /**
      * Weak cache of allocated instance of this static field wrappers of non-static bound fields
      */
-    protected static final Cache<Pair<Field, ?>, InvokeStaticFieldWrapper<?, ?>> BOUND_WRAPPER_CACHE
-            = CacheBuilder.newBuilder()
+    protected static final @NotNull Cache<
+            @NotNull Pair<@NotNull Field, @NotNull ?>, @NotNull StaticFieldWrapper<?, ?>
+            > BOUND_WRAPPER_CACHE = CacheBuilder.newBuilder()
             .weakValues()
             .concurrencyLevel(
                     Math.max(1, Integer.getInteger(BOUND_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
@@ -78,22 +81,12 @@ public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> i
      * @param getter supplier performing the field get operation
      * @param setter consumer performing the field set operation
      */
-    protected InvokeStaticFieldWrapper(@NonNull final Class<? extends T> containingClass,
-                                       @NonNull final Field wrapped,
-                                       @NonNull Supplier<V> getter, @NonNull Consumer<V> setter) {
+    protected InvokeStaticFieldWrapper(final @NotNull Class<? extends T> containingClass,
+                                       final @NotNull Field wrapped,
+                                       final @NotNull Supplier<V> getter, final @NotNull Consumer<V> setter) {
         super(containingClass, wrapped);
         this.getter = getter;
         this.setter = setter;
-    }
-
-    @Override
-    public V get() {
-        return getter.get();
-    }
-
-    @Override
-    public void set(final V value) {
-        setter.accept(value);
     }
 
     /**
@@ -106,8 +99,10 @@ public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> i
      */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    public static <T, V> InvokeStaticFieldWrapper<T, V> from(@NonNull final Field field) {
-        return (InvokeStaticFieldWrapper<T, V>) STATIC_WRAPPER_CACHE.get(field, () -> {
+    public static <@NonNull T, V> @NotNull StaticFieldWrapper<T, V> from(
+            final @NonNull Field field
+    ) {
+        return (StaticFieldWrapper<T, V>) STATIC_WRAPPER_CACHE.get(field, () -> {
             checkArgument(Modifier.isStatic(field.getModifiers()), "field should be static");
 
             return new InvokeStaticFieldWrapper<>(
@@ -128,9 +123,10 @@ public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> i
      */
     @SuppressWarnings("unchecked")
     @SneakyThrows(ExecutionException.class)
-    public static <T, V> InvokeStaticFieldWrapper<T, V> from(@NonNull final Field field,
-                                                             @NonNull final T target) {
-        return (InvokeStaticFieldWrapper<T, V>) BOUND_WRAPPER_CACHE.get(SimplePair.of(field, target), () -> {
+    public static <@NonNull T, V> @NotNull StaticFieldWrapper<T, V> from(
+            final @NonNull Field field, final @NonNull T target
+    ) {
+        return (StaticFieldWrapper<T, V>) BOUND_WRAPPER_CACHE.get(SimplePair.of(field, target), () -> {
             checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
 
             return new InvokeStaticFieldWrapper<>(
@@ -139,5 +135,15 @@ public class InvokeStaticFieldWrapper<T, V> extends AbstractFieldWrapper<T, V> i
                     InvokeUtil.toBoundSetterConsumer(field, target)
             );
         });
+    }
+
+    @Override
+    public V get() {
+        return getter.get();
+    }
+
+    @Override
+    public void set(final V value) {
+        setter.accept(value);
     }
 }
