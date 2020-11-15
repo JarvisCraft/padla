@@ -2,40 +2,50 @@ package ru.progrm_jarvis.javacommons.collection.concurrent;
 
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Spliterator;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
-        extends ConcurrentWrapper<T> implements Collection<E> {
+public class ConcurrentCollectionWrapper<E, W extends Collection<E>>
+        extends AbstractConcurrentSizedCollectionWrapper<W> implements Collection<E> {
 
-    public ConcurrentCollectionWrapper(@NonNull final T wrapped) {
-        super(wrapped);
+
+    protected ConcurrentCollectionWrapper(@NotNull final W wrapped,
+                                          final @NotNull Lock readLock,
+                                          final @NotNull Lock writeLock) {
+        super(wrapped, readLock, writeLock);
+    }
+
+    public static <E> @NotNull Collection<E> create(final @NonNull Collection<E> wrapped) {
+        final ReadWriteLock lock;
+
+        return new ConcurrentCollectionWrapper<>(
+                wrapped, (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock()
+        );
     }
 
     @Override
-    public int size() {
-        readLock.lock();
-        try {
-            return wrapped.size();
-        } finally {
-            readLock.unlock();
-        }
+    protected int internalSize() {
+        return wrapped.size();
     }
 
     @Override
-    public boolean isEmpty() {
-        readLock.lock();
-        try {
-            return wrapped.isEmpty();
-        } finally {
-            readLock.unlock();
-        }
+    protected boolean internalIsEmpty() {
+        return wrapped.isEmpty();
+    }
+
+    @Override
+    protected void internalClear() {
+        wrapped.clear();
     }
 
     @Override
@@ -60,17 +70,7 @@ public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
     }
 
     @Override
-    public void forEach(@NonNull final Consumer<? super E> action) {
-        readLock.lock();
-        try {
-            wrapped.forEach(action);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    @Override
-    @Nonnull public Object[] toArray() {
+    public @NotNull Object[] toArray() {
         readLock.lock();
         try {
             return wrapped.toArray();
@@ -80,7 +80,7 @@ public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
     }
 
     @Override
-    @Nonnull public <R> R[] toArray(@NonNull final R[] a) {
+    public <R> @NotNull R[] toArray(final @NonNull R[] a) {
         readLock.lock();
         try {
             //noinspection SuspiciousToArrayCall
@@ -111,47 +111,37 @@ public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
     }
 
     @Override
-    public boolean containsAll(@NonNull final Collection<?> c) {
+    public boolean containsAll(final @NonNull Collection<?> elements) {
         readLock.lock();
         try {
-            return wrapped.containsAll(c);
+            return wrapped.containsAll(elements);
         } finally {
             readLock.unlock();
         }
     }
 
     @Override
-    public boolean addAll(@NonNull final Collection<? extends E> c) {
+    public boolean addAll(final @NonNull Collection<? extends E> elements) {
         writeLock.lock();
         try {
-            return wrapped.addAll(c);
+            return wrapped.addAll(elements);
         } finally {
             writeLock.unlock();
         }
     }
 
     @Override
-    public boolean retainAll(@NonNull final Collection<?> c) {
+    public boolean removeAll(final @NonNull Collection<?> elements) {
         writeLock.lock();
         try {
-            return wrapped.retainAll(c);
+            return wrapped.removeAll(elements);
         } finally {
             writeLock.unlock();
         }
     }
 
     @Override
-    public boolean removeAll(@NonNull final Collection<?> c) {
-        writeLock.lock();
-        try {
-            return wrapped.removeAll(c);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public boolean removeIf(@NonNull final Predicate<? super E> filter) {
+    public boolean removeIf(final @NonNull Predicate<? super E> filter) {
         writeLock.lock();
         try {
             return wrapped.removeIf(filter);
@@ -161,10 +151,10 @@ public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
     }
 
     @Override
-    public void clear() {
+    public boolean retainAll(final @NonNull Collection<?> elements) {
         writeLock.lock();
         try {
-            wrapped.clear();
+            return wrapped.retainAll(elements);
         } finally {
             writeLock.unlock();
         }
@@ -195,6 +185,16 @@ public class ConcurrentCollectionWrapper<E, T extends Collection<E>>
         readLock.lock();
         try {
             return wrapped.parallelStream();
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public void forEach(final @NonNull Consumer<? super E> action) {
+        readLock.lock();
+        try {
+            wrapped.forEach(action);
         } finally {
             readLock.unlock();
         }

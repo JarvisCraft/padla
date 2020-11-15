@@ -4,41 +4,50 @@ package ru.progrm_jarvis.javacommons.collection.concurrent;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
-        extends ConcurrentWrapper<T> implements Map<K, V> {
+public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
+        extends AbstractConcurrentSizedCollectionWrapper<W> implements Map<K, V> {
 
-    public ConcurrentMapWrapper(@NonNull final T wrapped) {
-        super(wrapped);
+    protected ConcurrentMapWrapper(@NotNull final W wrapped,
+                                   final @NotNull Lock readLock,
+                                   final @NotNull Lock writeLock) {
+        super(wrapped, readLock, writeLock);
+    }
+
+    public static <K, V> @NotNull Map<K, V> create(final @NonNull Map<K, V> wrapped) {
+        final ReadWriteLock lock;
+
+        return new ConcurrentMapWrapper<>(
+                wrapped, (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock()
+        );
     }
 
     @Override
-    public int size() {
-        readLock.lock();
-        try {
-            return wrapped.size();
-        } finally {
-            readLock.unlock();
-        }
+    protected int internalSize() {
+        return wrapped.size();
     }
 
     @Override
-    public boolean isEmpty() {
-        readLock.lock();
-        try {
-            return wrapped.isEmpty();
-        } finally {
-            readLock.unlock();
-        }
+    protected boolean internalIsEmpty() {
+        return wrapped.isEmpty();
+    }
+
+    @Override
+    protected void internalClear() {
+        wrapped.clear();
     }
 
     @Override
@@ -102,20 +111,10 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    public void putAll(@NonNull final Map<? extends K, ? extends V> m) {
+    public void putAll(final @NonNull Map<? extends K, ? extends V> elements) {
         writeLock.lock();
         try {
-            wrapped.putAll(m);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    @Override
-    public void clear() {
-        writeLock.lock();
-        try {
-            wrapped.clear();
+            wrapped.putAll(elements);
         } finally {
             writeLock.unlock();
         }
@@ -133,7 +132,7 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    @Nonnull public Collection<V> values() {
+    public @NotNull Collection<V> values() {
         readLock.lock();
         try {
             return wrapped.values();
@@ -143,7 +142,8 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    @Nonnull  public Set<Entry<K, V>> entrySet() {
+    @Nonnull
+    public Set<Entry<K, V>> entrySet() {
         readLock.lock();
         try {
             return wrapped.entrySet();
@@ -163,7 +163,7 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    public void forEach(@NonNull final BiConsumer<? super K, ? super V> action) {
+    public void forEach(final @NonNull BiConsumer<? super K, ? super V> action) {
         readLock.lock();
         try {
             wrapped.forEach(action);
@@ -173,7 +173,7 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    public void replaceAll(@NonNull final BiFunction<? super K, ? super V, ? extends V> function) {
+    public void replaceAll(final @NonNull BiFunction<? super K, ? super V, ? extends V> function) {
         writeLock.lock();
         try {
             wrapped.replaceAll(function);
@@ -213,7 +213,7 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    public V computeIfAbsent(final K key, @NonNull final Function<? super K, ? extends V> mappingFunction) {
+    public V computeIfAbsent(final K key, final @NonNull Function<? super K, ? extends V> mappingFunction) {
         writeLock.lock();
         try {
             return wrapped.computeIfAbsent(key, mappingFunction);
@@ -224,7 +224,7 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
 
     @Override
     public V computeIfPresent(final K key,
-                              @NonNull final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+                              final @NonNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         writeLock.lock();
         try {
             return wrapped.computeIfPresent(key, remappingFunction);
@@ -234,7 +234,7 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    public V compute(final K key, @NonNull final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public V compute(final K key, final @NonNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         writeLock.lock();
         try {
             return wrapped.compute(key, remappingFunction);
@@ -244,8 +244,8 @@ public class ConcurrentMapWrapper<K, V, T extends Map<K, V>>
     }
 
     @Override
-    public V merge(final K key, @NonNull final V value,
-                   @NonNull final BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    public V merge(final K key, final @NonNull V value,
+                   final @NonNull BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         writeLock.lock();
         try {
             return wrapped.merge(key, value, remappingFunction);

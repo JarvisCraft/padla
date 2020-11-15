@@ -1,14 +1,28 @@
 package ru.progrm_jarvis.javacommons.collection.concurrent;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Queue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ConcurrentQueueWrapper<E, T extends Queue<E>>
-        extends ConcurrentCollectionWrapper<E, T> implements Queue<E> {
+public class ConcurrentQueueWrapper<E, W extends Queue<E>>
+        extends ConcurrentCollectionWrapper<E, W> implements Queue<E> {
 
-    public ConcurrentQueueWrapper(@NonNull final T wrapped) {
-        super(wrapped);
+    protected ConcurrentQueueWrapper(@NotNull final W wrapped,
+                                     final @NotNull Lock readLock,
+                                     final @NotNull Lock writeLock) {
+        super(wrapped, readLock, writeLock);
+    }
+
+    public static <E> @NotNull Queue<E> create(final @NonNull Queue<E> wrapped) {
+        final ReadWriteLock lock;
+
+        return new ConcurrentQueueWrapper<>(
+                wrapped, (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock()
+        );
     }
 
     @Override
