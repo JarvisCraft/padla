@@ -1,9 +1,12 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.val;
+import lombok.var;
 import org.hamcrest.Matchers;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -12,13 +15,10 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractTextModelFactoryTest {
 
-    static Stream<TextModelFactory<User>> provideTestSubjects() {
-        throw new RuntimeException(
-                "`static Stream<TextModelFactory<User>> provideTestSubjects()` method should be present in test class"
-        );
-    }
+    protected abstract @NotNull Stream<@NotNull TextModelFactory<@NotNull User>> provideTestSubjects();
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
@@ -191,8 +191,7 @@ abstract class AbstractTextModelFactoryTest {
     }
 
     @Value
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    static class User {
+    protected static class User {
 
         @NonNull String name;
         int age;
