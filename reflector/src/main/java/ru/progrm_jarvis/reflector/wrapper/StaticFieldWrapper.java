@@ -11,7 +11,21 @@ import java.util.function.UnaryOperator;
  * @param <T> type of the object containing the wrapped method
  * @param <V> type of the field's value
  */
-public interface StaticFieldWrapper<T, V> extends FieldWrapper<T, V> {
+public interface StaticFieldWrapper<@NotNull T, V>
+        extends FieldWrapper<T, V> {
+
+    /**
+     * Gets the field's value and sets it to the new one.
+     *
+     * @param value new value of the field
+     * @return old value of the field
+     */
+    default V getAndSet(final V value) {
+        val previousValue = get();
+        set(value);
+
+        return previousValue;
+    }
 
     /**
      * Gets the field's value.
@@ -28,25 +42,12 @@ public interface StaticFieldWrapper<T, V> extends FieldWrapper<T, V> {
     void set(V value);
 
     /**
-     * Gets the field's value and sets it to the new one.
-     *
-     * @param value new value of the field
-     * @return old value of the field
-     */
-    default V getAndSet(V value) {
-        val previousValue = get();
-        set(value);
-
-        return previousValue;
-    }
-
-    /**
      * Sets the field's value and gets it.
      *
      * @param value new value of the field
      * @return new value of the field (literally, {@code value})
      */
-    default V setAndGet(V value) {
+    default V setAndGet(final V value) {
         set(value);
 
         return value;
@@ -58,7 +59,7 @@ public interface StaticFieldWrapper<T, V> extends FieldWrapper<T, V> {
      * @param operator operator to transform the old value to the new one
      * @return old value of the field
      */
-    default V getAndUpdate(@NotNull UnaryOperator<V> operator) {
+    default V getAndUpdate(final @NotNull UnaryOperator<V> operator) {
         val previousValue = get();
         set(operator.apply(previousValue));
 
@@ -71,7 +72,7 @@ public interface StaticFieldWrapper<T, V> extends FieldWrapper<T, V> {
      * @param operator operator to transform the old value to the new one
      * @return new value of the field
      */
-    default V updateAndGet(@NotNull UnaryOperator<V> operator) {
+    default V updateAndGet(final @NotNull UnaryOperator<V> operator) {
         val newValue = operator.apply(get());
         set(newValue);
 
