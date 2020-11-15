@@ -1,12 +1,14 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.ultimatemessenger.format.model.AsmTextModelFactory.Configuration.StringConcatFactoryAlgorithm;
 
 import java.util.stream.Stream;
 
 class AsmTextModelFactoryTest extends AbstractTextModelFactoryTest {
 
-    static Stream<TextModelFactory<User>> provideTestSubjects() {
+    @Override
+    protected @NotNull Stream<@NotNull TextModelFactory<@NotNull User>> provideTestSubjects() {
         return Stream.of(
                 /*
                 AsmTextModelFactory.create(

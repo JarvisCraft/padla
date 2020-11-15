@@ -1,6 +1,10 @@
 package ru.progrm_jarvis.reflector.wrapper;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Simple POJO abstract implementation of the {@link ReflectorWrapper}.
@@ -10,8 +14,10 @@ import lombok.*;
  */
 @Data
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class AbstractReflectorWrapper<T, W> implements ReflectorWrapper<T, W> {
+@FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+public abstract class AbstractReflectorWrapper<@NotNull T, @NotNull W>
+        implements ReflectorWrapper<T, W> {
 
-    @NonNull Class<? extends T> containingClass;
-    @NonNull W wrapped;
+    @NotNull Class<? extends T> containingClass;
+    @NotNull W wrapped;
 }
