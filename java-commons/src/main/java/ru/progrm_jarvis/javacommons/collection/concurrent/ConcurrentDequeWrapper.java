@@ -1,16 +1,29 @@
 package ru.progrm_jarvis.javacommons.collection.concurrent;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class ConcurrentDequeWrapper<E, T extends Deque<E>>
-        extends ConcurrentQueueWrapper<E, T> implements Deque<E> {
+public class ConcurrentDequeWrapper<E, W extends Deque<E>>
+        extends ConcurrentQueueWrapper<E, W> implements Deque<E> {
 
-    public ConcurrentDequeWrapper(@NonNull final T wrapped) {
-        super(wrapped);
+    protected ConcurrentDequeWrapper(@NotNull final W wrapped,
+                                     final @NotNull Lock readLock,
+                                     final @NotNull Lock writeLock) {
+        super(wrapped, readLock, writeLock);
+    }
+
+    public static <E> @NotNull Deque<E> create(final @NonNull Deque<E> wrapped) {
+        final ReadWriteLock lock;
+
+        return new ConcurrentDequeWrapper<>(
+                wrapped, (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock()
+        );
     }
 
     @Override
@@ -174,7 +187,7 @@ public class ConcurrentDequeWrapper<E, T extends Deque<E>>
     }
 
     @Override
-    @Nonnull public Iterator<E> descendingIterator() {
+    public @NotNull Iterator<E> descendingIterator() {
         readLock.lock();
         try {
             return wrapped.descendingIterator();

@@ -1,21 +1,19 @@
 package ru.progrm_jarvis.javacommons.collection.concurrent;
 
 
-import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.collection.SizedCollection;
 
-public abstract class AbstractConcurrentSizedCollectionWrapper<T>
-        extends ConcurrentWrapper<T> implements SizedCollection {
+import java.util.concurrent.locks.Lock;
 
-    public AbstractConcurrentSizedCollectionWrapper(@NonNull final T wrapped) {
-        super(wrapped);
+public abstract class AbstractConcurrentSizedCollectionWrapper<W>
+        extends ConcurrentWrapper<W> implements SizedCollection {
+
+    protected AbstractConcurrentSizedCollectionWrapper(@NotNull final W wrapped,
+                                                       @NotNull final Lock readLock,
+                                                       @NotNull final Lock writeLock) {
+        super(wrapped, readLock, writeLock);
     }
-
-    protected abstract int internalSize();
-
-    protected abstract boolean internalIsEmpty();
-
-    protected abstract void internalClear();
 
     @Override
     public int size() {
@@ -27,6 +25,8 @@ public abstract class AbstractConcurrentSizedCollectionWrapper<T>
         }
     }
 
+    protected abstract int internalSize();
+
     @Override
     public boolean isEmpty() {
         readLock.lock();
@@ -37,6 +37,8 @@ public abstract class AbstractConcurrentSizedCollectionWrapper<T>
         }
     }
 
+    protected abstract boolean internalIsEmpty();
+
     @Override
     public void clear() {
         writeLock.lock();
@@ -46,4 +48,6 @@ public abstract class AbstractConcurrentSizedCollectionWrapper<T>
             writeLock.unlock();
         }
     }
+
+    protected abstract void internalClear();
 }

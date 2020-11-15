@@ -1,34 +1,48 @@
 package ru.progrm_jarvis.javacommons.collection.concurrent;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.UnaryOperator;
 
-public class ConcurrentListWrapper<E, T extends List<E>> extends ConcurrentCollectionWrapper<E, T> implements List<E> {
+public class ConcurrentListWrapper<E, W extends List<E>> extends ConcurrentCollectionWrapper<E, W> implements List<E> {
 
-    public ConcurrentListWrapper(@NonNull final T wrapped) {
-        super(wrapped);
+    protected ConcurrentListWrapper(@NotNull final W wrapped,
+                                    final @NotNull Lock readLock,
+                                    final @NotNull Lock writeLock) {
+        super(wrapped, readLock, writeLock);
+    }
+
+    public static <E> @NotNull List<E> create(final @NonNull List<E> wrapped) {
+        final ReadWriteLock lock;
+
+        return new ConcurrentListWrapper<>(
+                wrapped, (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock()
+        );
     }
 
     @Override
-    public boolean addAll(final int index, @Nonnull final Collection<? extends E> c) {
+    public boolean addAll(final int index, final @NonNull Collection<? extends E> elements) {
         if (index < 0) throw new IndexOutOfBoundsException("index should be positive");
 
         writeLock.lock();
         try {
-            return wrapped.addAll(index, c);
+            return wrapped.addAll(index, elements);
         } finally {
             writeLock.unlock();
         }
     }
 
     @Override
-    public void replaceAll(@Nonnull final UnaryOperator<E> operator) {
+    public void replaceAll(final @NonNull UnaryOperator<E> operator) {
         writeLock.lock();
         try {
             wrapped.replaceAll(operator);
@@ -38,7 +52,7 @@ public class ConcurrentListWrapper<E, T extends List<E>> extends ConcurrentColle
     }
 
     @Override
-    public void sort(@Nonnull final Comparator<? super E> c) {
+    public void sort(final @NonNull Comparator<? super E> c) {
         writeLock.lock();
         try {
             wrapped.sort(c);
@@ -127,7 +141,7 @@ public class ConcurrentListWrapper<E, T extends List<E>> extends ConcurrentColle
     }
 
     @Override
-    @Nonnull public ListIterator<E> listIterator(final int index) {
+    public @NotNull ListIterator<E> listIterator(final int index) {
         if (index < 0) throw new IndexOutOfBoundsException("index should be positive");
 
         readLock.lock();
@@ -139,7 +153,7 @@ public class ConcurrentListWrapper<E, T extends List<E>> extends ConcurrentColle
     }
 
     @Override
-    @Nonnull public List<E> subList(final int fromIndex, final int toIndex) {
+    public @NotNull List<E> subList(final int fromIndex, final int toIndex) {
         if (fromIndex < 0) throw new IndexOutOfBoundsException("fromIndex should be positive");
         if (toIndex < fromIndex) throw new IndexOutOfBoundsException(
                 "toIndex should be greater than or equal to fromIndex"
