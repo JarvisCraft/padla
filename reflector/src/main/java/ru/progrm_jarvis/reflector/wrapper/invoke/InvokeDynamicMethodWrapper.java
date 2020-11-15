@@ -9,6 +9,7 @@ import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.DynamicMethodWrapper;
+import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
@@ -103,9 +104,8 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         return new InvokeDynamicMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 (target, parameters) -> {
-                    if (parameters.length != 0) throw new IllegalArgumentException(
-                            "This method requires no parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(0, parameters);
+
                     generatedConsumer.accept(target);
 
                     return null;
@@ -121,9 +121,8 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         return new InvokeDynamicMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 (target, parameters) -> {
-                    if (parameters.length != 1) throw new IllegalArgumentException(
-                            "This method requires 1 parameter"
-                    );
+                    ReflectorWrappers.validateParameterCount(1, parameters);
+
                     generatedBiConsumer.accept(target, parameters[0]);
 
                     return null;
@@ -139,9 +138,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         return new InvokeDynamicMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 (target, parameters) -> {
-                    if (parameters.length != 0) throw new IllegalArgumentException(
-                            "This method requires no parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(0, parameters);
 
                     return generatedFunction.apply(target);
                 }
@@ -156,9 +153,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         return new InvokeDynamicMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 (target, parameters) -> {
-                    if (parameters.length != 1) throw new IllegalArgumentException(
-                            "This method requires 1 parameter"
-                    );
+                    ReflectorWrappers.validateParameterCount(1, parameters);
 
                     return generatedBiFunction.apply(target, parameters[0]);
                 }
@@ -170,12 +165,17 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
             final @NotNull Method method,
             final @NotNull MethodHandle methodHandle
     ) {
+        val parameterCount = method.getParameterCount();
+
         return new InvokeDynamicMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 (ThrowingBiFunction<T, Object[], R, Throwable>) (target, parameters) -> {
+                    final int parametersLength;
+                    ReflectorWrappers.validateParameterCount(parameterCount, parametersLength = parameters.length);
+
                     final int length;
                     final Object[] arguments;
-                    (arguments = new Object[(length = parameters.length) + 1])[0] = target;
+                    (arguments = new Object[(length = parametersLength) + 1])[0] = target;
                     System.arraycopy(parameters, 0, arguments, 1, length);
 
                     return (R) methodHandle.invokeWithArguments(arguments);

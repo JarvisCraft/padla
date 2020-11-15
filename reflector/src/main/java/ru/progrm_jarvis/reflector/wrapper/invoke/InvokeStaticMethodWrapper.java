@@ -10,6 +10,7 @@ import ru.progrm_jarvis.javacommons.pair.Pair;
 import ru.progrm_jarvis.javacommons.pair.SimplePair;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
+import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 import ru.progrm_jarvis.reflector.wrapper.StaticMethodWrapper;
 
 import java.lang.invoke.MethodHandle;
@@ -161,9 +162,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 parameters -> {
-                    if (parameters.length != 0) throw new IllegalArgumentException(
-                            "This static method requires no parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(0, parameters);
+
                     generatedRunnable.run();
 
                     return null;
@@ -179,9 +179,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 parameters -> {
-                    if (parameters.length != 1) throw new IllegalArgumentException(
-                            "This static method requires 1 parameter"
-                    );
+                    ReflectorWrappers.validateParameterCount(1, parameters);
+
                     generatedConsumer.accept(parameters[0]);
 
                     return null;
@@ -197,9 +196,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 parameters -> {
-                    if (parameters.length != 2) throw new IllegalArgumentException(
-                            "This static method requires 2 parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(2, parameters);
+
                     generatedBiConsumer.accept(parameters[0], parameters[1]);
 
                     return null;
@@ -215,9 +213,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 parameters -> {
-                    if (parameters.length != 0) throw new IllegalArgumentException(
-                            "This static method requires no parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(0, parameters);
 
                     return generatedSupplier.get();
                 }
@@ -232,9 +228,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 parameters -> {
-                    if (parameters.length != 1) throw new IllegalArgumentException(
-                            "This static method requires 1 parameter"
-                    );
+                    ReflectorWrappers.validateParameterCount(1, parameters);
 
                     return generatedFunction.apply(parameters[0]);
                 }
@@ -249,9 +243,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
                 parameters -> {
-                    if (parameters.length != 2) throw new IllegalArgumentException(
-                            "This static method requires 2 parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(2, parameters);
 
                     return generatedBiFunction.apply(parameters[0], parameters[1]);
                 }
@@ -263,9 +255,15 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
             final @NotNull Method method,
             final @NotNull MethodHandle methodHandle
     ) {
+        val parameterCount = method.getParameterCount();
+
         return new InvokeStaticMethodWrapper<>(
                 (Class<? extends T>) method.getDeclaringClass(), method,
-                (ThrowingFunction<Object[], R, ?>) parameters -> (R) methodHandle.invokeWithArguments(parameters)
+                (ThrowingFunction<Object[], R, ?>) parameters -> {
+                    ReflectorWrappers.validateParameterCount(parameterCount, parameters);
+
+                    return (R) methodHandle.invokeWithArguments(parameters);
+                }
         );
     }
 

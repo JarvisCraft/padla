@@ -2,13 +2,17 @@ package ru.progrm_jarvis.reflector.wrapper.invoke;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractConstructorWrapper;
 import ru.progrm_jarvis.reflector.wrapper.ConstructorWrapper;
+import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
@@ -97,9 +101,7 @@ public class InvokeConstructorWrapper<@NotNull T>
         return new InvokeConstructorWrapper<>(
                 constructor.getDeclaringClass(), constructor,
                 parameters -> {
-                    if (parameters.length != 0) throw new IllegalArgumentException(
-                            "This constructor requires no parameters"
-                    );
+                    ReflectorWrappers.validateParameterCount(0, parameters);
 
                     return generatedSupplier.get();
                 }
@@ -113,9 +115,7 @@ public class InvokeConstructorWrapper<@NotNull T>
         return new InvokeConstructorWrapper<>(
                 constructor.getDeclaringClass(), constructor,
                 parameters -> {
-                    if (parameters.length != 1) throw new IllegalArgumentException(
-                            "This constructor requires 1 parameter"
-                    );
+                    ReflectorWrappers.validateParameterCount(1, parameters);
 
                     return generatedFunction.apply(parameters[0]);
                 }
@@ -129,9 +129,7 @@ public class InvokeConstructorWrapper<@NotNull T>
         return new InvokeConstructorWrapper<>(
                 constructor.getDeclaringClass(), constructor,
                 parameters -> {
-                    if (parameters.length != 2) throw new IllegalArgumentException(
-                            "This constructor requires 2 parameter"
-                    );
+                    ReflectorWrappers.validateParameterCount(2, parameters);
 
                     return generatedBiFunction.apply(parameters[0], parameters[1]);
                 }
