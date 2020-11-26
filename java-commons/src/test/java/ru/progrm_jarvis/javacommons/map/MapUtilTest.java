@@ -109,7 +109,7 @@ class MapUtilTest {
     @Test
     void testMapFillerConstructWithFirst() {
         assertThat(
-                MapUtil.mapFiller(new HashMap<>()).map().entrySet(),
+                MapFiller.from(new HashMap<>()).map().entrySet(),
                 empty()
         );
 
@@ -117,14 +117,14 @@ class MapUtilTest {
                 new HashMap<String, Integer>() {{
                     put("Hello", 1);
                 }},
-                MapUtil.mapFiller(new HashMap<>(), "Hello", 1).map()
+                MapFiller.from(new HashMap<>(), "Hello", 1).map()
         );
     }
 
     @Test
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerPut() {
-        val entries = MapUtil.mapFiller(new HashMap<String, Integer>())
+        val entries = MapFiller.from(new HashMap<String, Integer>())
                 .put("one", 1)
                 .put("two", 2)
                 .map()
@@ -138,7 +138,7 @@ class MapUtilTest {
     @Test
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromArray() {
-        val entries = MapUtil.mapFiller(new HashMap<String, Integer>())
+        val entries = MapFiller.from(new HashMap<String, Integer>())
                 .fill(SimplePair.of("one", 1), SimplePair.of("two", 2))
                 .map()
                 .entrySet();
@@ -151,7 +151,7 @@ class MapUtilTest {
     @Test
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromIterator() {
-        val entries = MapUtil.mapFiller(new HashMap<String, Integer>())
+        val entries = MapFiller.from(new HashMap<String, Integer>())
                 .fill(Arrays.asList(SimplePair.of("one", 1), SimplePair.of("two", 2)).iterator())
                 .map()
                 .entrySet();
@@ -164,7 +164,7 @@ class MapUtilTest {
     @Test
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromIterable() {
-        val entries = MapUtil.mapFiller(new HashMap<String, Integer>())
+        val entries = MapFiller.from(new HashMap<String, Integer>())
                 .fill(Arrays.asList(SimplePair.of("one", 1), SimplePair.of("two", 2)))
                 .map()
                 .entrySet();
@@ -177,7 +177,7 @@ class MapUtilTest {
     @Test
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromStream() {
-        val entries = MapUtil.mapFiller(new HashMap<String, Integer>())
+        val entries = MapFiller.from(new HashMap<String, Integer>())
                 .fill(Stream.of(SimplePair.of("one", 1), SimplePair.of("two", 2)))
                 .map()
                 .entrySet();
@@ -192,7 +192,7 @@ class MapUtilTest {
     @Test
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromEveryKind() {
-        val entries = MapUtil.mapFiller(new HashMap<String, Integer>())
+        val entries = MapFiller.from(new HashMap<String, Integer>())
                 .put("one", 1)
                 .put("two", 2)
                 .fill(SimplePair.of("three", 3), SimplePair.of("four", 4))

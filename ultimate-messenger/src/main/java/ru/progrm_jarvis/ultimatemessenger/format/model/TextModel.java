@@ -1,5 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -33,9 +35,9 @@ public interface TextModel<T> {
     @NotNull String getText(T target);
 
     /**
-     * Retrieves whether this {@link TextModel text model} is dynamic.
+     * Retrieves whether this text model is dynamic.
      *
-     * @return {@code true} if this {@link TextModel text model} may produce different values
+     * @return {@code true} if this text model may produce different values
      * and {@code false} if it produces equal values for all calls to {@link #getText(Object)}
      */
     @Contract(pure = true)
@@ -62,25 +64,27 @@ public interface TextModel<T> {
     }
 
     /**
-     * Returns an empty static {@link TextModel text model}.
+     * Returns an empty static text model.
      *
      * @param <T> type of object according to which the text model is formatted
-     * @return singleton of an empty static {@link TextModel text model}
+     * @return singleton of an empty static text model
      */
     @SuppressWarnings("unchecked")
     @NotNull static <T> TextModel<T> empty() {
-        return EmptyTextModel.INSTANCE;
+        return (TextModel<T>) EmptyTextModel.INSTANCE;
     }
 
     /**
-     * Empty static {@link TextModel text model}.
+     * Empty static text model.
      */
+    @SuppressWarnings("rawtypes") // behaviour is independent of the generic type
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class EmptyTextModel implements TextModel {
 
         /**
-         * Singleton instance of this {@link TextModel text model}
+         * Singleton instance of this text model
          */
-        private static EmptyTextModel INSTANCE = new EmptyTextModel();
+        private static final TextModel<?> INSTANCE = new EmptyTextModel();
 
         @Override
         @Contract(pure = true)

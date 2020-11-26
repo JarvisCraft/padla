@@ -3,8 +3,10 @@ package ru.progrm_jarvis.javacommons.util;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.classloading.ClassLoadingUtil;
 
 import java.math.BigInteger;
@@ -14,7 +16,8 @@ import java.util.function.Supplier;
 /**
  * Object responsible for creating class names at runtime.
  */
-public interface ClassNamingStrategy extends Supplier<String> {
+@FunctionalInterface
+public interface ClassNamingStrategy extends Supplier<@NotNull String> {
 
     /**
      * Creates a name for a new class to be generated considering
@@ -22,48 +25,40 @@ public interface ClassNamingStrategy extends Supplier<String> {
      *
      * @return name for a new class
      */
+    @NotNull String nextName();
+
     @Override
-    String get();
+    default @NotNull String get() {
+        return nextName();
+    }
 
     /**
      * Creates new instance of paginated class naming strategy with the given base name.
      * This strategy will append numeric IDs to the given base name.
      *
      * @param baseName base name of the generated class names to which the ID should be appended
-     *
      * @return created paginated class naming strategy
      */
-    static PaginatedClassNamingStrategy createPaginated(final @NonNull String baseName) {
-        return new PaginatedClassNamingStrategy(baseName);
+    static @NotNull ClassNamingStrategy createPaginated(final @NonNull String baseName) {
+        return new PaginatedClassNamingStrategy(baseName, new AtomicReference<>(BigInteger.ZERO));
     }
 
     /***
      * Class naming strategy appending numeric IDs to the base name.
      */
-    @EqualsAndHashCode
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    @NonFinal class PaginatedClassNamingStrategy implements ClassNamingStrategy {
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    final class PaginatedClassNamingStrategy implements ClassNamingStrategy {
 
         /**
          * Base name of the generated class names to which the ID should be appended
          */
-        @NonNull String baseName;
+        @NotNull String baseName;
 
         /**
          * Counter incremented for each attempt to create a class name
          */
-        @NonNull AtomicReference<BigInteger> counter;
-
-        /**
-         * Creates new instance of paginated class naming strategy with the given base name.
-         *
-         * @param baseName base name of the generated class names to which the ID should be appended
-         */
-        public PaginatedClassNamingStrategy(final @NonNull String baseName) {
-            this.baseName = baseName;
-
-            counter = new AtomicReference<>(BigInteger.ZERO);
-        }
+        @NotNull AtomicReference<BigInteger> counter;
 
         /**
          * Gets the next ID to be used for naming the class.
@@ -72,16 +67,15 @@ public interface ClassNamingStrategy extends Supplier<String> {
          *
          * @apiNote always returns new value
          */
-        protected BigInteger nextClassNameId() {
+        private BigInteger nextClassNameId() {
             return counter.updateAndGet(id -> id.add(BigInteger.ONE));
         }
 
         @Override
-        public String get() {
+        public @NotNull String nextName() {
             String name;
-            do {
-                name = baseName + nextClassNameId().toString();
-            } while (ClassLoadingUtil.isClassAvailable(name, false));
+            do name = baseName + nextClassNameId();
+            while (ClassLoadingUtil.isClassAvailable(name, false));
 
             return name;
         }

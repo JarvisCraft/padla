@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 
@@ -19,7 +20,8 @@ public class IOWrappers {
      * @param inputStream input stream to wrap
      * @return wrapped input stream
      */
-    public NonAutoCloseableInputStream nonAutoCloseable(final @NonNull InputStream inputStream) {
+    @SuppressWarnings("MethodReturnOfConcreteClass") // caused by sub-classing
+    public @NotNull NonAutoCloseableInputStream nonAutoCloseable(final @NonNull InputStream inputStream) {
         return new NonAutoCloseableInputStreamWrapper(inputStream);
     }
 
@@ -29,7 +31,8 @@ public class IOWrappers {
      * @param outputStream output stream to wrap
      * @return wrapped output stream
      */
-    public NonAutoCloseableOutputStream nonAutoCloseable(final @NonNull OutputStream outputStream) {
+    @SuppressWarnings("MethodReturnOfConcreteClass") // caused by sub-classing
+    public @NotNull NonAutoCloseableOutputStream nonAutoCloseable(final @NonNull OutputStream outputStream) {
         return new NonAutoCloseableOutputStreamWrapper(outputStream);
     }
 
@@ -39,7 +42,8 @@ public class IOWrappers {
      * @param reader reader to wrap
      * @return wrapped reader
      */
-    public NonAutoCloseableReader nonAutoCloseable(final @NonNull Reader reader) {
+    @SuppressWarnings("MethodReturnOfConcreteClass") // caused by sub-classing
+    public @NotNull NonAutoCloseableReader nonAutoCloseable(final @NonNull Reader reader) {
         return new NonAutoCloseableReaderWrapper(reader);
     }
 
@@ -49,7 +53,8 @@ public class IOWrappers {
      * @param writer writer to wrap
      * @return wrapped writer
      */
-    public NonAutoCloseableWriter nonAutoCloseable(final @NonNull Writer writer) {
+    @SuppressWarnings("MethodReturnOfConcreteClass") // caused by sub-classing
+    public @NotNull NonAutoCloseableWriter nonAutoCloseable(final @NonNull Writer writer) {
         return new NonAutoCloseableWriterWrapper(writer);
     }
 
@@ -57,7 +62,7 @@ public class IOWrappers {
      * Simple delegating {@link NonAutoCloseableInputStream}.
      */
     @Value
-    @EqualsAndHashCode(callSuper = false) // super has no logic
+    @EqualsAndHashCode
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
     private static class NonAutoCloseableInputStreamWrapper extends NonAutoCloseableInputStream {

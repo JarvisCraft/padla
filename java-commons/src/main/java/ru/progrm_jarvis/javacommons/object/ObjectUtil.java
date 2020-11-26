@@ -85,7 +85,7 @@ public class ObjectUtil {
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T> T nonNullOrThrow(final @NonNull T... variants) {
+    public <T> T nonNullOrThrow(final T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return variant;
 
         throw new NullPointerException("No nonnull value found among variants");

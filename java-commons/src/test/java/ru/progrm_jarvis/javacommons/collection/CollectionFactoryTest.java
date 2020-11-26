@@ -9,14 +9,12 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionFactoryTest {
 
@@ -56,8 +54,8 @@ class CollectionFactoryTest {
         assertTrue(set.contains(TestEnum.BAZ));
         assertThat(set, not(contains(TestEnum.FOO)));
         // test equality (both sides)
-        assertThat(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ)), equalTo(set));
-        assertThat(set, equalTo(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
+        assertThat(EnumSet.of(TestEnum.BAR, TestEnum.BAZ), equalTo(set));
+        assertThat(set, equalTo(EnumSet.of(TestEnum.BAR, TestEnum.BAZ)));
         assertThat(set, equalTo(new ArrayList<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
         // test to-array conversion
         assertThat(set.toArray(), anyOf( // although implementation uses natural order, check any array orders

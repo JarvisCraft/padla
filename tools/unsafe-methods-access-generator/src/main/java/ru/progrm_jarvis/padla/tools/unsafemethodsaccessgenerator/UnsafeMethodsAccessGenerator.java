@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.padla.tools.unsafemethodsaccessgenerator;
 
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
@@ -18,19 +19,21 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * CLI tool used for generating accessor class for {@code Unsafe}.
  */
+@UtilityClass
 public final class UnsafeMethodsAccessGenerator {
 
-    private static final Options OPTIONS = new Options()
+    private final Options OPTIONS = new Options()
             .addRequiredOption("c", "class-name", true, "Class name")
             .addOption("p", "package-name", true, "Package name");
 
-    public static void main(final @NotNull String... args) throws ParseException, IOException {
+    public void main(final @NotNull String... args) throws ParseException, IOException {
         final @NotNull String className;
         final @Nullable String packageName;
         {
@@ -53,8 +56,8 @@ public final class UnsafeMethodsAccessGenerator {
         writer.flush(); // close shouldn't be called on System.out
     }
 
-    protected static void addImport(final @NotNull Set<String> importedClasses,
-                                    /* may be replaced with content */ @NotNull Class<?> possiblyImportedClass) {
+    private void addImport(final @NotNull Collection<String> importedClasses,
+                           @NotNull Class<?> possiblyImportedClass /* may be replaced with content */) {
         while (possiblyImportedClass.isArray()) possiblyImportedClass = possiblyImportedClass.getComponentType();
         if (possiblyImportedClass.isPrimitive()) return;
 
@@ -64,7 +67,7 @@ public final class UnsafeMethodsAccessGenerator {
         importedClasses.add(className);
     }
 
-    private static void writeUnsafeMethodsAccessClass(final @NonNull String className,
+    private void writeUnsafeMethodsAccessClass(final @NonNull String className,
                                                       final @Nullable String packageName,
                                                       final @NonNull Template template,
                                                       final @NonNull Writer output) {

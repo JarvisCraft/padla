@@ -87,7 +87,7 @@ public class CollectionFactory {
         try {
             return CLASS_POOL.get().get(clazz.getName());
         } catch (final NotFoundException e) {
-            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName());
+            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName(), e);
         }
     }
 
@@ -150,10 +150,9 @@ public class CollectionFactory {
         if (values.length == 0) return Collections.emptySet();
 
         if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) {
-            // sort enum values so that the cache does not store different instances for different orders of same
-            // elements
-            //noinspection unchecked,SuspiciousToArrayCall
-            val enumValues = (E[]) Arrays.stream(values)
+            // sort enum values so that the cache does not store different instances
+            // for different orders of same elements
+            @SuppressWarnings("SuspiciousArrayCast") val enumValues = (E[]) Arrays.stream(values)
                     .distinct()
                     .sorted()
                     .toArray(Enum[]::new);

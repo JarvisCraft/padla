@@ -147,14 +147,12 @@ public interface InvokeFactory<F, T> {
     }
 
     /*
-    // Those methods *could* have been implemented but JDK's default LambdaMetaFactory is not capable
-    // of generating functional interfaces for <put|get>field instructions ;-(
-    // and the approach of manual creation of functional interfaces is not applicable as from side of Reflector API
-    // the type of passed functional interface is not known at compile-time (of the very API)
-
-    InvokeFactory<F, T> viaGetter(@NonNull Field field);
-
-    InvokeFactory<F, T> viaSetter(@NonNull Field field);
+     * The following methods *could* have been implemented but JDK's default LambdaMetaFactory is not capable
+     * of generating functional interfaces for <put|get>field instructions ;-(
+     * and the approach of manual creation of functional interfaces is not applicable as from side of Reflector API
+     * the type of passed functional interface is not known at compile-time (of the very API)
+     * - InvokeFactory<F, T> viaGetter(@NonNull Field field);
+     * - InvokeFactory<F, T> viaSetter(@NonNull Field field);
      */
 
     /**

@@ -27,28 +27,22 @@ public class FullAccessLookupFactories {
      * <b>Nullable</b> if this JVM's lookup class doesn't have an internal field named {@code "IMPL_LOOKUP"}
      */
     private final Lazy<@Nullable LookupFactory> TRUSTED_LOOKUP_FACTORY = Lazy.createThreadSafe(
-            () -> {
-                try {
-                    return Arrays.stream(MethodHandles.Lookup.class.getDeclaredFields())
-                            .filter(field -> field.getName().equals("IMPL_LOOKUP"))
-                            .findAny()
-                            .map(field -> {
-                                @SuppressWarnings("deprecation") val accessible = field.isAccessible();
-                                field.setAccessible(true);
-                                try {
-                                    return (MethodHandles.Lookup) field.get(null);
-                                } catch (final IllegalAccessException e) {
-                                    throw new IllegalStateException("Unable to create a trusted lookup factory", e);
-                                } finally {
-                                    field.setAccessible(accessible);
-                                }
-                            })
-                            .map(lookup -> (LookupFactory) lookup::in)
-                            .orElse(null);
-                } catch (final Throwable x) {
-                    return null;
-                }
-            }
+            () -> Arrays.stream(MethodHandles.Lookup.class.getDeclaredFields())
+                    .filter(field -> field.getName().equals("IMPL_LOOKUP"))
+                    .findAny()
+                    .map(field -> {
+                        @SuppressWarnings("deprecation") val accessible = field.isAccessible();
+                        field.setAccessible(true);
+                        try {
+                            return (MethodHandles.Lookup) field.get(null);
+                        } catch (final IllegalAccessException e) {
+                            throw new IllegalStateException("Unable to create a trusted lookup factory", e);
+                        } finally {
+                            field.setAccessible(accessible);
+                        }
+                    })
+                    .map(lookup -> (LookupFactory) lookup::in)
+                    .orElse(null)
     );
 
     /**

@@ -68,11 +68,10 @@ class RandomUtilTest {
     void testGetRandomFromCollection() {
         val random = ThreadLocalRandom.current();
 
-        final Collection<String> values;
         var valuesList = new ArrayList<String>();
         var iterations = 64 + random.nextInt(65);
         for (var i = 0; i < iterations; i++) valuesList.add(Integer.toString(random.nextInt()));
-        values = valuesList;
+        final Collection<String> values = valuesList;
 
         iterations = 128 + random.nextInt(129);
         for (var i = 0; i < iterations; i++) assertThat(                RandomUtil.getRandom(values), isIn(values));

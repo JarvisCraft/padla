@@ -364,7 +364,7 @@ class SimplePlaceholdersTest {
 
     @RequiredArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    enum Target {
+    private enum Target {
         FOO("Foo"),
         BAR("Bar"),
         BAZ("Baz");

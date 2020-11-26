@@ -2,8 +2,8 @@ package ru.progrm_jarvis.javacommons.invoke;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.annotation.DontOverrideEqualsAndHashCode;
 
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
@@ -21,10 +21,9 @@ import static com.google.common.base.Preconditions.checkState;
  * @param <T> type of target value
  */
 @ToString
-@DontOverrideEqualsAndHashCode("Class is more of an utility then a POJO")
-@NoArgsConstructor(access = AccessLevel.PROTECTED, staticName = "newInstance")
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
 
     /**
      * Used lookup factory
@@ -54,6 +53,17 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
      * Target
      */
     @Nullable Object target;
+
+    /**
+     * Creates a new simple {@link InvokeFactory invoke factory}.
+     *
+     * @param <F> type of functional interface implemented
+     * @param <T> type of target value
+     * @return created invoke factory
+     */
+    public static <F, T> @NotNull InvokeFactory<F, T> newInstance() {
+        return new SimpleInvokeFactory<>();
+    }
 
     @Override
     public InvokeFactory<F, T> using(final @NonNull LookupFactory lookupFactory) {
@@ -93,7 +103,7 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
 
     @Override
     public InvokeFactory<F, T> unbound() {
-        this.target = null;
+        target = null;
 
         return this;
     }
@@ -124,39 +134,6 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
         }
 
         /* Bound */
-
-        /*
-        var signature = methodHandle.type();
-        {
-            val functionalParameterCount = functionalMethodSignature.parameterCount();
-
-            checkState(
-                    signature.parameterCount() == functionalParameterCount + 1,
-                    "Malformed parameter count: actual - %s, implemented - %s",
-                    signature.parameterCount(), functionalParameterCount
-            );
-
-            // use indexed iteration not to create short-living collections
-            for (var i = 1; i <= functionalParameterCount; i++) {
-                final Class<?>
-                        actualType = signature.parameterType(i),
-                        functionalType = functionalMethodSignature.parameterType(i - 1);
-
-                if (!functionalType.isAssignableFrom(actualType)) {
-                    checkState(
-                            actualType.isPrimitive(), "Parameter types are incompatible at index [%s]", i - 1
-                    );
-
-                    val wrapperType = ClassUtil.toPrimitiveWrapper(actualType);
-                    checkState(
-                            functionalType.isAssignableFrom(wrapperType),
-                            "Parameter types are incompatible at index [%s] even with wrapping", i - 1
-                    );
-                    signature = signature.changeParameterType(i, wrapperType);
-                }
-            }
-        }
-        */
 
         val targetMethodHandle = LambdaMetafactory.metafactory(
                 lookup, functionalMethodName,

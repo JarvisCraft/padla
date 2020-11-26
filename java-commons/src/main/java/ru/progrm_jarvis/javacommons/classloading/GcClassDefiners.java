@@ -289,7 +289,7 @@ public class GcClassDefiners {
                 "This class-loader is intended only for internal usage and should never be accessed outside "
                         + "as there should be no strong references to it"
         )
-        private static class TmpClassLoader extends ClassLoader {
+        private static final class TmpClassLoader extends ClassLoader {
 
             /**
              * Instantiates a new temporary class-loader using the given parent.

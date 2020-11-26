@@ -31,8 +31,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<JavassistTextModelFactory<?>> INSTANCE
-            = Lazy.createThreadSafe(JavassistTextModelFactory::new);
+    private static final Lazy<TextModelFactory<?>> INSTANCE = Lazy.createThreadSafe(JavassistTextModelFactory::new);
 
     /**
      * Returns this {@link TextModelFactory text model factory} singleton.
@@ -41,13 +40,13 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public static <T> @NotNull JavassistTextModelFactory<T> get() {
-        return (JavassistTextModelFactory<T>) INSTANCE.get();
+    public static <T> @NotNull TextModelFactory<T> get() {
+        return (TextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
-        return new TextModelBuilder<>();
+        return new JavassistTextModelBuilder<>();
     }
 
     /**
@@ -61,13 +60,15 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder
-            <T, Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T>, DynamicNode<T>> {
+    protected static class JavassistTextModelBuilder<T>
+            extends AbstractGeneratingTextModelFactoryBuilder<
+            T, Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T>, DynamicNode<T>
+            > {
 
         /**
          * Lookup of this class.
          */
-        protected static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        protected static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
         @Override
         protected @NotNull Node<T, StaticNode<T>, DynamicNode<T>> newStaticNode(final @NotNull String text) {
@@ -82,8 +83,8 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Full name (including canonical class name) of {@link #internal$getDynamicTextModel(String)} method
          */
-        protected static final String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME
-                = TextModelBuilder.class.getCanonicalName() + ".internal$getDynamicTextModel",
+        protected static final @NotNull String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME
+                = JavassistTextModelBuilder.class.getCanonicalName() + ".internal$getDynamicTextModel",
         /**
          * Prefix of generated fields after which the index will go
          */
@@ -92,21 +93,22 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
          */
-        protected static final ValueStorage<String, TextModel<?>> DYNAMIC_MODELS = new SimpleValueStorage<>();
+        protected static final @NotNull ValueStorage<@NotNull String, @NotNull TextModel<?>> DYNAMIC_MODELS
+                = SimpleValueStorage.create();
 
         /**
          * Lazily initialized {@link ClassPool Javassist class pool}
          */
-        private static final Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+        private static final @NotNull Lazy<@NotNull ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
 
         /**
          * Lazily initialized {@link CtClass compile-time class} of {@link TextModel text model}
          */
-        private static final Lazy<CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
+        private static final @NotNull Lazy<@NotNull CtClass> TEXT_MODEL_CT_CLASS = Lazy.createThreadSafe(() -> {
             try {
                 return CLASS_POOL.get().getCtClass(TextModel.class.getName());
             } catch (final NotFoundException e) {
-                throw new IllegalStateException("Unable to get CtClass by name " + TextModel.class.getName());
+                throw new IllegalStateException("Unable to get CtClass by name " + TextModel.class.getName(), e);
             }
         });
 
@@ -119,8 +121,8 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        protected @NonNull static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
+        protected static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+                JavassistTextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
         /**
@@ -148,7 +150,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             try {
                 clazz.addConstructor(CtNewConstructor.defaultConstructor(clazz));
             } catch (final CannotCompileException e) {
-                throw new IllegalStateException("Could not add defaul constructor to generated TextModel");
+                throw new IllegalStateException("Could not add defaul constructor to generated TextModel", e);
             }
 
             { // Method (#getText(T))
@@ -186,9 +188,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                         val staticText = element.asStatic().getText();
                         if (staticText.length() == 1) { // handle single char String as a char
                             val character = staticText.charAt(0);
-                            if (character < 32) {/* There seems to be a Javassist bug with characters less than \32 */
-                                src.append(".append((char)").append((int) character).append(')');
-                            } else src.append(".append('").append(
+                            // There seems to be a Javassist bug with characters less than \32
+                            if (character < 32) src.append(".append((char)").append((int) character).append(')');
+                            else src.append(".append('").append(
                                     StringMicroOptimizationUtil.escapeJavaCharacterLiteral(character)
                             ).append('\'').append(')');
                         } else src.append(".append(\"").append(
@@ -200,7 +202,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 try {
                     clazz.addMethod(CtMethod.make(src.append(".toString();}").toString(), clazz));
                 } catch (final CannotCompileException e) {
-                    throw new IllegalStateException("Could not add method to generated TextModel");
+                    throw new IllegalStateException("Could not add method to generated TextModel", e);
                 }
             }
 
@@ -213,7 +215,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 return (TextModel<T>) constructor.newInstance();
             } catch (final IOException | CannotCompileException | NoSuchMethodException
                     | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException("Could not compile and instantiate TextModel from the given elements");
+                throw new IllegalStateException(
+                        "Could not compile and instantiate TextModel from the given elements", e
+                );
             }
         }
 

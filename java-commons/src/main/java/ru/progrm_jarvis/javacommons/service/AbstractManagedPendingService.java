@@ -67,7 +67,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
     }
 
     @Override
-    @SuppressWarnings("resource") // while an auto-closeable instance is created, it should be closed in other place
+    // while an auto-closeable instance is created, it should be closed in other place
     public @NotNull OwnedService<S, R> request(final @NonNull O owner) {
         final Lock lock;
         (lock = lifecycleLock).lock();
@@ -224,22 +224,28 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
             closed = new AtomicBoolean();
         }
 
+        protected void failOnClosed() {
+            throw new IllegalStateException("This managed service has already been closed");
+        }
+
         @Override
         public @NotNull S service() {
-            if (closed.get()) throw new IllegalStateException("This managed service has already been closed");
+            if (closed.get()) failOnClosed();
+
             return service;
         }
 
         @Override
         public void onceReady(final @NonNull Consumer<R> serviceCallback) {
-            if (closed.get()) throw new IllegalStateException("This managed service has already been closed");
+            if (closed.get()) failOnClosed();
+
             addReadyCallback(owner, serviceCallback);
         }
 
         @Override
         public void close() {
             if (closed.compareAndSet(false, true)) markAsReady(owner);
-            else throw new IllegalStateException("This managed service has already been closed");
+            else failOnClosed();
         }
     }
 }

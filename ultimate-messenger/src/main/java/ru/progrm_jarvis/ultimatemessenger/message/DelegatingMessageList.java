@@ -28,32 +28,32 @@ public class DelegatingMessageList<C, R> implements MessageList<C, R> {
     @Delegate @NonNull List<Message<C, R>> messages;
 
     /**
-     * Creates a new {@link DelegatingMessageList} using the given list of messages.
+     * Creates a new delegating {@link MessageList} using the given list of messages.
      *
      * @param messages list of messages to use for created message list's backend
      * @param <C> type of message context
      * @param <R> type of message receivers
      * @return creates simple message list
      *
-     * @implNote the created  message list will use the given list as its internal storage of messages
+     * @implNote the created message list will use the given list as its internal storage of messages
      * and so any changes to it from outside may also affect this message list
      */
-    public static <C, R> DelegatingMessageList<C, R> from(final @NonNull List<Message<C, R>> messages) {
+    public static <C, R> MessageList<C, R> from(final @NonNull List<Message<C, R>> messages) {
         return new DelegatingMessageList<>(messages);
     }
 
     /**
-     * Creates a new {@link DelegatingMessageList} using the copy of the given list of messages.
+     * Creates a new delegating {@link MessageList} using the copy of the given list of messages.
      *
      * @param messages list of messages to be copied for use in created {@link MessageList message list's} backend
      * @param <C> type of message context
      * @param <R> type of message receivers
      * @return creates simple message list
      *
-     * @implNote the created  message list will use the given list as its internal storage of messages
+     * @implNote the created message list will use the given list as its internal storage of messages
      * and so any changes to it from outside may also affect this message list
      */
-    public static <C, R> DelegatingMessageList<C, R> fromCopyOf(final @NonNull List<Message<C, R>> messages) {
+    public static <C, R> MessageList<C, R> fromCopyOf(final @NonNull List<Message<C, R>> messages) {
         return new DelegatingMessageList<>(new ArrayList<>(messages));
     }
 }

@@ -21,7 +21,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return created int wrapper
      */
     static IntWrapper create(final int value) {
-        return new IntIntWrapper(value);
+        return new PrimitiveIntWrapper(value);
     }
 
     /**
@@ -30,7 +30,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return created int wrapper
      */
     static IntWrapper create() {
-        return new IntIntWrapper();
+        return new PrimitiveIntWrapper();
     }
 
     /**
@@ -40,7 +40,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return created int wrapper
      */
     static IntWrapper createAtomic(final int value) {
-        return new AtomicIntegerIntWrapper(value);
+        return new AtomicIntWrapper(value);
     }
 
     /**
@@ -49,7 +49,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return created int wrapper
      */
     static IntWrapper createAtomic() {
-        return new AtomicIntegerIntWrapper();
+        return new AtomicIntWrapper();
     }
 
     @Override
@@ -166,11 +166,11 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * {@link IntWrapper} implementation based on {@code int}.
      */
     @ToString
+    @EqualsAndHashCode
     @NoArgsConstructor
     @AllArgsConstructor
-    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    final class IntIntWrapper implements IntWrapper {
+    final class PrimitiveIntWrapper implements IntWrapper {
 
         int value;
 
@@ -286,9 +286,9 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * {@link IntWrapper} implementation based on {@link AtomicInteger}.
      */
     @ToString
-    @EqualsAndHashCode(callSuper = false)
+    @EqualsAndHashCode
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    final class AtomicIntegerIntWrapper implements IntWrapper {
+    final class AtomicIntWrapper implements IntWrapper {
 
         @Delegate(types = IntWrapper.class, excludes = PrimitiveWrapper.class)
         @NonNull AtomicInteger value;
@@ -298,14 +298,14 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
          *
          * @param value initial value
          */
-        private AtomicIntegerIntWrapper(final int value) {
+        private AtomicIntWrapper(final int value) {
             this.value = new AtomicInteger(value);
         }
 
         /**
          * Creates new atomic integer int wrapper with initial value set to {@code 0}.
          */
-        private AtomicIntegerIntWrapper() {
+        private AtomicIntWrapper() {
             value = new AtomicInteger();
         }
     }

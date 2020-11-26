@@ -20,7 +20,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<SimpleTextModelFactory<?>> INSTANCE
+    private static final Lazy<TextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(SimpleTextModelFactory::new);
 
     /**
@@ -30,13 +30,13 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public @NotNull static <T> SimpleTextModelFactory<T> get() {
-        return (SimpleTextModelFactory<T>) INSTANCE.get();
+    public @NotNull static <T> TextModelFactory<T> get() {
+        return (TextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
-        return new TextModelBuilder<>();
+        return new SimpleTextModelBuilder<>();
     }
 
     /**
@@ -49,7 +49,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this also allows instance caching)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
+    protected static class SimpleTextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
 
         @NonNull List<TextModel<T>> elements = new ArrayList<>();
 

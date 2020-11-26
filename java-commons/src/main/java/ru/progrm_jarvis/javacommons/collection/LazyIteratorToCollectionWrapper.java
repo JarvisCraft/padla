@@ -6,10 +6,7 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A wrapper for {@link Iterator} to make it treated as a {@link Collection}.
@@ -36,6 +33,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      */
     protected @Nullable E readNextIteratorElement() {
         if (iterator.hasNext()) return iterator.next();
+
         return null;
     }
 
@@ -46,12 +44,11 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      * @return found element reference if found and {@code null} false otherwise
      */
     protected @Nullable E readIteratorUntilReached(final E element) {
-        if (iterator.hasNext()) {
-            while (iterator.hasNext()) {
-                val nextElement = iterator.next();
-                if (Objects.equals(element, nextElement)) return nextElement;
-            }
+        if (iterator.hasNext()) while (iterator.hasNext()) {
+            val nextElement = iterator.next();
+            if (Objects.equals(element, nextElement)) return nextElement;
         }
+
         return null;
     }
 
@@ -62,12 +59,11 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      * @return {@code true} if the element is contained in the wrapped iterator and {@code false} otherwise
      */
     protected boolean isIteratorContaining(final Object element) {
-        if (iterator.hasNext()) {
-            while (iterator.hasNext()) {
-                val nextElement = iterator.next();
-                if (Objects.equals(element, nextElement)) return true;
-            }
+        if (iterator.hasNext()) while (iterator.hasNext()) {
+            val nextElement = iterator.next();
+            if (Objects.equals(element, nextElement)) return true;
         }
+
         return false;
     }
 
@@ -112,7 +108,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     @NotNull
     @Override
     @SuppressWarnings({"unchecked", "SuspiciousToArrayCall"})
-    public <T> T[] toArray(final @NotNull T... a) {
+    public <T> T[] toArray(final T @NotNull ... a) {
         readIteratorFully();
 
         return targetCollection.toArray(a);
@@ -242,7 +238,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
                 return iterator.next();
             }
 
-            throw new IllegalStateException();
+            throw new NoSuchElementException("No more elements available");
         }
 
         @Override

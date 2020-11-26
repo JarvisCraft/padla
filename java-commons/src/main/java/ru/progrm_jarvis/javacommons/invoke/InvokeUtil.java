@@ -107,8 +107,7 @@ public class InvokeUtil {
      * @return created cached lookup fir the given class
      */
     @SneakyThrows(ExecutionException.class)
-    public@NotNull
-     Lookup lookup(final @NonNull Class<?> clazz) {
+    public @NotNull Lookup lookup(final @NonNull Class<?> clazz) {
         return LOOKUPS.get(clazz, () -> LOOKUP_FACTORY.create(clazz));
     }
 
@@ -178,9 +177,9 @@ public class InvokeUtil {
                     lookup, RUNNABLE_FUNCTIONAL_METHOD_NAME, RUNNABLE__METHOD_TYPE,
                     VOID__METHOD_TYPE, methodHandle, VOID__METHOD_TYPE
             ).getTarget().invokeExact();
-        } catch (final Throwable throwable) {
+        } catch (final Throwable x) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + " to Runnable"
+                    "An exception occurred while trying to convert method " + method + " to Runnable", x
             );
         }
     }
@@ -209,9 +208,9 @@ public class InvokeUtil {
                     RUNNABLE_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
                     VOID__METHOD_TYPE, methodHandle, VOID__METHOD_TYPE
             ).getTarget().invoke(target);
-        } catch (final Throwable throwable) {
+        } catch (final Throwable x) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + " to Runnable"
+                    "An exception occurred while trying to convert method " + method + " to Runnable", x
             );
         }
     }
@@ -240,9 +239,9 @@ public class InvokeUtil {
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
             ).getTarget().invokeExact();
-        } catch (final Throwable throwable) {
+        } catch (final Throwable x) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + " to Supplier"
+                    "An exception occurred while trying to convert method " + method + " to Supplier", x
             );
         }
     }
@@ -273,9 +272,9 @@ public class InvokeUtil {
                     SUPPLIER_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
                     OBJECT__METHOD_TYPE, methodHandle, OBJECT__METHOD_TYPE.changeReturnType(method.getReturnType())
             ).getTarget().invoke(target);
-        } catch (final Throwable throwable) {
+        } catch (final Throwable x) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert method " + method + " to Supplier"
+                    "An exception occurred while trying to convert method " + method + " to Supplier", x
             );
         }
     }
@@ -302,9 +301,9 @@ public class InvokeUtil {
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
             ).getTarget().invokeExact();
-        } catch (final Throwable throwable) {
+        } catch (final Throwable x) {
             throw new RuntimeException(
-                    "An exception occurred while trying to convert constructor " + constructor + " to Supplier"
+                    "An exception occurred while trying to convert constructor " + constructor + " to Supplier", x
             );
         }
     }

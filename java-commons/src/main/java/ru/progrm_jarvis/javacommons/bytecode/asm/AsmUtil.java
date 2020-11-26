@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.bytecode.asm;
 
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;

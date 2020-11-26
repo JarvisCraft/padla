@@ -29,7 +29,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         extends AbstractCachingTextModelFactoryBuilder<T> {
 
     /**
-     * Instantiates new {@link AbstractGeneratingTextModelFactoryBuilder} using {@link ArrayList} for its backend.
+     * Instantiates new abstract generating text model factory builder using {@link ArrayList} for its backend.
      */
     protected AbstractGeneratingTextModelFactoryBuilder() {
         this(new ArrayList<>());
@@ -87,10 +87,8 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * or {@link #endModification(StaticNode)} otherwise.
      */
     protected void endLastNodeModification() {
-        if (lastNode != null) {
-            if (lastNode.isDynamic()) endModification(lastNode.asDynamic());
-            else endModification(lastNode.asStatic());
-        }
+        if (lastNode != null) if (lastNode.isDynamic()) endModification(lastNode.asDynamic());
+        else endModification(lastNode.asStatic());
     }
 
     /**
@@ -210,6 +208,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param <S> type of static node wrapped
      * @param <D> type of dynamic node wrapped
      */
+    @SuppressWarnings("InterfaceMayBeAnnotatedFunctional") // at least one `as` should be
     protected interface Node<T, S extends StaticNode<T>, D extends DynamicNode<T>> {
 
         /**
@@ -227,9 +226,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
          *
          * @see #isDynamic() to check if this method can be used
          */
-        default S asStatic() {
-            throw new UnsupportedOperationException("This is not a static element");
-        }
+        @NotNull S asStatic();
 
         /**
          * Gets this node's dynamic view if it is {@link #isDynamic() dynamic} otherwise throwing an exception.
@@ -239,9 +236,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
          *
          * @see #isDynamic() to check if this method can be used
          */
-        default D asDynamic() {
-            throw new UnsupportedOperationException("This is not a dynamic element");
-        }
+        @NotNull D asDynamic();
     }
 
     /**
@@ -303,7 +298,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     @Value
     @RequiredArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class SimpleStaticNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T> {
+    protected static class SimpleStaticNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T> {
 
         /**
          * Text of this node
@@ -338,6 +333,11 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         public void appendText(final @NotNull String text) {
             this.text.append(text);
         }
+
+        @Override
+        public DynamicNode<T> asDynamic() {
+            throw new UnsupportedOperationException("This is not a dynamic node");
+        }
     }
 
     /**
@@ -347,7 +347,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      */
     @Value
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    public static class SimpleDynamicNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, DynamicNode<T> {
+    protected static class SimpleDynamicNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, DynamicNode<T> {
 
         /**
          * Dynamic content of this node
@@ -362,6 +362,11 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         @Override
         public DynamicNode<T> asDynamic() {
             return this;
+        }
+
+        @Override
+        public StaticNode<T> asStatic() {
+            throw new UnsupportedOperationException("This is not a static node");
         }
     }
 }

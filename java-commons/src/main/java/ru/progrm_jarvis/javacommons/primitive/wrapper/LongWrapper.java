@@ -21,7 +21,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return created long wrapper
      */
     static LongWrapper create(final long value) {
-        return new LongLongWrapper(value);
+        return new PrimitiveLongWrapper(value);
     }
 
     /**
@@ -30,7 +30,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return created long wrapper
      */
     static LongWrapper create() {
-        return new LongLongWrapper(0);
+        return new PrimitiveLongWrapper(0);
     }
 
     /**
@@ -40,7 +40,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return created long wrapper
      */
     static LongWrapper createAtomic(final long value) {
-        return new AtomicLongLongWrapper(value);
+        return new AtomicLongWrapper(value);
     }
 
     /**
@@ -49,7 +49,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return created long wrapper
      */
     static LongWrapper createAtomic() {
-        return new AtomicLongLongWrapper();
+        return new AtomicLongWrapper();
     }
 
     @Override
@@ -166,11 +166,11 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * {@link LongWrapper} implementation based on {@code long}.
      */
     @ToString
+    @EqualsAndHashCode
     @NoArgsConstructor
     @AllArgsConstructor
-    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    final class LongLongWrapper implements LongWrapper {
+    final class PrimitiveLongWrapper implements LongWrapper {
 
         long value;
 
@@ -286,9 +286,9 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * {@link LongWrapper} implementation based on {@link AtomicLong}.
      */
     @ToString
-    @EqualsAndHashCode(callSuper = false)
+    @EqualsAndHashCode
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    final class AtomicLongLongWrapper implements LongWrapper {
+    final class AtomicLongWrapper implements LongWrapper {
 
         @Delegate(types = LongWrapper.class, excludes = PrimitiveWrapper.class)
         @NonNull AtomicLong value;
@@ -298,14 +298,14 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
          *
          * @param value initial value
          */
-        private AtomicLongLongWrapper(final long value) {
+        private AtomicLongWrapper(final long value) {
             this.value = new AtomicLong(value);
         }
 
         /**
          * Creates new atomic long long wrapper with initial value set to {@code 0}.
          */
-        private AtomicLongLongWrapper() {
+        private AtomicLongWrapper() {
             value = new AtomicLong();
         }
     }

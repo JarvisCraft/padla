@@ -27,25 +27,25 @@ public class DelegatingNestingTextModel<T> implements NestingTextModel<T> {
     @Delegate @NonNull List<TextModel<T>> elements;
 
     /**
-     * Creates a new {@link DelegatingNestingTextModel} using the given collection fot its backend.
+     * Creates a new delegating {@link NestingTextModel} using the given collection fot its backend.
      *
      * @param elements elements to use as this {@link NestingTextModel nesting text model's} content
      * @param <T> type of object according to which the text model is formatted
-     * @return created {@link DelegatingNestingTextModel}
+     * @return created delegating nesting text model
      */
-    public @NotNull static <T> DelegatingNestingTextModel<T> from(final @NonNull List<TextModel<T>> elements) {
+    public static <T> @NotNull NestingTextModel<T> from(final @NonNull List<TextModel<T>> elements) {
         return new DelegatingNestingTextModel<>(elements);
     }
 
     /**
-     * Creates a new {@link DelegatingNestingTextModel} using the copy of the given collection fot its backend.
+     * Creates a new delegating {@link NestingTextModel} using the copy of the given collection fot its backend.
      *
      * @param elements elements copied to the new collection which will be used
      * as this {@link NestingTextModel nesting text model's} content
      * @param <T> type of object according to which the text model is formatted
-     * @return created {@link DelegatingNestingTextModel}
+     * @return created delegating nesting text model
      */
-    public @NotNull static <T> DelegatingNestingTextModel<T> fromCopyOf(final @NonNull List<TextModel<T>> elements) {
+    public static <T> @NotNull NestingTextModel<T> fromCopyOf(final @NonNull List<TextModel<T>> elements) {
         return new DelegatingNestingTextModel<>(new ArrayList<>(elements));
     }
 }
