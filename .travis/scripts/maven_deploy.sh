@@ -18,7 +18,8 @@ function deploy() {
   fi
   echo "Using maven profiles: [${maven_profiles}]"
 
-  return "$(mvn deploy --settings ./.travis/maven/"$1"-settings.xml --activate-profiles "$maven_profiles" -B -V)"
+  mvn deploy --settings ./.travis/maven/"$1"-settings.xml --activate-profiles "$maven_profiles" -B -V
 }
 
-deploy sonatype-ossrh "$1" && deploy github-package-registry "$1"
+deploy sonatype-ossrh "$1"
+deploy github-package-registry "$1"
