@@ -116,7 +116,7 @@ public interface InvokeFactory<F, T> {
      * @see #via(Class, Function)
      * @see #via(Constructor)
      */
-    default InvokeFactory<F, T> via(@NonNull final Method method) {
+    default InvokeFactory<F, T> via(final @NonNull Method method) {
         //noinspection unchecked
         return via((Class<? extends T>) method.getDeclaringClass(), lookup -> {
             try {
@@ -136,7 +136,7 @@ public interface InvokeFactory<F, T> {
      * @see #via(Class, Function)
      * @see #via(Method)
      */
-    default InvokeFactory<F, T> via(@NonNull final Constructor<? extends T> constructor) {
+    default InvokeFactory<F, T> via(final @NonNull Constructor<? extends T> constructor) {
         return via(constructor.getDeclaringClass(), lookup -> {
             try {
                 return lookup.unreflectConstructor(constructor);
@@ -164,7 +164,7 @@ public interface InvokeFactory<F, T> {
      * to unbound (make the call static)
      * @return <b>this</b> invoke factory
      */
-    InvokeFactory<F, T> boundTo(@Nullable final T target);
+    InvokeFactory<F, T> boundTo(final @Nullable T target);
 
     /**
      * Unbinds the method call from instance (making it static).

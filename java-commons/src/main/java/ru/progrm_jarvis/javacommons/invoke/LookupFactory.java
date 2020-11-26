@@ -21,7 +21,7 @@ public interface LookupFactory extends Function<Class<?>, Lookup> {
     // Javadoc is based in the same ones of Lookup class
     int ALL_LOOKUP_MODES = Lookup.PUBLIC | Lookup.PRIVATE | Lookup.PROTECTED | Lookup.PACKAGE;
 
-    @NotNull Lookup create(@NonNull final Class<?> clazz);
+    @NotNull Lookup create(final @NonNull Class<?> clazz);
 
     @Override
     default Lookup apply(Class<?> clazz) {

@@ -20,7 +20,7 @@ public abstract class AbstractImmutableSet<E> implements Set<E> {
     private static final String UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE = "This enum set is immutable";
 
     @Override
-    public boolean containsAll(@NonNull final Collection<?> collection) {
+    public boolean containsAll(final @NonNull Collection<?> collection) {
         for (val element : collection) if (!collection.contains(element)) return false;
         return true;
     }
@@ -36,17 +36,17 @@ public abstract class AbstractImmutableSet<E> implements Set<E> {
     }
 
     @Override
-    public boolean addAll(@NonNull final Collection<? extends E> c) {
+    public boolean addAll(final @NonNull Collection<? extends E> c) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 
     @Override
-    public boolean retainAll(@NonNull final Collection<?> c) {
+    public boolean retainAll(final @NonNull Collection<?> c) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 
     @Override
-    public boolean removeAll(@NonNull final Collection<?> c) {
+    public boolean removeAll(final @NonNull Collection<?> c) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 
@@ -56,7 +56,7 @@ public abstract class AbstractImmutableSet<E> implements Set<E> {
     }
 
     @Override
-    public boolean removeIf(@NonNull final Predicate<? super E> filter) {
+    public boolean removeIf(final @NonNull Predicate<? super E> filter) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 }

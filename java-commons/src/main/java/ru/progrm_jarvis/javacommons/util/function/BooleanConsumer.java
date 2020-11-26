@@ -32,7 +32,7 @@ public interface BooleanConsumer extends Consumer<Boolean> {
      * @return a composed operator that first performs this operation and then the provided one
      * @throws NullPointerException if {@code after} is {@code null}
      */
-    default BooleanConsumer andThen(@NonNull final BooleanConsumer after) {
+    default BooleanConsumer andThen(final @NonNull BooleanConsumer after) {
         return value -> {
             accept(value);
             after.accept(value);

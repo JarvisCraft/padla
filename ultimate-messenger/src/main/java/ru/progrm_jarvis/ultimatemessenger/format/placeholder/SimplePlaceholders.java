@@ -180,7 +180,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     }
 
     @Override
-    public @NotNull TextModel<T> parse(@NonNull final TextModelFactory<T> factory, @NonNull final String text) {
+    public @NotNull TextModel<T> parse(final @NonNull TextModelFactory<T> factory, final @NonNull String text) {
         if (text.isEmpty()) return factory.empty();
 
         val builder = factory.newBuilder();
@@ -299,7 +299,7 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     }
 
     @Override
-    public void add(@NonNull final String name, @NonNull final StringFormatter<T> formatter) {
+    public void add(final @NonNull String name, final @NonNull StringFormatter<T> formatter) {
         checkArgument(
                 name.indexOf(escapeCharacter) == -1, "name should not contain escape character (%s)", escapeCharacter
         );
@@ -309,12 +309,12 @@ public class SimplePlaceholders<T> implements Placeholders<T>, TextModelParser<T
     }
 
     @Override
-    @NotNull public Optional<StringFormatter<T>> get(@NonNull final String name) {
+    public @NotNull Optional<StringFormatter<T>> get(final @NonNull String name) {
         return Optional.ofNullable(handlers.get(name));
     }
 
     @Override
-    @NotNull public Optional<StringFormatter<T>> remove(@NonNull final String name) {
+    public @NotNull Optional<StringFormatter<T>> remove(final @NonNull String name) {
         return Optional.ofNullable(handlers.remove(name));
     }
 }

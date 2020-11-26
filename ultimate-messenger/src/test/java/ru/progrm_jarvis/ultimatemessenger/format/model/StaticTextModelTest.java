@@ -36,20 +36,20 @@ class StaticTextModelTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testGetTextForNull(@NotNull final TextModel<User> textModel, @NotNull final String text) {
+    void testGetTextForNull(final @NotNull TextModel<User> textModel, final @NotNull String text) {
         assertThat(textModel.getText(null), equalTo(text));
     }
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testGetTextForNotNull(@NotNull final TextModel<User> textModel, @NotNull final String text) {
+    void testGetTextForNotNull(final @NotNull TextModel<User> textModel, final @NotNull String text) {
         assertThat(textModel.getText(new User("Jarvis", 5)), equalTo(text));
         assertThat(textModel.getText(new User("P(r)ogrammer", 255)), equalTo(text));
     }
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testMinLength(@NotNull final TextModel<User> textModel, @NotNull final String text) {
+    void testMinLength(final @NotNull TextModel<User> textModel, final @NotNull String text) {
         assertThat(textModel.getMinLength().orElseGet(() -> {
             fail("Min length is undefined");
             return 0;
@@ -58,7 +58,7 @@ class StaticTextModelTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testMaxLength(@NotNull final TextModel<User> textModel, @NotNull final String text) {
+    void testMaxLength(final @NotNull TextModel<User> textModel, final @NotNull String text) {
         assertThat(textModel.getMaxLength().orElseGet(() -> {
             fail("Max length is undefined");
             return 0;

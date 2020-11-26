@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ConcurrentQueueWrapper<E, W extends Queue<E>>
         extends ConcurrentCollectionWrapper<E, W> implements Queue<E> {
 
-    protected ConcurrentQueueWrapper(@NotNull final W wrapped,
+    protected ConcurrentQueueWrapper(final @NotNull W wrapped,
                                      final @NotNull Lock readLock,
                                      final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);

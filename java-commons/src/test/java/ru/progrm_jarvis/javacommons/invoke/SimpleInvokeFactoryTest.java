@@ -55,8 +55,8 @@ class SimpleInvokeFactoryTest {
 
     private static final class SociophobicClass {
 
-        @NonNull private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-        @NonNull private static final LookupFactory LOOKUP_FACTORY = clazz -> LOOKUP;
+        private @NonNull static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        private @NonNull static final LookupFactory LOOKUP_FACTORY = clazz -> LOOKUP;
 
         public String foo(int number) {
             return "foo-" + number;

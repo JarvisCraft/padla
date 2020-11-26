@@ -33,7 +33,7 @@ public interface ClassNamingStrategy extends Supplier<String> {
      *
      * @return created paginated class naming strategy
      */
-    static PaginatedClassNamingStrategy createPaginated(@NonNull final String baseName) {
+    static PaginatedClassNamingStrategy createPaginated(final @NonNull String baseName) {
         return new PaginatedClassNamingStrategy(baseName);
     }
 
@@ -59,7 +59,7 @@ public interface ClassNamingStrategy extends Supplier<String> {
          *
          * @param baseName base name of the generated class names to which the ID should be appended
          */
-        public PaginatedClassNamingStrategy(@NonNull final String baseName) {
+        public PaginatedClassNamingStrategy(final @NonNull String baseName) {
             this.baseName = baseName;
 
             counter = new AtomicReference<>(BigInteger.ZERO);

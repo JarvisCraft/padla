@@ -69,7 +69,7 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @apiNote might be thread-unsafe
      */
-    static <T> Lazy<T> create(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> create(final @NonNull Supplier<T> valueSupplier) {
         return new SimpleLazy<>(valueSupplier);
     }
 
@@ -80,7 +80,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of value wrapped
      * @return created lazy
      */
-    static <T> Lazy<T> createThreadSafe(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> createThreadSafe(final @NonNull Supplier<T> valueSupplier) {
         return new DoubleCheckedLazy<>(valueSupplier);
     }
 
@@ -95,7 +95,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    static <T> Lazy<T> createWeak(@NonNull final Supplier<@NotNull T> valueSupplier) {
+    static <T> Lazy<T> createWeak(final @NonNull Supplier<@NotNull T> valueSupplier) {
         return new SimpleWeakLazy<>(valueSupplier);
     }
 
@@ -109,7 +109,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    static <T> Lazy<T> createWeakThreadSafe(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> createWeakThreadSafe(final @NonNull Supplier<T> valueSupplier) {
         return new LockingWeakLazy<>(valueSupplier);
     }
 
@@ -120,7 +120,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of value wrapped
      * @return created lazy
      */
-    static <T> Lazy<T> createThreadLocal(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> createThreadLocal(final @NonNull Supplier<T> valueSupplier) {
         return new ThreadLocalLazy<>(valueSupplier);
     }
 
@@ -138,7 +138,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         @Nullable Supplier<T> valueSupplier;
 
-        protected SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected SimpleLazy(final @NonNull Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
         }
 
@@ -181,7 +181,7 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Mutex used for synchronizations
          */
-        @NonNull final Object mutex;
+        final @NonNull Object mutex;
 
         /**
          * Supplier used for creation of the value
@@ -193,7 +193,7 @@ public interface Lazy<T> extends Supplier<T> {
          */
         volatile T value;
 
-        protected DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected DoubleCheckedLazy(final @NonNull Supplier<T> valueSupplier) {
             mutex = new Object[0];
             this.valueSupplier = valueSupplier;
         }
@@ -248,7 +248,7 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Supplier used for creation of the value
          */
-        @NonNull final Supplier<T> valueSupplier;
+        final @NonNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
@@ -293,19 +293,19 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Mutex used for synchronizations
          */
-        @NonNull final Lock readLock, writeLock;
+        final @NonNull Lock readLock, writeLock;
 
         /**
          * Supplier used for creation of the value
          */
-        @NonNull final Supplier<T> valueSupplier;
+        final @NonNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
          */
         @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
-        protected LockingWeakLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected LockingWeakLazy(final @NonNull Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
 
             {

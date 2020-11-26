@@ -30,9 +30,9 @@ public final class UnsafeMethodsAccessGenerator {
             .addRequiredOption("c", "class-name", true, "Class name")
             .addOption("p", "package-name", true, "Package name");
 
-    public static void main(@NotNull final String... args) throws ParseException, IOException {
-        @NotNull final String className;
-        @Nullable final String packageName;
+    public static void main(final @NotNull String... args) throws ParseException, IOException {
+        final @NotNull String className;
+        final @Nullable String packageName;
         {
             val commandLine = new DefaultParser().parse(OPTIONS, args);
 

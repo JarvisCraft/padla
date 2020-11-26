@@ -33,7 +33,7 @@ public class DelegatingNestingTextModel<T> implements NestingTextModel<T> {
      * @param <T> type of object according to which the text model is formatted
      * @return created {@link DelegatingNestingTextModel}
      */
-    @NotNull public static <T> DelegatingNestingTextModel<T> from(@NonNull final List<TextModel<T>> elements) {
+    public @NotNull static <T> DelegatingNestingTextModel<T> from(final @NonNull List<TextModel<T>> elements) {
         return new DelegatingNestingTextModel<>(elements);
     }
 
@@ -45,7 +45,7 @@ public class DelegatingNestingTextModel<T> implements NestingTextModel<T> {
      * @param <T> type of object according to which the text model is formatted
      * @return created {@link DelegatingNestingTextModel}
      */
-    @NotNull public static <T> DelegatingNestingTextModel<T> fromCopyOf(@NonNull final List<TextModel<T>> elements) {
+    public @NotNull static <T> DelegatingNestingTextModel<T> fromCopyOf(final @NonNull List<TextModel<T>> elements) {
         return new DelegatingNestingTextModel<>(new ArrayList<>(elements));
     }
 }

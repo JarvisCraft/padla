@@ -226,7 +226,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
         }
 
         @Override
-        public long getAndUpdate(@NonNull final LongUnaryOperator updateFunction) {
+        public long getAndUpdate(final @NonNull LongUnaryOperator updateFunction) {
             val oldValue = value;
             value = updateFunction.applyAsLong(oldValue);
 
@@ -234,12 +234,12 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
         }
 
         @Override
-        public long updateAndGet(@NonNull final LongUnaryOperator updateFunction) {
+        public long updateAndGet(final @NonNull LongUnaryOperator updateFunction) {
             return value = updateFunction.applyAsLong(value);
         }
 
         @Override
-        public long getAndAccumulate(final long updateValue, @NonNull final LongBinaryOperator accumulatorFunction) {
+        public long getAndAccumulate(final long updateValue, final @NonNull LongBinaryOperator accumulatorFunction) {
             val oldValue = value;
             value = accumulatorFunction.applyAsLong(value, updateValue);
 
@@ -247,7 +247,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
         }
 
         @Override
-        public long accumulateAndGet(final long updateValue, @NonNull final LongBinaryOperator accumulatorFunction) {
+        public long accumulateAndGet(final long updateValue, final @NonNull LongBinaryOperator accumulatorFunction) {
             return value = accumulatorFunction.applyAsLong(value, updateValue);
         }
 

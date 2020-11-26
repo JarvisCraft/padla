@@ -34,7 +34,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      *
      * @return next element in iterator if any or {@code null} if its end was reached.
      */
-    @Nullable protected E readNextIteratorElement() {
+    protected @Nullable E readNextIteratorElement() {
         if (iterator.hasNext()) return iterator.next();
         return null;
     }
@@ -45,7 +45,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      * @param element element to try to reach
      * @return found element reference if found and {@code null} false otherwise
      */
-    @Nullable protected E readIteratorUntilReached(final E element) {
+    protected @Nullable E readIteratorUntilReached(final E element) {
         if (iterator.hasNext()) {
             while (iterator.hasNext()) {
                 val nextElement = iterator.next();
@@ -112,7 +112,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     @NotNull
     @Override
     @SuppressWarnings({"unchecked", "SuspiciousToArrayCall"})
-    public <T> T[] toArray(@NotNull final T... a) {
+    public <T> T[] toArray(final @NotNull T... a) {
         readIteratorFully();
 
         return targetCollection.toArray(a);
@@ -156,7 +156,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     }
 
     @Override
-    public boolean addAll(@NotNull final Collection<? extends E> elements) {
+    public boolean addAll(final @NotNull Collection<? extends E> elements) {
         return targetCollection.addAll(elements);
     }
 
@@ -175,7 +175,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     }
 
     @Override
-    public boolean retainAll(@NotNull final Collection<?> valuesToRetain) {
+    public boolean retainAll(final @NotNull Collection<?> valuesToRetain) {
         if (valuesToRetain.isEmpty()) {
             val changed = !targetCollection.isEmpty();
             targetCollection.clear();

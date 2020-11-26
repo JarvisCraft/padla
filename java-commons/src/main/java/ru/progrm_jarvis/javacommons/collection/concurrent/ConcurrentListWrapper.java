@@ -15,7 +15,7 @@ import java.util.function.UnaryOperator;
 
 public class ConcurrentListWrapper<E, W extends List<E>> extends ConcurrentCollectionWrapper<E, W> implements List<E> {
 
-    protected ConcurrentListWrapper(@NotNull final W wrapped,
+    protected ConcurrentListWrapper(final @NotNull W wrapped,
                                     final @NotNull Lock readLock,
                                     final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);
@@ -130,8 +130,8 @@ public class ConcurrentListWrapper<E, W extends List<E>> extends ConcurrentColle
     }
 
     @Override
-    @Nonnull
-    public ListIterator<E> listIterator() {
+    public@Nonnull
+     ListIterator<E> listIterator() {
         readLock.lock();
         try {
             return wrapped.listIterator();

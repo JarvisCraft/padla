@@ -38,7 +38,7 @@ public class DelegatingMessageList<C, R> implements MessageList<C, R> {
      * @implNote the created  message list will use the given list as its internal storage of messages
      * and so any changes to it from outside may also affect this message list
      */
-    public static <C, R> DelegatingMessageList<C, R> from(@NonNull final List<Message<C, R>> messages) {
+    public static <C, R> DelegatingMessageList<C, R> from(final @NonNull List<Message<C, R>> messages) {
         return new DelegatingMessageList<>(messages);
     }
 
@@ -53,7 +53,7 @@ public class DelegatingMessageList<C, R> implements MessageList<C, R> {
      * @implNote the created  message list will use the given list as its internal storage of messages
      * and so any changes to it from outside may also affect this message list
      */
-    public static <C, R> DelegatingMessageList<C, R> fromCopyOf(@NonNull final List<Message<C, R>> messages) {
+    public static <C, R> DelegatingMessageList<C, R> fromCopyOf(final @NonNull List<Message<C, R>> messages) {
         return new DelegatingMessageList<>(new ArrayList<>(messages));
     }
 }

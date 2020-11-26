@@ -38,24 +38,24 @@ public class CollectionFactory {
     /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
      */
-    @NonNull private static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
+    private @NonNull static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
             .createPaginated(CollectionFactory.class.getName() + "$$Generated$$ImmutableEnumSet$$");
 
     /**
      * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
      */
-    @NonNull private final String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
+    private final @NonNull String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = CollectionFactory.class.getCanonicalName() + ".immutable-enum-set-instance-cache-concurrency-level";
 
     /**
      * Default javassist class pool
      */
-    @NonNull private final Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+    private final @NonNull Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
 
     /**
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
-    @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
+    private final @NonNull Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
             = CacheBuilder
             .newBuilder()
             .concurrencyLevel(
@@ -67,12 +67,12 @@ public class CollectionFactory {
     /**
      * {@link CtClass} representation of {@link AbstractImmutableSet} wrapped in {@link Lazy}
      */
-    @NonNull private static final Lazy<CtClass> ABSTRACT_IMMUTABLE_SET_CT_CLASS = Lazy
+    private @NonNull static final Lazy<CtClass> ABSTRACT_IMMUTABLE_SET_CT_CLASS = Lazy
             .createThreadSafe(() -> toCtClass(AbstractImmutableSet.class));
     /**
      * Array storing single reference to {@link CtClass} representation of {@link Iterator} wrapped in {@link Lazy}
      */
-    @NonNull private static final Lazy<CtClass[]> ITERATOR_CT_CLASS_ARRAY = Lazy
+    private @NonNull static final Lazy<CtClass[]> ITERATOR_CT_CLASS_ARRAY = Lazy
             .createThreadSafe(() -> new CtClass[]{toCtClass(Iterator.class)});
 
     /**
@@ -83,7 +83,7 @@ public class CollectionFactory {
      *
      * @throws IllegalStateException if it is impossible to find {@link CtClass} representation of the given class
      */
-    private CtClass toCtClass(@NonNull final Class<?> clazz) {
+    private CtClass toCtClass(final @NonNull Class<?> clazz) {
         try {
             return CLASS_POOL.get().get(clazz.getName());
         } catch (final NotFoundException e) {
@@ -97,7 +97,7 @@ public class CollectionFactory {
      * @param targetClass class to which to add an empty constructor
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
-    private void addEmptyConstructor(@NonNull final CtClass targetClass) throws CannotCompileException {
+    private void addEmptyConstructor(final @NonNull CtClass targetClass) throws CannotCompileException {
         targetClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], targetClass));
     }
 
@@ -110,7 +110,7 @@ public class CollectionFactory {
      */
     private void addCtField(
             @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
-                               suffix = "}") final String src, @NonNull final CtClass targetClass)
+                               suffix = "}") final String src, final @NonNull CtClass targetClass)
             throws CannotCompileException {
         targetClass.addField(CtField.make(src, targetClass));
     }
@@ -124,7 +124,7 @@ public class CollectionFactory {
      */
     private void addCtMethod(
             @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
-                               suffix = "}") final String src, @NonNull final CtClass targetClass)
+                               suffix = "}") final String src, final @NonNull CtClass targetClass)
             throws CannotCompileException {
         targetClass.addMethod(CtNewMethod.make(src, targetClass));
     }
@@ -146,7 +146,7 @@ public class CollectionFactory {
     @SneakyThrows(ExecutionException.class)
     @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
     @UsesBytecodeModification(value = CommonBytecodeLibrary.JAVASSIST, optional = true)
-    public <E extends Enum<E>> Set<E> createImmutableEnumSet(@NonNull final E... values) {
+    public <E extends Enum<E>> Set<E> createImmutableEnumSet(final @NonNull E... values) {
         if (values.length == 0) return Collections.emptySet();
 
         if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) {

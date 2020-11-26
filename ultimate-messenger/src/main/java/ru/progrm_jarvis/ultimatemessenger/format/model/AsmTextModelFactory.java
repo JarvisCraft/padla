@@ -62,7 +62,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     /**
      * Class of {@code java.lang.invoke.StringConcatFactory}
      */
-    @Nullable protected static final Class<?> STRING_CONCAT_FACTORY_CLASS;
+    protected @Nullable static final Class<?> STRING_CONCAT_FACTORY_CLASS;
 
     static {
         boolean stringConcatFactoryAvailable = false;
@@ -98,7 +98,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * @param <T> type of object according to which the created text models are formatted
      * @return created {@link AsmTextModelFactory ASM-based text model factory} with the given configuration
      */
-    public static <T> @NotNull TextModelFactory<T> create(@NonNull final Configuration configuration) {
+    public static <T> @NotNull TextModelFactory<T> create(final @NonNull Configuration configuration) {
         return new AsmTextModelFactory<>(configuration);
     }
 
@@ -472,8 +472,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
 
         @Override
-        @NotNull
-        protected TextModel<T> performTextModelBuild(final boolean release) {
+        protected@NotNull
+         TextModel<T> performTextModelBuild(final boolean release) {
             val clazz = new ClassWriter(0); // MAXs are already computed 😎
 
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
@@ -1023,7 +1023,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param method method visitor through which the code should be updated
          */
-        protected static void asm$invokeStringBuilderAppendChar(@NotNull final MethodVisitor method) {
+        protected static void asm$invokeStringBuilderAppendChar(final @NotNull MethodVisitor method) {
             // Invoke `StringBuilder.append(char)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
@@ -1097,7 +1097,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                  */
                 @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
 
-                public StaticNode(@NonNull final String text) {
+                public StaticNode(final @NonNull String text) {
                     this.text = new StringBuilder(text);
 
                     treatAsDynamicValueInStringConcatFactory = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;

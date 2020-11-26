@@ -55,7 +55,7 @@ public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
         @NonNull TextModelFactory.TextModelBuilder<T> textModelBuilder;
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
             debugHandler.accept(
                     "TextModelBuilder#append(\""
                             + StringMicroOptimizationUtil.escapeJavaStringLiteral(staticText) + "\")"
@@ -65,7 +65,7 @@ public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
             debugHandler.accept("TextModelBuilder#append(" + dynamicText + ')');
 
             return textModelBuilder.append(dynamicText);

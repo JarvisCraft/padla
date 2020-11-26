@@ -25,8 +25,8 @@ public class MapUtil {
      * @param keyValuePairs key-value pairs to put to the map ordered as <i>key1, value1, key2, value2...</i>
      */
     @SuppressWarnings("unchecked")
-    private void fillMapNoChecks(@SuppressWarnings("rawtypes") @NonNull final Map map,
-                                 @NonNull final Object... keyValuePairs) {
+    private void fillMapNoChecks(@SuppressWarnings("rawtypes") final @NonNull Map map,
+                                 final @NonNull Object... keyValuePairs) {
         var value = true; // will get reverted for the first value
 
         Object key = null; // requires to be initialized for some reason :)
@@ -45,7 +45,7 @@ public class MapUtil {
      *
      * @see #fillMap(Map, Object, Object, Object...)
      */
-    public <M extends Map<?, ?>> M fillMap(@NonNull final M map, @NonNull final Object... keyValuePairs) {
+    public <M extends Map<?, ?>> M fillMap(final @NonNull M map, final @NonNull Object... keyValuePairs) {
         val length = keyValuePairs.length;
         if (length == 0) return map;
         Preconditions.checkArgument(length % 2 == 0, "Key-Value pairs array should have an even number of elements");
@@ -70,8 +70,8 @@ public class MapUtil {
      *
      * @see #fillMap(Map, Object...)
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, final K firstValueKey, final V firstValue,
-                                                 @NonNull final Object... keyValuePairs) {
+    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map, final K firstValueKey, final V firstValue,
+                                                 final @NonNull Object... keyValuePairs) {
         val length = keyValuePairs.length;
         Preconditions.checkArgument(length % 2 == 0, "Key-Value pairs array should have an even number of elements");
 
@@ -92,7 +92,7 @@ public class MapUtil {
      * @return the map passed filled with key-value pairs specified
      */
     @SafeVarargs
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map, @NonNull final Pair<K, V>... entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map, final @NonNull Pair<K, V>... entries) {
         for (val entry : entries) map.put(entry.getFirst(), entry.getSecond());
 
         return map;
@@ -108,8 +108,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map,
-                                                 @NonNull final Iterator<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map,
+                                                 final @NonNull Iterator<? extends Pair<K, V>> entries) {
         while (entries.hasNext()) {
             val entry = entries.next();
             map.put(entry.getFirst(), entry.getSecond());
@@ -128,8 +128,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map,
-                                                 @NonNull final Iterable<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map,
+                                                 final @NonNull Iterable<? extends Pair<K, V>> entries) {
         return fillMap(map, entries.iterator());
     }
 
@@ -143,8 +143,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(@NonNull final M map,
-                                                 @NonNull final Stream<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map,
+                                                 final @NonNull Stream<? extends Pair<K, V>> entries) {
         entries.forEach(entry -> map.put(entry.getFirst(), entry.getSecond()));
 
         return map;
@@ -160,8 +160,8 @@ public class MapUtil {
      * @param <M> map type
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMapOrdered(@NonNull final M map,
-                                                        @NonNull final Stream<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMapOrdered(final @NonNull M map,
+                                                        final @NonNull Stream<? extends Pair<K, V>> entries) {
         entries.forEachOrdered(entry -> map.put(entry.getFirst(), entry.getSecond()));
 
         return map;
@@ -178,7 +178,7 @@ public class MapUtil {
      * @see MapFiller
      * @see #mapFiller(Map, Object, Object)
      */
-    public <K, V> MapFiller<K, V> mapFiller(@NonNull final Map<K, V> map) {
+    public <K, V> MapFiller<K, V> mapFiller(final @NonNull Map<K, V> map) {
         return new MapFiller<>(map);
     }
 
@@ -195,18 +195,18 @@ public class MapUtil {
      * @see MapFiller
      * @see #mapFiller(Map)
      */
-    public <K, V> MapFiller<K, V> mapFiller(@NonNull final Map<K, V> map, K firstKey, final V firstValue) {
+    public <K, V> MapFiller<K, V> mapFiller(final @NonNull Map<K, V> map, K firstKey, final V firstValue) {
         return new MapFiller<>(map)
                 .put(firstKey, firstValue);
     }
 
-    public <K, V> V getOrDefault(@NonNull final Map<K, V> map, final K key, final Supplier<V> defaultValueSupplier) {
+    public <K, V> V getOrDefault(final @NonNull Map<K, V> map, final K key, final Supplier<V> defaultValueSupplier) {
         // the value is got from map, non-null value is surely a present one, but null may have different meanings
         val value = map.get(key);
         return value == null ? map.containsKey(key) ? null : defaultValueSupplier.get() : value;
     }
 
-    public <K, V, R> R getOrDefault(@NonNull final Map<K, V> map, final K key, final Function<V, R> valueTransformer,
+    public <K, V, R> R getOrDefault(final @NonNull Map<K, V> map, final K key, final Function<V, R> valueTransformer,
                                     final R defaultValue) {
         // the value is got from map, non-null value is surely a present one, but null may have different meanings
         val value = map.get(key);
@@ -215,7 +215,7 @@ public class MapUtil {
                 : valueTransformer.apply(value);
     }
 
-    public <K, V, R> R getOrDefault(@NonNull final Map<K, V> map, final K key, final Function<V, R> valueTransformer,
+    public <K, V, R> R getOrDefault(final @NonNull Map<K, V> map, final K key, final Function<V, R> valueTransformer,
                                     final Supplier<R> defaultValueSupplier) {
         // the value is got from map, non-null value is surely a present one, but null may have different meanings
         val value = map.get(key);

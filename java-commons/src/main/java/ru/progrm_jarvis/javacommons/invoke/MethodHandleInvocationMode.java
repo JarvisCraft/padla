@@ -14,8 +14,8 @@ public enum MethodHandleInvocationMode {
      */
     EXACT {
         @Override
-        public Object invoke(@NonNull final MethodHandle methodHandle,
-                             @NonNull final Object... parameters) throws Throwable {
+        public Object invoke(final @NonNull MethodHandle methodHandle,
+                             final @NonNull Object... parameters) throws Throwable {
             return methodHandle.invokeExact(methodHandle, parameters);
         }
     },
@@ -24,8 +24,8 @@ public enum MethodHandleInvocationMode {
      */
     MIXED {
         @Override
-        public Object invoke(@NonNull final MethodHandle methodHandle,
-                             @NonNull final Object... parameters) throws Throwable {
+        public Object invoke(final @NonNull MethodHandle methodHandle,
+                             final @NonNull Object... parameters) throws Throwable {
             return methodHandle.invoke(methodHandle, parameters);
         }
     },
@@ -34,8 +34,8 @@ public enum MethodHandleInvocationMode {
      */
     VARARG {
         @Override
-        public Object invoke(@NonNull final MethodHandle methodHandle,
-                             @NonNull final Object... parameters) throws Throwable {
+        public Object invoke(final @NonNull MethodHandle methodHandle,
+                             final @NonNull Object... parameters) throws Throwable {
             return methodHandle.invokeWithArguments(methodHandle, parameters);
         }
     };

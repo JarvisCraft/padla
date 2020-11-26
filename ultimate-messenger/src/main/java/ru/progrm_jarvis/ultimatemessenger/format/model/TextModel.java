@@ -84,19 +84,19 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        @NotNull public String getText(@Nullable final Object target) {
+        public @NotNull String getText(final @Nullable Object target) {
             return ""; // thanks to JVM magic this is always the same object (got using LDC)
         }
 
         @Override
         @Contract(pure = true)
-        @NotNull public OptionalInt getMinLength() {
+        public @NotNull OptionalInt getMinLength() {
             return OPTIONAL_ZERO;
         }
 
         @Override
         @Contract(pure = true)
-        @NotNull public OptionalInt getMaxLength() {
+        public @NotNull OptionalInt getMaxLength() {
             return OPTIONAL_ZERO;
         }
 
@@ -108,7 +108,7 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        public boolean equals(@Nullable final Object object) {
+        public boolean equals(final @Nullable Object object) {
             if (object == this) return true;
             if (object instanceof TextModel) {
                 val textModel = (TextModel<?>) object;

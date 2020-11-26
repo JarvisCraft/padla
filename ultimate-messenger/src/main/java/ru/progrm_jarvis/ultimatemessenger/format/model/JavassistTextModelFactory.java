@@ -70,12 +70,12 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         protected static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
         @Override
-        @NotNull protected Node<T, StaticNode<T>, DynamicNode<T>> newStaticNode(@NotNull final String text) {
+        protected @NotNull Node<T, StaticNode<T>, DynamicNode<T>> newStaticNode(final @NotNull String text) {
             return new SimpleStaticNode<>(text);
         }
 
         @Override
-        @NotNull protected Node<T, StaticNode<T>, DynamicNode<T>> newDynamicNode(@NotNull final TextModel<T> content) {
+        protected @NotNull Node<T, StaticNode<T>, DynamicNode<T>> newDynamicNode(final @NotNull TextModel<T> content) {
             return new SimpleDynamicNode<>(content);
         }
 
@@ -119,7 +119,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        @NonNull protected static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+        protected @NonNull static final ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
                 TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
@@ -133,12 +133,12 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          */
         @Deprecated
         @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
-        public static TextModel<?> internal$getDynamicTextModel(@NotNull final String uniqueKey) {
+        public static TextModel<?> internal$getDynamicTextModel(final @NotNull String uniqueKey) {
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }
 
         @Override
-        @NotNull public TextModel<T> performTextModelBuild(final boolean release) {
+        public @NotNull TextModel<T> performTextModelBuild(final boolean release) {
             val clazz = CLASS_POOL.get().makeClass(CLASS_NAMING_STRATEGY.get());
             val textModelCtClass = TEXT_MODEL_CT_CLASS.get();
             clazz.setModifiers(PUBLIC_FINAL_MODIFIERS);
@@ -225,9 +225,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          * @param fieldName name of the field to store value
          * @param value value of the field (dynamic text model)
          */
-        protected static void javassist$addStaticFieldWithInitializer(@NotNull final CtClass clazz,
-                                                                      @NotNull final String fieldName,
-                                                                      @NotNull final TextModel<?> value) {
+        protected static void javassist$addStaticFieldWithInitializer(final @NotNull CtClass clazz,
+                                                                      final @NotNull String fieldName,
+                                                                      final @NotNull TextModel<?> value) {
             try {
                 val field = new CtField(TEXT_MODEL_CT_CLASS.get(), fieldName, clazz);
                 field.setModifiers(PUBLIC_STATIC_FINAL_MODIFIERS);

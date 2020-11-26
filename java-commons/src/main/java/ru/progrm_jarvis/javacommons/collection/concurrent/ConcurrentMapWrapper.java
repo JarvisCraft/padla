@@ -21,7 +21,7 @@ import java.util.function.Function;
 public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
         extends AbstractConcurrentSizedCollectionWrapper<W> implements Map<K, V> {
 
-    protected ConcurrentMapWrapper(@NotNull final W wrapped,
+    protected ConcurrentMapWrapper(final @NotNull W wrapped,
                                    final @NotNull Lock readLock,
                                    final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);
@@ -121,8 +121,8 @@ public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
     }
 
     @Override
-    @Nonnull
-    public Set<K> keySet() {
+    public@Nonnull
+     Set<K> keySet() {
         readLock.lock();
         try {
             return wrapped.keySet();
@@ -142,8 +142,8 @@ public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
     }
 
     @Override
-    @Nonnull
-    public Set<Entry<K, V>> entrySet() {
+    public@Nonnull
+     Set<Entry<K, V>> entrySet() {
         readLock.lock();
         try {
             return wrapped.entrySet();

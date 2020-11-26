@@ -23,7 +23,7 @@ public class StringMicroOptimizationUtil {
     /**
      * Method handle for accessing {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} if it is possible
      */
-    @Nullable private final MethodHandle STRING_VALUE_FIELD_GETTER_METHOD_HANDLE;
+    private final @Nullable MethodHandle STRING_VALUE_FIELD_GETTER_METHOD_HANDLE;
     /**
      * Marker indicating whether access to {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} is available
      */
@@ -55,7 +55,7 @@ public class StringMicroOptimizationUtil {
      */
     @SneakyThrows
     @SuppressWarnings("ConstantConditions") // null check goes by field STRING_VALUE_FIELD_AVAILABLE
-    public char[] getStringChars(@NonNull final String string) {
+    public char[] getStringChars(final @NonNull String string) {
         if (STRING_VALUE_FIELD_AVAILABLE) return (char[]) STRING_VALUE_FIELD_GETTER_METHOD_HANDLE.invokeExact(string);
         return string.toCharArray();
     }
@@ -67,7 +67,7 @@ public class StringMicroOptimizationUtil {
      * @param source source {@link String string}
      * @return valid value for copying into {@link String string literal} {@code "}s
      */
-    public String escapeJavaStringLiteral(@NonNull final String source) {
+    public String escapeJavaStringLiteral(final @NonNull String source) {
         @Nullable StringBuilder result = null;
         val characters = getStringChars(source);
         int lastWriteIndex = -1;

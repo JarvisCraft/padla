@@ -19,7 +19,7 @@ public class IOWrappers {
      * @param inputStream input stream to wrap
      * @return wrapped input stream
      */
-    public NonAutoCloseableInputStream nonAutoCloseable(@NonNull final InputStream inputStream) {
+    public NonAutoCloseableInputStream nonAutoCloseable(final @NonNull InputStream inputStream) {
         return new NonAutoCloseableInputStreamWrapper(inputStream);
     }
 
@@ -29,7 +29,7 @@ public class IOWrappers {
      * @param outputStream output stream to wrap
      * @return wrapped output stream
      */
-    public NonAutoCloseableOutputStream nonAutoCloseable(@NonNull final OutputStream outputStream) {
+    public NonAutoCloseableOutputStream nonAutoCloseable(final @NonNull OutputStream outputStream) {
         return new NonAutoCloseableOutputStreamWrapper(outputStream);
     }
 
@@ -39,7 +39,7 @@ public class IOWrappers {
      * @param reader reader to wrap
      * @return wrapped reader
      */
-    public NonAutoCloseableReader nonAutoCloseable(@NonNull final Reader reader) {
+    public NonAutoCloseableReader nonAutoCloseable(final @NonNull Reader reader) {
         return new NonAutoCloseableReaderWrapper(reader);
     }
 
@@ -49,7 +49,7 @@ public class IOWrappers {
      * @param writer writer to wrap
      * @return wrapped writer
      */
-    public NonAutoCloseableWriter nonAutoCloseable(@NonNull final Writer writer) {
+    public NonAutoCloseableWriter nonAutoCloseable(final @NonNull Writer writer) {
         return new NonAutoCloseableWriterWrapper(writer);
     }
 

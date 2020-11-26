@@ -32,7 +32,7 @@ public class UnsafeMethodData {
         );
     }
 
-    private static String camelCaseToUpperSnakeCase(@NotNull final String methodName) {
+    private static String camelCaseToUpperSnakeCase(final @NotNull String methodName) {
         val words =  CAMEL_CASE_SPLIT_PATTERN.split(methodName);
         val length = words.length;
 
@@ -61,7 +61,7 @@ public class UnsafeMethodData {
         return result.toString();
     }
 
-    private static String[] getSignature(@SuppressWarnings("rawtypes") @NotNull final Class[] parameterTypes) {
+    private static String[] getSignature(@SuppressWarnings("rawtypes") final @NotNull Class[] parameterTypes) {
         if (true) return Arrays.stream(parameterTypes)
                 .map(UnsafeMethodData::getTypeName)
                 .toArray(String[]::new);
@@ -80,8 +80,8 @@ public class UnsafeMethodData {
         return signature;
     }
 
-    private static String appendParameterNames(@NotNull final String string,
-                                               @NotNull final Method method) {
+    private static String appendParameterNames(final @NotNull String string,
+                                               final @NotNull Method method) {
         final int parameterCount = method.getParameterCount();
         if (parameterCount == 0) return string;
 

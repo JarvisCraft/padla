@@ -30,7 +30,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    @NotNull public static <T> SimpleTextModelFactory<T> get() {
+    public @NotNull static <T> SimpleTextModelFactory<T> get() {
         return (SimpleTextModelFactory<T>) INSTANCE.get();
     }
 
@@ -56,7 +56,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         @NonFinal transient String lastStaticText;
 
         @Override
-        @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
             if (!staticText.isEmpty()) {
                 if (lastStaticText == null) elements.add(StaticTextModel.of(lastStaticText = staticText));
                 else elements.set(elements.size() - 1, StaticTextModel.of(lastStaticText += staticText)); // ...
@@ -69,7 +69,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
             elements.add(dynamicText);
             lastStaticText = null;
             markAsChanged();
@@ -78,7 +78,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
+        public @NotNull TextModelFactory.TextModelBuilder<T> clear() {
             if (!elements.isEmpty()) {
                 elements.clear();
                 lastStaticText = null;
@@ -90,7 +90,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull protected TextModel<T> buildTextModel(final boolean release) {
+        protected @NotNull TextModel<T> buildTextModel(final boolean release) {
             return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.fromCopyOf(elements);
         }
     }

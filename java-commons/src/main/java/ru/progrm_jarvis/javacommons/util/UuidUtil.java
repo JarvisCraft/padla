@@ -23,7 +23,7 @@ public class UuidUtil {
      *
      * @see #uuidFromBytes(byte[]) for backward conversion
      */
-    public byte[] uuidToBytes(@NonNull final UUID uuid) {
+    public byte[] uuidToBytes(final @NonNull UUID uuid) {
         val buffer = ByteBuffer.wrap(new byte[16]);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
@@ -39,7 +39,7 @@ public class UuidUtil {
      *
      * @see #uuidToBytes(UUID) for backward conversion
      */
-    public UUID uuidFromBytes(@NonNull final byte[] bytes) {
+    public UUID uuidFromBytes(final @NonNull byte[] bytes) {
         checkArgument(bytes.length == 16, "bytes length should be 16");
 
         val buffer = ByteBuffer.wrap(bytes);

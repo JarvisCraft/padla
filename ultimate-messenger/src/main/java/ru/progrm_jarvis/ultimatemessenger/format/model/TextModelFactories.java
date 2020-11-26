@@ -16,7 +16,7 @@ public class TextModelFactories {
      * @param <T> generic type of {@link TextModelFactory}
      * @return the best available {@link TextModelFactory text model factory}
      */
-    @NotNull public <T> TextModelFactory<T> getAvailable() {
+    public @NotNull <T> TextModelFactory<T> getAvailable() {
         if (CommonBytecodeLibrary.ASM.isAvailable()) try {
             return AsmTextModelFactory.get();
         } catch (final Throwable ignored) {}

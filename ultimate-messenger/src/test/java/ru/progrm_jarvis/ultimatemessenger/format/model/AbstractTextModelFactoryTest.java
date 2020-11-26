@@ -22,7 +22,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testWithLongHandmadeString(@NotNull final TextModelFactory<User> factory) {
+    void testWithLongHandmadeString(final @NotNull TextModelFactory<User> factory) {
         // this string is long so that I can check if the right bytecode operations are used
         // static part is 192 chars which is cool as I was not planning it, haha
         assertThat(
@@ -40,7 +40,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testEmptyBuilder(@NotNull final TextModelFactory<User> factory) {
+    void testEmptyBuilder(final @NotNull TextModelFactory<User> factory) {
         assertThat(factory.empty().getText(new User("Petro", 12)), equalTo(""));
         assertThat(factory.empty().getText(new User("Mikhail", 24)), equalTo(""));
         assertThat(factory.empty().getText(new User("Aleksey", 32)), equalTo(""));
@@ -48,7 +48,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testNotReusedBuilder(@NotNull final TextModelFactory<User> factory) {
+    void testNotReusedBuilder(final @NotNull TextModelFactory<User> factory) {
         var builder = factory.newBuilder()
                 .append("Hi")
                 .append(" ")
@@ -74,7 +74,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testReusedBuilder(@NotNull final TextModelFactory<User> factory) {
+    void testReusedBuilder(final @NotNull TextModelFactory<User> factory) {
         val builder = factory.newBuilder()
                 .append("Hello")
                 .append(" ")
@@ -104,7 +104,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testJustDynamicBuilder(@NotNull final TextModelFactory<User> factory) {
+    void testJustDynamicBuilder(final @NotNull TextModelFactory<User> factory) {
         assertThat(
                 factory.newBuilder()
                         .append(User::getName)
@@ -124,7 +124,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testDynamicWithSingleCharBuilder(@NotNull final TextModelFactory<User> factory) {
+    void testDynamicWithSingleCharBuilder(final @NotNull TextModelFactory<User> factory) {
         assertThat(
                 factory.newBuilder()
                         .append("Q")
@@ -150,7 +150,7 @@ abstract class AbstractTextModelFactoryTest {
     @MethodSource("provideTestSubjects")
         // This is an ASM specific test, because I use SIPUSH for all non-small char's while javac usese LDC dor some reason
         // I had to check if it javac who is wrong rather than me
-    void testSingleCharDynamicBuilders(@NotNull final TextModelFactory<User> factory) {
+    void testSingleCharDynamicBuilders(final @NotNull TextModelFactory<User> factory) {
         val user = new User("John", 123);
         for (var character = Character.MIN_VALUE; true; character++) {
             val model = factory.newBuilder()
@@ -166,7 +166,7 @@ abstract class AbstractTextModelFactoryTest {
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
-    void testBigTextModels(@NotNull final TextModelFactory<User> factory) {
+    void testBigTextModels(final @NotNull TextModelFactory<User> factory) {
         // 200 is currently the maximal amount of `StringConcatFactory#makeConcat[..]` dynamic arguments
 
         val user = new User("Japris", 8);

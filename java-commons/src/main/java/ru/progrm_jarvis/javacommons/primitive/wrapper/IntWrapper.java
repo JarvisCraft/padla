@@ -226,7 +226,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
         }
 
         @Override
-        public int getAndUpdate(@NonNull final IntUnaryOperator updateFunction) {
+        public int getAndUpdate(final @NonNull IntUnaryOperator updateFunction) {
             val oldValue = value;
             value = updateFunction.applyAsInt(oldValue);
 
@@ -234,12 +234,12 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
         }
 
         @Override
-        public int updateAndGet(@NonNull final IntUnaryOperator updateFunction) {
+        public int updateAndGet(final @NonNull IntUnaryOperator updateFunction) {
             return value = updateFunction.applyAsInt(value);
         }
 
         @Override
-        public int getAndAccumulate(final int updateValue, @NonNull final IntBinaryOperator accumulatorFunction) {
+        public int getAndAccumulate(final int updateValue, final @NonNull IntBinaryOperator accumulatorFunction) {
             val oldValue = value;
             value = accumulatorFunction.applyAsInt(value, updateValue);
 
@@ -247,7 +247,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
         }
 
         @Override
-        public int accumulateAndGet(final int updateValue, @NonNull final IntBinaryOperator accumulatorFunction) {
+        public int accumulateAndGet(final int updateValue, final @NonNull IntBinaryOperator accumulatorFunction) {
             return value = accumulatorFunction.applyAsInt(value, updateValue);
         }
 

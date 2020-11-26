@@ -13,7 +13,7 @@ public class UnsafeInternals {
     /**
      * {@code Unsafe} Class object
      */
-    @Nullable public final Class<?> UNSAFE_CLASS,
+    public final @Nullable Class<?> UNSAFE_CLASS,
     /**
      * {@code MagicAccessorImpl} Class object
      */

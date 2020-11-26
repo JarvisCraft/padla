@@ -44,7 +44,7 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      * @see #andThen(BooleanUnaryOperator) behaving in opposite manner
      */
     @Contract(value = "null -> fail; _ -> _", pure = true)
-    default @NotNull BooleanUnaryOperator compose(@NonNull final BooleanUnaryOperator before) {
+    default @NotNull BooleanUnaryOperator compose(final @NonNull BooleanUnaryOperator before) {
         return operand -> applyAsBoolean(before.applyAsBoolean(operand));
     }
 
@@ -59,7 +59,7 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      * @see #compose(BooleanUnaryOperator) behaving in opposite manner
      */
     @Contract(value = "null -> fail; _ -> _", pure = true)
-    default @NotNull BooleanUnaryOperator andThen(@NonNull final BooleanUnaryOperator after) {
+    default @NotNull BooleanUnaryOperator andThen(final @NonNull BooleanUnaryOperator after) {
         return operand -> after.applyAsBoolean(applyAsBoolean(operand));
     }
 

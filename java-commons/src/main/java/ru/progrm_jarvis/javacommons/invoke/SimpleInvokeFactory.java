@@ -56,16 +56,16 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
     @Nullable Object target;
 
     @Override
-    public InvokeFactory<F, T> using(@NonNull final LookupFactory lookupFactory) {
+    public InvokeFactory<F, T> using(final @NonNull LookupFactory lookupFactory) {
         this.lookupFactory = lookupFactory;
 
         return this;
     }
 
     @Override
-    public InvokeFactory<F, T> implementing(@NonNull final MethodType functionalInterface,
-                                            @NonNull final String functionalMethodName,
-                                            @NonNull final MethodType functionalMethodSignature) {
+    public InvokeFactory<F, T> implementing(final @NonNull MethodType functionalInterface,
+                                            final @NonNull String functionalMethodName,
+                                            final @NonNull MethodType functionalMethodSignature) {
         checkArgument(functionalInterface.parameterCount() == 0, "functionalInterface should have no parameters");
 
         this.functionalInterface = functionalInterface;
@@ -76,8 +76,8 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
     }
 
     @Override
-    public InvokeFactory<F, T> via(@NonNull final Class<? extends T> targetClass,
-                                   @NonNull final Function<MethodHandles.Lookup, MethodHandle> methodHandleCreator) {
+    public InvokeFactory<F, T> via(final @NonNull Class<? extends T> targetClass,
+                                   final @NonNull Function<MethodHandles.Lookup, MethodHandle> methodHandleCreator) {
         this.targetClass = targetClass;
         this.methodHandleCreator = methodHandleCreator;
 
@@ -85,7 +85,7 @@ public class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
     }
 
     @Override
-    public InvokeFactory<F, T> boundTo(@Nullable final T target) {
+    public InvokeFactory<F, T> boundTo(final @Nullable T target) {
         this.target = target;
 
         return this;

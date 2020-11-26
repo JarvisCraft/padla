@@ -64,7 +64,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param staticNode node whose modification should be ended
      */
     @OverridingMethodsMustInvokeSuper
-    protected void endModification(@NotNull final SN staticNode) {
+    protected void endModification(final @NotNull SN staticNode) {
         // increase the length of static text part
         staticLength += staticNode.getTextLength();
     }
@@ -75,7 +75,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param dynamicNode node whose modification should be ended
      */
     @OverridingMethodsMustInvokeSuper
-    protected void endModification(@NotNull final DN dynamicNode) {
+    protected void endModification(final @NotNull DN dynamicNode) {
         // increment the amount of dynamic elements
         dynamicNodeCount++;
         dynamicNode.getContent().getMinLength().ifPresent(length -> minDynamicLength += length);
@@ -99,7 +99,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param text static text of the created node
      * @return created static node
      */
-    @NotNull protected abstract N newStaticNode(@NotNull final String text);
+    protected @NotNull abstract N newStaticNode(final @NotNull String text);
 
     /**
      * Creates a new dynamic node to be used for creation of the {@link TextModel text model}.
@@ -107,10 +107,10 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param content dynamic content of the created node
      * @return created dynamic node
      */
-    @NotNull protected abstract N newDynamicNode(@NotNull final TextModel<T> content);
+    protected @NotNull abstract N newDynamicNode(final @NotNull TextModel<T> content);
 
     @Override
-    @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+    public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
         if (!staticText.isEmpty()) {
             val tail = lastNode;
 
@@ -131,7 +131,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     }
 
     @Override
-    @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+    public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
         if (dynamicText.isDynamic()) {
             endLastNodeModification();
 
@@ -145,7 +145,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     }
 
     @Override
-    @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
+    public @NotNull TextModelFactory.TextModelBuilder<T> clear() {
         if (!nodes.isEmpty()) {
             nodes.clear();
             lastNode = null;
@@ -167,7 +167,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @apiNote gets called by {@link #buildTextModel(boolean)}
      * whenever it cannot create a fast universal implementation
      */
-    @NotNull protected abstract TextModel<T> performTextModelBuild(boolean release);
+    protected @NotNull abstract TextModel<T> performTextModelBuild(boolean release);
 
     /**
      * {@inheritDoc}
@@ -178,7 +178,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @return {@inheritDoc}
      */
     @Override
-    @NotNull protected TextModel<T> buildTextModel(final boolean release) {
+    protected @NotNull TextModel<T> buildTextModel(final boolean release) {
         if (nodes.isEmpty()) return TextModel.empty();
 
         // make sure that the last node modification is ended properly
@@ -310,7 +310,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
          */
         @NotNull StringBuilder text;
 
-        protected SimpleStaticNode(@NonNull final String text) {
+        protected SimpleStaticNode(final @NonNull String text) {
             this(new StringBuilder(text));
         }
 
@@ -325,7 +325,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        @NotNull public String getText() {
+        public @NotNull String getText() {
             return text.toString();
         }
 
@@ -335,7 +335,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public void appendText(@NotNull final String text) {
+        public void appendText(final @NotNull String text) {
             this.text.append(text);
         }
     }
