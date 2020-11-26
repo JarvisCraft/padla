@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)
 public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
@@ -154,7 +155,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             }
 
             { // Method (#getText(T))
-                StringBuilder src;
+                final StringBuilder src;
                 val staticLength = this.staticLength;
                 if (staticLength == 0) { // constructor StringBuilder from the first object
                     // only dynamic elements (yet, there are multiple of those)

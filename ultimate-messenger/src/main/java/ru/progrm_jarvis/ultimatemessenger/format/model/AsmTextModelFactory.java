@@ -404,17 +404,17 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         @NonNull Configuration configuration;
 
         /**
-         * Amount of {@link AsmNode.StaticAsmNode static nodes} whose text should be treated by {@code
+         * Amount of {@link StaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
-         * @see AsmNode.StaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
+         * @see StaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
         @NonFinal int staticNodeHandledAsDynamicCount,
         /**
-         * Length of texts of those {@link AsmNode.StaticAsmNode static nodes} whose text should be treated by {@code
+         * Length of texts of those {@link StaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
-         * @see AsmNode.StaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
+         * @see StaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
         staticSpecialNodeLength;
 
