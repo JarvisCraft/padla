@@ -21,22 +21,20 @@ jobs:
       deploy:
         # Deploy snapshot to Sonatype OSSRH
         - provider: script
+          edge: true
           script: ./.travis/scripts/maven_deploy.sh
           on:
             branch: development
             condition: "\"$(./.travis/scripts/get_version.sh)\" == *-SNAPSHOT"
-          skip_cleanup: true
-          #edge: true
 
         # Deploy release to Maven Central
         - provider: script
+          edge: true
           script: ./.travis/scripts/maven_deploy.sh release
           on:
             branch: master
             tags: true
             condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
-          skip_cleanup: true
-          #edge: true
 
 cache:
   directories:
