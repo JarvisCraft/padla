@@ -64,7 +64,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     /**
      * Class of {@code java.lang.invoke.StringConcatFactory}
      */
-    protected @Nullable static final Class<?> STRING_CONCAT_FACTORY_CLASS;
+    protected static final @Nullable Class<?> STRING_CONCAT_FACTORY_CLASS;
 
     static {
         boolean stringConcatFactoryAvailable = false;
@@ -125,6 +125,15 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         return (TextModelFactory<T>) INSTANCE.get();
     }
 
+    /**
+     * Creates a new builder of the configuration.
+     *
+     * @return builder of a {@link Configuration}
+     */
+    public static @NotNull SimpleConfiguration.SimpleConfigurationBuilder configuration() {
+        return SimpleConfiguration.builder();
+    }
+
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new AsmTextModelBuilder<>(configuration);
@@ -141,10 +150,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     protected static class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
-            T,
-            AsmTextModelBuilder.AsmNode<T>,
-            AsmTextModelBuilder.AsmNode.StaticAsmNode<T>,
-            AsmTextModelBuilder.AsmNode.DynamicAsmNode<T>
+            T, AsmTextModelBuilder.AsmNode<T>,
+            AsmTextModelBuilder.StaticAsmNode<T>, AsmTextModelBuilder.DynamicAsmNode<T>
             > {
 
         /**
@@ -424,7 +431,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
 
         @Override
-        protected void endModification(final @NotNull AsmNode.StaticAsmNode<T> staticNode) {
+        protected void endModification(final @NotNull StaticAsmNode<T> staticNode) {
             super.endModification(staticNode);
 
             if (isStringConcatFactoryEnabled() && staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
@@ -434,15 +441,13 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
 
         @Override
-        protected @NotNull
-        AsmTextModelFactory.AsmTextModelBuilder.AsmNode<T> newStaticNode(final @NotNull String text) {
-            return new AsmNode.StaticAsmNode<>(text);
+        protected @NotNull AsmNode<T> newStaticNode(final @NotNull String text) {
+            return new StaticAsmNode<>(text);
         }
 
         @Override
-        protected @NotNull
-        AsmTextModelFactory.AsmTextModelBuilder.AsmNode<T> newDynamicNode(final @NotNull TextModel<T> content) {
-            return new AsmNode.DynamicAsmNode<>(content);
+        protected @NotNull AsmNode<T> newDynamicNode(final @NotNull TextModel<T> content) {
+            return new DynamicAsmNode<>(content);
         }
 
         /**
@@ -1035,105 +1040,103 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
 
         /**
-         * A {@link ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.Node node}
-         * specific for {@link AsmTextModelFactory ASM-based text model factory}.
+         * {@link Node Node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
          *
          * @param <T> type of object according to which the created text models are formatted
          */
-        protected interface AsmNode<T> extends Node<T, AsmNode.StaticAsmNode<T>, AsmNode.DynamicAsmNode<T>> {
+        protected interface AsmNode<T>
+                extends AbstractGeneratingTextModelFactoryBuilder.Node<T, StaticAsmNode<T>, DynamicAsmNode<T>> {}
+
+        /**
+         * {@link StaticNode Static node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+         *
+         * @param <T> type of object according to which the created text models are formatted
+         */
+        @Value
+        @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+        protected static class StaticAsmNode<T>
+                implements AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>, AsmNode<T> {
 
             /**
-             * A
-             * {@link StaticNode static node} specific for {@link AsmTextModelFactory ASM-based text model factory}.
-             *
-             * @param <T> type of object according to which the created text models are formatted
+             * Text of this node
              */
-            @Value
-            @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-            class StaticAsmNode<T> implements StaticNode<T>, AsmNode<T> {
+            @NotNull StringBuilder text;
 
-                /**
-                 * Text of this node
-                 */
-                @NotNull StringBuilder text;
+            /**
+             * Marker indicating whether this node's text cannot be passed as a raw part of {@code
+             * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
+             * ({@code '\1'} and {@code '\2'})
+             */
+            @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
 
-                /**
-                 * Marker indicating whether this node's text cannot be passed as a raw part of {@code
-                 * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
-                 * ({@code '\1'} and {@code '\2'})
-                 */
-                @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
+            protected StaticAsmNode(final @NonNull String text) {
+                this.text = new StringBuilder(text);
 
-                protected StaticAsmNode(final @NonNull String text) {
-                    this.text = new StringBuilder(text);
-
-                    treatAsDynamicValueInStringConcatFactory = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
-                }
-
-                @Override
-                public boolean isDynamic() {
-                    return false;
-                }
-
-                @Override
-                public @NotNull StaticAsmNode<T> asStatic() {
-                    return this;
-                }
-
-                @Override
-                public @NotNull DynamicAsmNode<T> asDynamic() {
-                    throw new UnsupportedOperationException("This is not a dynamic node");
-                }
-
-                @Override
-                public @NotNull String getText() {
-                    return text.toString();
-                }
-
-                @Override
-                public int getTextLength() {
-                    return text.length();
-                }
-
-                @Override
-                public void appendText(final @NotNull String text) {
-                    this.text.append(text);
-
-                    // operator `|=` cannot be used here as it is not lazy (the right side of expression is always used)
-                    if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
-                            = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
-                }
+                treatAsDynamicValueInStringConcatFactory = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
             }
 
+            @Override
+            public boolean isDynamic() {
+                return false;
+            }
+
+            @Override
+            public @NotNull StaticAsmNode<T> asStatic() {
+                return this;
+            }
+
+            @Override
+            public @NotNull DynamicAsmNode<T> asDynamic() {
+                throw new UnsupportedOperationException("This is not a dynamic node");
+            }
+
+            @Override
+            public @NotNull String getText() {
+                return text.toString();
+            }
+
+            @Override
+            public int getTextLength() {
+                return text.length();
+            }
+
+            @Override
+            public void appendText(final @NotNull String text) {
+                this.text.append(text);
+
+                // operator `|=` cannot be used here as it is not lazy (the right side of expression is always used)
+                if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
+                        = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
+            }
+        }
+
+        /**
+         * {@link DynamicNode Dynamic node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+         *
+         * @param <T> type of object according to which the created text models are formatted
+         */
+        @Value
+        protected static class DynamicAsmNode<T>
+                implements AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>, AsmNode<T> {
+
             /**
-             * A
-             * {@link ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.DynamicNode
-             * dynamic node} specific for {@link AsmTextModelFactory ASM-based text model factory}.
-             *
-             * @param <T> type of object according to which the created text models are formatted
+             * Dynamic content of this node
              */
-            @Value
-            class DynamicAsmNode<T> implements DynamicNode<T>, AsmNode<T> {
+            @NotNull TextModel<T> content;
 
-                /**
-                 * Dynamic content of this node
-                 */
-                @NotNull TextModel<T> content;
+            @Override
+            public boolean isDynamic() {
+                return true;
+            }
 
-                @Override
-                public boolean isDynamic() {
-                    return true;
-                }
+            @Override
+            public @NotNull DynamicAsmNode<T> asDynamic() {
+                return this;
+            }
 
-                @Override
-                public @NotNull DynamicAsmNode<T> asDynamic() {
-                    return this;
-                }
-
-                @Override
-                public @NotNull StaticAsmNode<T> asStatic() {
-                    throw new UnsupportedOperationException("This is not a static node");
-                }
+            @Override
+            public @NotNull StaticAsmNode<T> asStatic() {
+                throw new UnsupportedOperationException("This is not a static node");
             }
         }
     }
@@ -1166,15 +1169,6 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             //TREE,
             VECTOR
         }
-    }
-
-    /**
-     * Creates a new builder of the configuration.
-     *
-     * @return builder of a {@link Configuration}
-     */
-    public static @NotNull SimpleConfiguration.SimpleConfigurationBuilder configuration() {
-        return SimpleConfiguration.builder();
     }
 
     /**

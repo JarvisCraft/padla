@@ -244,7 +244,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             } catch (final CannotCompileException e) {
                 throw new IllegalStateException(
                         "Could not add public static final field \"" + fieldName + " \" to generated TextModel "
-                                + "to" + clazz + "to store dynamic TextModel element", e
+                                + "to " + clazz + " to store dynamic TextModel element", e
                 );
             }
         }
