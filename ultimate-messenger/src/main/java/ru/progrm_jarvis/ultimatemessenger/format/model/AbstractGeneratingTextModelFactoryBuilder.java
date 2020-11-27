@@ -208,7 +208,6 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param <S> type of static node wrapped
      * @param <D> type of dynamic node wrapped
      */
-    @SuppressWarnings("InterfaceMayBeAnnotatedFunctional") // at least one `as` should be
     protected interface Node<T, S extends StaticNode<T>, D extends DynamicNode<T>> {
 
         /**
