@@ -22,9 +22,9 @@ public class TextModelFactories {
         } catch (final Throwable ignored) {}
 
         if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) try {
-            return JavassistTextModelFactory.get();
+            return JavassistTextModelFactory.create();
         } catch (final Throwable ignored) {}
 
-        return SimpleTextModelFactory.get();
+        return SimpleTextModelFactory.create();
     }
 }

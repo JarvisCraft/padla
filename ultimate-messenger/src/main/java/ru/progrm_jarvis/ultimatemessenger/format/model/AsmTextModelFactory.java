@@ -228,9 +228,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     protected static final class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
-            T, AsmTextModelBuilder.AsmNode<T>,
-            AsmTextModelBuilder.StaticAsmNode<T>, AsmTextModelBuilder.DynamicAsmNode<T>
-            > {
+            T, AsmNode<T>, StaticAsmNode<T>, DynamicAsmNode<T>> {
 
         /**
          * Lookup of this class.
@@ -1117,161 +1115,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             // set the field to the computed value
             staticInitializer.visitFieldInsn(PUTSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
         }
-
-        /**
-         * {@link Node Node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
-         *
-         * @param <T> type of object according to which the created text models are formatted
-         */
-        private interface AsmNode<T> extends Node<T, StaticAsmNode<T>, DynamicAsmNode<T>> {}
-
-        /**
-         * {@link StaticNode Static node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
-         *
-         * @param <T> type of object according to which the created text models are formatted
-         */
-        private interface StaticAsmNode<T> extends StaticNode<T>, AsmNode<T> {
-
-            /**
-             * Checks if this node's text cannot be passed as a raw part
-             * of {@code java.lang.invoke.StringConcatFactory}'s concatenation recipe,
-             * e.g. due to it containing special characters ({@code '\1'} and {@code '\2'})
-             *
-             * @return {@code true} if this node's text should be treated as dynamic when used by string concat factory
-             */
-            boolean isTreatAsDynamicValueInStringConcatFactory();
-        }
-
-        /**
-         * {@link DynamicNode Dynamic node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
-         *
-         * @param <T> type of object according to which the created text models are formatted
-         */
-        private interface DynamicAsmNode<T> extends DynamicNode<T>, AsmNode<T> {}
-
-        //<editor-fold desc="Node implementations" defaultstate="collapsed">
-        /**
-         * Simple implementation of {@link StaticAsmNode}.
-         *
-         * @param <T> type of object according to which the created text models are formatted
-         */
-        @Value
-        @AllArgsConstructor(access = AccessLevel.PRIVATE)
-        @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-        protected static class SimpleStaticAsmNode<T> implements StaticAsmNode<T> {
-
-            /**
-             * Text of this node
-             */
-            @SuppressWarnings("StringBufferField") @NotNull StringBuilder text;
-
-            /**
-             * Marker indicating whether this node's text cannot be passed as a raw part of {@code
-             * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
-             * ({@code '\1'} and {@code '\2'})
-             */
-            @SuppressWarnings("BooleanVariableAlwaysNegated") // simpler assignment
-            @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
-
-            /**
-             * Checks if the given string cannot be used as static by {@code java.lang.invoke.StringConcatFactory}.
-             * This happens when the string contains symbols which have special meaning in the latter's templates
-             * i.e. {@code \1} and {@code \2}.
-             *
-             * @param string string to get check
-             * @return {@code true} if the given string cannot be treated as static when used by string concat factory
-             */
-            private static boolean cannotBeStaticInStringConcatFactory(final @NotNull String string) {
-                return string.indexOf('\1') != -1 || string.indexOf('\2') != -1;
-            }
-
-            @Override
-            public boolean isDynamic() {
-                return false;
-            }
-
-            @Override
-            public @NotNull StaticAsmNode<T> asStatic() {
-                return this;
-            }
-
-            @Override
-            public @NotNull DynamicAsmNode<T> asDynamic() {
-                throw new UnsupportedOperationException("This is not a dynamic node");
-            }
-
-            @Override
-            public @NotNull String getText() {
-                return text.toString();
-            }
-
-            @Override
-            public int getTextLength() {
-                return text.length();
-            }
-
-            @Override
-            public void appendText(final @NotNull String text) {
-                this.text.append(text);
-
-                // operator `|=` cannot be used here as it is not lazy
-                if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
-                        = cannotBeStaticInStringConcatFactory(text);
-            }
-
-            /**
-             * Creates a new {@link StaticAsmNode} from the gicen text.
-             *
-             * @param text initial text of the created node
-             * @param <T> type of object according to which the created text models are formatted
-             * @return created node
-             */
-            public static <T> @NotNull StaticAsmNode<T> from(final @NotNull String text) {
-                return new SimpleStaticAsmNode<>(new StringBuilder(text), cannotBeStaticInStringConcatFactory(text));
-            }
-        }
-
-        /**
-         * Simple implementation of {@link DynamicAsmNode}.
-         *
-         * @param <T> type of object according to which the created text models are formatted
-         */
-        @Value
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        protected static class SimpleDynamicAsmNode<T> implements DynamicAsmNode<T> {
-
-            /**
-             * Dynamic content of this node
-             */
-            @NotNull TextModel<T> content;
-
-            @Override
-            public boolean isDynamic() {
-                return true;
-            }
-
-            @Override
-            public @NotNull DynamicAsmNode<T> asDynamic() {
-                return this;
-            }
-
-            @Override
-            public @NotNull StaticAsmNode<T> asStatic() {
-                throw new UnsupportedOperationException("This is not a static node");
-            }
-
-            /**
-             * Creates a new {@link DynamicAsmNode} from the given {@link TextModel text model}.
-             *
-             * @param content content of the created node
-             * @param <T> type of object according to which the created text models are formatted
-             * @return created node
-             */
-            public static <T> @NotNull DynamicAsmNode<T> from(final @NotNull TextModel<T> content) {
-                return new SimpleDynamicAsmNode<>(content);
-            }
-        }
-        //</editor-fold>
     }
 
     //<editor-fold desc="Configuration implementation" defaultstate="collapsed">
@@ -1318,6 +1161,166 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * Simple implementation of {@link ConfigurationBuilder}.
          */
         private static final class SimpleConfigurationBuilder implements ConfigurationBuilder {}
+    }
+    //</editor-fold>
+
+
+
+    /**
+     * {@link AbstractGeneratingTextModelFactoryBuilder.Node Node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    private interface AsmNode<T>
+            extends AbstractGeneratingTextModelFactoryBuilder.Node<T, StaticAsmNode<T>, DynamicAsmNode<T>> {}
+
+    /**
+     * {@link AbstractGeneratingTextModelFactoryBuilder.StaticNode Static node}
+     * specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    private interface StaticAsmNode<T> extends AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>, AsmNode<T> {
+
+        /**
+         * Checks if this node's text cannot be passed as a raw part
+         * of {@code java.lang.invoke.StringConcatFactory}'s concatenation recipe,
+         * e.g. due to it containing special characters ({@code '\1'} and {@code '\2'})
+         *
+         * @return {@code true} if this node's text should be treated as dynamic when used by string concat factory
+         */
+        boolean isTreatAsDynamicValueInStringConcatFactory();
+    }
+
+    /**
+     * {@link AbstractGeneratingTextModelFactoryBuilder.DynamicNode Dynamic node}
+     * specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    private interface DynamicAsmNode<T> extends AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>, AsmNode<T> {}
+
+    //<editor-fold desc="Node implementations" defaultstate="collapsed">
+    /**
+     * Simple implementation of {@link StaticAsmNode}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    @Value
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+    private static class SimpleStaticAsmNode<T> implements StaticAsmNode<T> {
+
+        /**
+         * Text of this node
+         */
+        @SuppressWarnings("StringBufferField") @NotNull StringBuilder text;
+
+        /**
+         * Marker indicating whether this node's text cannot be passed as a raw part of {@code
+         * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
+         * ({@code '\1'} and {@code '\2'})
+         */
+        @SuppressWarnings("BooleanVariableAlwaysNegated") // simpler assignment
+        @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
+
+        /**
+         * Checks if the given string cannot be used as static by {@code java.lang.invoke.StringConcatFactory}.
+         * This happens when the string contains symbols which have special meaning in the latter's templates
+         * i.e. {@code \1} and {@code \2}.
+         *
+         * @param string string to get check
+         * @return {@code true} if the given string cannot be treated as static when used by string concat factory
+         */
+        private static boolean cannotBeStaticInStringConcatFactory(final @NotNull String string) {
+            return string.indexOf('\1') != -1 || string.indexOf('\2') != -1;
+        }
+
+        @Override
+        public boolean isDynamic() {
+            return false;
+        }
+
+        @Override
+        public @NotNull StaticAsmNode<T> asStatic() {
+            return this;
+        }
+
+        @Override
+        public @NotNull DynamicAsmNode<T> asDynamic() {
+            throw new UnsupportedOperationException("This is not a dynamic node");
+        }
+
+        @Override
+        public @NotNull String getText() {
+            return text.toString();
+        }
+
+        @Override
+        public int getTextLength() {
+            return text.length();
+        }
+
+        @Override
+        public void appendText(final @NotNull String text) {
+            this.text.append(text);
+
+            // operator `|=` cannot be used here as it is not lazy
+            if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
+                    = cannotBeStaticInStringConcatFactory(text);
+        }
+
+        /**
+         * Creates a new {@link StaticAsmNode} from the gicen text.
+         *
+         * @param text initial text of the created node
+         * @param <T> type of object according to which the created text models are formatted
+         * @return created node
+         */
+        public static <T> @NotNull StaticAsmNode<T> from(final @NotNull String text) {
+            return new SimpleStaticAsmNode<>(new StringBuilder(text), cannotBeStaticInStringConcatFactory(text));
+        }
+    }
+
+    /**
+     * Simple implementation of {@link DynamicAsmNode}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    @Value
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static class SimpleDynamicAsmNode<T> implements DynamicAsmNode<T> {
+
+        /**
+         * Dynamic content of this node
+         */
+        @NotNull TextModel<T> content;
+
+        @Override
+        public boolean isDynamic() {
+            return true;
+        }
+
+        @Override
+        public @NotNull DynamicAsmNode<T> asDynamic() {
+            return this;
+        }
+
+        @Override
+        public @NotNull StaticAsmNode<T> asStatic() {
+            throw new UnsupportedOperationException("This is not a static node");
+        }
+
+        /**
+         * Creates a new {@link DynamicAsmNode} from the given {@link TextModel text model}.
+         *
+         * @param content content of the created node
+         * @param <T> type of object according to which the created text models are formatted
+         * @return created node
+         */
+        public static <T> @NotNull DynamicAsmNode<T> from(final @NotNull TextModel<T> content) {
+            return new SimpleDynamicAsmNode<>(content);
+        }
     }
     //</editor-fold>
 }

@@ -213,7 +213,7 @@ class SimplePlaceholdersTest {
                 default: return UNKNOWN_VALUE_PLACEHOLDER;
             }
         });
-        modelFactory = new SimpleTextModelFactory<>();
+        modelFactory = SimpleTextModelFactory.create();
     }
 
     @ParameterizedTest

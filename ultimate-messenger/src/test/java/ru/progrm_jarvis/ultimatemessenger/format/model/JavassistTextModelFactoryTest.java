@@ -11,6 +11,6 @@ class JavassistTextModelFactoryTest extends AbstractTextModelFactoryTest {
 
     @Override
     protected @NotNull Stream<@NotNull TextModelFactory<@NotNull User>> provideTestSubjects() {
-        return Stream.of(new JavassistTextModelFactory<>());
+        return Stream.of(JavassistTextModelFactory.create());
     }
 }

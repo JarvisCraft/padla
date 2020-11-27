@@ -35,13 +35,15 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     private static final Lazy<TextModelFactory<?>> INSTANCE = Lazy.createThreadSafe(JavassistTextModelFactory::new);
 
     /**
-     * Returns this {@link TextModelFactory text model factory} singleton.
+     * Creates a Javassist-based {@link TextModelFactory text model factory}.
      *
-     * @param <T> generic type of got {@link TextModelFactory text model factory}
-     * @return shared instance of this {@link TextModelFactory text model factory}
+     * @param <T> generic type of created text model factory
+     * @return created text model factory
+     *
+     * @implNote returned instance may be a singleton
      */
     @SuppressWarnings("unchecked")
-    public static <T> @NotNull TextModelFactory<T> get() {
+    public static <T> @NotNull TextModelFactory<T> create() {
         return (TextModelFactory<T>) INSTANCE.get();
     }
 

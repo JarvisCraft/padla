@@ -22,13 +22,15 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
             = Lazy.createThreadSafe(SimpleTextModelFactory::new);
 
     /**
-     * Returns this {@link TextModelFactory text model factory} singleton.
+     * Creates a simple {@link TextModelFactory text model factory}.
      *
      * @param <T> generic type of got {@link TextModelFactory text model factory}
-     * @return shared instance of this {@link TextModelFactory text model factory}
+     * @return created text model factory
+     *
+     * @implNote returned instance may be a singleton
      */
     @SuppressWarnings("unchecked")
-    public static <T> @NotNull TextModelFactory<T> get() {
+    public static <T> @NotNull TextModelFactory<T> create() {
         return (TextModelFactory<T>) INSTANCE.get();
     }
 
