@@ -1,11 +1,11 @@
-package ru.progrm_jarvis.javacommons.map;
+package ru.progrm_jarvis.javacommons.collection;
 
 import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
-import ru.progrm_jarvis.javacommons.pair.Pair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.util.Iterator;
 import java.util.Map;

@@ -2,7 +2,8 @@ package ru.progrm_jarvis.javacommons.map;
 
 import lombok.val;
 import org.junit.jupiter.api.Test;
-import ru.progrm_jarvis.javacommons.pair.SimplePair;
+import ru.progrm_jarvis.javacommons.collection.MapUtil;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -42,7 +43,7 @@ class MapFillerTest {
     @SuppressWarnings("unchecked")
     void testFillMapFromArray() {
         val entries = MapUtil.<Integer, String, Map<Integer, String>>fillMap(
-                new HashMap<>(), SimplePair.of(1, "Hello"), SimplePair.of(2, "world")
+                new HashMap<>(), Pair.of(1, "Hello"), Pair.of(2, "world")
         ).entrySet();
 
         assertThat(entries, hasSize(2));
@@ -53,7 +54,7 @@ class MapFillerTest {
     @SuppressWarnings("unchecked")
     void testFillMapFromIterator() {
         val entries = MapUtil
-                .fillMap(new HashMap<>(), Arrays.asList(SimplePair.of(1, "Hello"), SimplePair.of(2, "world")).iterator())
+                .fillMap(new HashMap<>(), Arrays.asList(Pair.of(1, "Hello"), Pair.of(2, "world")).iterator())
                 .entrySet();
 
         assertThat(entries, hasSize(2));
@@ -64,7 +65,7 @@ class MapFillerTest {
     @SuppressWarnings("unchecked")
     void testFillMapFromIterable() {
         val entries = MapUtil
-                .fillMap(new HashMap<>(), Arrays.asList(SimplePair.of(1, "Hello"), SimplePair.of(2, "world")))
+                .fillMap(new HashMap<>(), Arrays.asList(Pair.of(1, "Hello"), Pair.of(2, "world")))
                 .entrySet();
 
         assertThat(entries, hasSize(2));
@@ -74,7 +75,7 @@ class MapFillerTest {
     @Test
     @SuppressWarnings("unchecked")
     void testFillMapFromStream() {
-        val entries = MapUtil.fillMap(new HashMap<>(), Stream.of(SimplePair.of(1, "Hello"), SimplePair.of(2, "world"))).entrySet();
+        val entries = MapUtil.fillMap(new HashMap<>(), Stream.of(Pair.of(1, "Hello"), Pair.of(2, "world"))).entrySet();
 
         assertThat(entries, hasSize(2));
         assertThat(entries, contains(immutableEntry(1, "Hello"), immutableEntry(2, "world")));

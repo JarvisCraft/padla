@@ -13,10 +13,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import ru.progrm_jarvis.javacommons.pair.SimplePair;
-import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -327,8 +327,8 @@ public class CollectionFactory {
                         .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                         .defineClasses(
                                 LOOKUP,
-                                SimplePair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
-                                SimplePair.of(clazz.getName(), clazz.toBytecode())
+                                Pair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
+                                Pair.of(clazz.getName(), clazz.toBytecode())
                         )[1].getDeclaredConstructor().newInstance();
                 //</editor-fold>
             });

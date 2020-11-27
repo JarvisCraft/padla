@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.util.ReferenceUtil;
+import ru.progrm_jarvis.javacommons.object.ReferenceUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;

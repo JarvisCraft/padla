@@ -3,7 +3,7 @@ package ru.progrm_jarvis.javacommons.random;
 import lombok.val;
 import lombok.var;
 import org.junit.jupiter.api.Test;
-import ru.progrm_jarvis.javacommons.map.MapUtil;
+import ru.progrm_jarvis.javacommons.collection.MapUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;

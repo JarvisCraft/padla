@@ -1,10 +1,10 @@
-package ru.progrm_jarvis.javacommons.map;
+package ru.progrm_jarvis.javacommons.collection;
 
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.pair.Pair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.util.Iterator;
 import java.util.Map;

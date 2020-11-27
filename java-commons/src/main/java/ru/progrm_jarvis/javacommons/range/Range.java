@@ -5,8 +5,8 @@ import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.annotation.ownership.Own;
-import ru.progrm_jarvis.javacommons.annotation.ownership.Ref;
+import ru.progrm_jarvis.javacommons.ownership.annotation.Own;
+import ru.progrm_jarvis.javacommons.ownership.annotation.Ref;
 
 import java.util.*;
 import java.util.function.Predicate;

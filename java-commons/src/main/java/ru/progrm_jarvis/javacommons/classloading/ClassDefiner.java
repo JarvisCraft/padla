@@ -3,7 +3,7 @@ package ru.progrm_jarvis.javacommons.classloading;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.pair.Pair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;

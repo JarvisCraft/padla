@@ -2,7 +2,9 @@ package ru.progrm_jarvis.javacommons.map;
 
 import lombok.val;
 import org.junit.jupiter.api.Test;
-import ru.progrm_jarvis.javacommons.pair.SimplePair;
+import ru.progrm_jarvis.javacommons.collection.MapFiller;
+import ru.progrm_jarvis.javacommons.collection.MapUtil;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,7 +48,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked")
     void testFillMapFromArray() {
         val entries = MapUtil.<Integer, String, Map<Integer, String>>fillMap(
-                new HashMap<>(), SimplePair.of(1, "Hello"), SimplePair.of(2, "world")
+                new HashMap<>(), Pair.of(1, "Hello"), Pair.of(2, "world")
         ).entrySet();
 
         assertThat(entries, hasSize(2));
@@ -56,7 +59,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked")
     void testFillMapFromIterator() {
         val entries = MapUtil
-                .fillMap(new HashMap<>(), Arrays.asList(SimplePair.of(1, "Hello"), SimplePair.of(2, "world")).iterator())
+                .fillMap(new HashMap<>(), Arrays.asList(Pair.of(1, "Hello"), Pair.of(2, "world")).iterator())
                 .entrySet();
 
         assertThat(entries, hasSize(2));
@@ -67,7 +70,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked")
     void testFillMapFromIterable() {
         val entries = MapUtil
-                .fillMap(new HashMap<>(), Arrays.asList(SimplePair.of(1, "Hello"), SimplePair.of(2, "world")))
+                .fillMap(new HashMap<>(), Arrays.asList(Pair.of(1, "Hello"), Pair.of(2, "world")))
                 .entrySet();
 
         assertThat(entries, hasSize(2));
@@ -77,7 +80,7 @@ class MapUtilTest {
     @Test
     @SuppressWarnings("unchecked")
     void testFillMapFromStream() {
-        val entries = MapUtil.fillMap(new HashMap<>(), Stream.of(SimplePair.of(1, "Hello"), SimplePair.of(2, "world"))).entrySet();
+        val entries = MapUtil.fillMap(new HashMap<>(), Stream.of(Pair.of(1, "Hello"), Pair.of(2, "world"))).entrySet();
 
         assertThat(entries, hasSize(2));
         assertThat(entries, contains(immutableEntry(1, "Hello"), immutableEntry(2, "world")));
@@ -139,7 +142,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromArray() {
         val entries = MapFiller.from(new HashMap<String, Integer>())
-                .fill(SimplePair.of("one", 1), SimplePair.of("two", 2))
+                .fill(Pair.of("one", 1), Pair.of("two", 2))
                 .map()
                 .entrySet();
 
@@ -152,7 +155,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromIterator() {
         val entries = MapFiller.from(new HashMap<String, Integer>())
-                .fill(Arrays.asList(SimplePair.of("one", 1), SimplePair.of("two", 2)).iterator())
+                .fill(Arrays.asList(Pair.of("one", 1), Pair.of("two", 2)).iterator())
                 .map()
                 .entrySet();
 
@@ -165,7 +168,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromIterable() {
         val entries = MapFiller.from(new HashMap<String, Integer>())
-                .fill(Arrays.asList(SimplePair.of("one", 1), SimplePair.of("two", 2)))
+                .fill(Arrays.asList(Pair.of("one", 1), Pair.of("two", 2)))
                 .map()
                 .entrySet();
 
@@ -178,7 +181,7 @@ class MapUtilTest {
     @SuppressWarnings("unchecked") // Hamcrest, R U fine?
     void testMapFillerFillFromStream() {
         val entries = MapFiller.from(new HashMap<String, Integer>())
-                .fill(Stream.of(SimplePair.of("one", 1), SimplePair.of("two", 2)))
+                .fill(Stream.of(Pair.of("one", 1), Pair.of("two", 2)))
                 .map()
                 .entrySet();
 
@@ -195,10 +198,10 @@ class MapUtilTest {
         val entries = MapFiller.from(new HashMap<String, Integer>())
                 .put("one", 1)
                 .put("two", 2)
-                .fill(SimplePair.of("three", 3), SimplePair.of("four", 4))
-                .fill(Arrays.asList(SimplePair.of("five", 5), SimplePair.of("six", 6)).iterator())
-                .fill(Arrays.asList(SimplePair.of("seven", 7), SimplePair.of("eight", 8)))
-                .fill(Stream.of(SimplePair.of("nine", 9), SimplePair.of("ten", 10)))
+                .fill(Pair.of("three", 3), Pair.of("four", 4))
+                .fill(Arrays.asList(Pair.of("five", 5), Pair.of("six", 6)).iterator())
+                .fill(Arrays.asList(Pair.of("seven", 7), Pair.of("eight", 8)))
+                .fill(Stream.of(Pair.of("nine", 9), Pair.of("ten", 10)))
                 .map()
                 .entrySet();
 

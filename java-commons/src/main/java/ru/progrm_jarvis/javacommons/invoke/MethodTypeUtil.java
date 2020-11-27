@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.util.ClassUtil;
+import ru.progrm_jarvis.javacommons.classloading.ClassUtil;
 
 import java.lang.invoke.MethodType;
 

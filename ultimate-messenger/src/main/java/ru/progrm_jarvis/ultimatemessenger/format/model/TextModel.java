@@ -20,7 +20,7 @@ public interface TextModel<T> {
     /**
      * {@code 0} wrapped in {@link OptionalInt}
      */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NotNull OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
 
     /**
      * Gets the text formatted for the given target.
@@ -123,9 +123,8 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        // usual hashcode for empty values
         public int hashCode() {
-            return 0;
+            return 0; // usual hashcode for empty values
         }
 
         @Override

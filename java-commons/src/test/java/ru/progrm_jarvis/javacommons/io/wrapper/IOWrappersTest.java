@@ -6,7 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
-import ru.progrm_jarvis.javacommons.util.NonAutoCloseable;
+import ru.progrm_jarvis.javacommons.service.NonAutoCloseable;
 
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -10,7 +10,7 @@ import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.invoke.FullAccessLookupFactories;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.ObjectUtil;
-import ru.progrm_jarvis.javacommons.pair.Pair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 import ru.progrm_jarvis.javacommons.unsafe.UnsafeInternals;
 
 import java.lang.invoke.*;

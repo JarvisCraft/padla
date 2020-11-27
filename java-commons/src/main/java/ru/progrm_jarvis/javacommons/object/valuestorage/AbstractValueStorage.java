@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util.valuestorage;
+package ru.progrm_jarvis.javacommons.object.valuestorage;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

@@ -18,9 +18,9 @@ import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
-import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
-import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
+import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
 import javax.annotation.Nonnegative;
 import java.lang.invoke.MethodHandles;

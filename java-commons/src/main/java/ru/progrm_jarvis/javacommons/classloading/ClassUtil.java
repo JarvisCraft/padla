@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util;
+package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.experimental.UtilityClass;
 import lombok.val;

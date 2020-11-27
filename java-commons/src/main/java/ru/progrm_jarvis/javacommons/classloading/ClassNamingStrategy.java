@@ -1,11 +1,10 @@
-package ru.progrm_jarvis.javacommons.util;
+package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.classloading.ClassLoadingUtil;
 
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicReference;

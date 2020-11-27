@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.annotation.ownership;
+package ru.progrm_jarvis.javacommons.ownership.annotation;
 
 import java.lang.annotation.*;
 

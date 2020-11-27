@@ -11,7 +11,7 @@
     <artifactId>java-commons</artifactId>
 
     <name>Java Commons</name>
-    <description>Common utilities for Java</description>
+    <description>Various generic utilities for Java</description>
 
     <dependencies>
         <dependency>
