@@ -32,7 +32,8 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<TextModelFactory<?>> INSTANCE = Lazy.createThreadSafe(JavassistTextModelFactory::new);
+    private static final @NotNull Lazy<@NotNull TextModelFactory<?>> INSTANCE
+            = Lazy.createThreadSafe(JavassistTextModelFactory::new);
 
     /**
      * Creates a Javassist-based {@link TextModelFactory text model factory}.
