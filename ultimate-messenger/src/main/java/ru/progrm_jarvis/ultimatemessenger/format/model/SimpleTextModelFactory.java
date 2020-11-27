@@ -1,9 +1,6 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +12,8 @@ import java.util.List;
 /**
  * Simple implementation of {@link TextModelFactory text model factory}.
  */
-public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
      * Lazy singleton of this text model factory
@@ -30,7 +28,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      * @return shared instance of this {@link TextModelFactory text model factory}
      */
     @SuppressWarnings("unchecked")
-    public @NotNull static <T> TextModelFactory<T> get() {
+    public static <T> @NotNull TextModelFactory<T> get() {
         return (TextModelFactory<T>) INSTANCE.get();
     }
 

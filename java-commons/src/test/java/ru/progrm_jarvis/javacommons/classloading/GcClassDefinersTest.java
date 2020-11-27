@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class GcClassDefinersTest {
 
     @Test
+    @SuppressWarnings("CallToSystemGC")
     @EnabledIfSystemProperty(named = "test.gc.always-respects-System.gc()", matches = "true|yes|\\+|1|enabled")
     void testDefineGCClass() throws IOException, CannotCompileException, IllegalAccessException,
             InstantiationException, NoSuchMethodException, InvocationTargetException {

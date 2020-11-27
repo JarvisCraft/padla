@@ -28,7 +28,7 @@ public class MapUtil {
     @SuppressWarnings("unchecked")
     private void fillMapNoChecks(@SuppressWarnings("rawtypes") final @NonNull Map map,
                                  final @NonNull Object... keyValuePairs) {
-        var value = true; // will get reverted for the first value
+        @SuppressWarnings("BooleanVariableAlwaysNegated") var value = true; // will get reverted for the first value
 
         Object key = null; // requires to be initialized for some reason :)
         for (final Object keyValuePair : keyValuePairs) if (value = !value) map.put(key, keyValuePair);

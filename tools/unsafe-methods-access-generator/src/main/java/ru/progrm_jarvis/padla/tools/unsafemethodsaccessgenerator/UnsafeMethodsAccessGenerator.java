@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * CLI tool used for generating accessor class for {@code Unsafe}.
@@ -49,7 +49,7 @@ public final class UnsafeMethodsAccessGenerator {
         engine.init();
 
         val template = engine.getTemplate("/templates/UnsafeMethodsAccess.java.vm");
-        val writer = new OutputStreamWriter(System.out);
+        val writer = new OutputStreamWriter(System.out, StandardCharsets.UTF_8);
         writeUnsafeMethodsAccessClass(
                 className, packageName, template, writer
         );
@@ -82,8 +82,8 @@ public final class UnsafeMethodsAccessGenerator {
 
             if (sunMiscUnsafeClass == null) try {
                 unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
-            } catch (final ClassNotFoundException classNotFoundException) {
-                throw new RuntimeException("Could not find Unsafe class");
+            } catch (final ClassNotFoundException e) {
+                throw new Error("Could not find Unsafe class", e);
             } else unsafeClass = sunMiscUnsafeClass;
         }
 

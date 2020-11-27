@@ -84,7 +84,7 @@ public interface InvokeFactory<F, T> {
         final Method method;
         {
             val methods = Arrays.stream(functionalInterface.getMethods())
-                    .filter(m -> Modifier.isAbstract(m.getModifiers()))
+                    .filter(testedMethod -> Modifier.isAbstract(testedMethod.getModifiers()))
                     .collect(Collectors.toList());
             checkArgument(methods.size() == 1, "There should only be one abstract method in %s", functionalInterface);
 

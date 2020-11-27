@@ -50,15 +50,15 @@ class InvokeConstructorWrapperTest {
             this(0);
         }
 
-        private Petya(final String a) {
+        private Petya(final String first) {
             this(1);
         }
 
-        private Petya(final int a, final int b) {
+        private Petya(final int first, final int second) {
             this(2);
         }
 
-        private Petya(final int a, final int b, final int c) {
+        private Petya(final int first, final int second, final int third) {
             this(3);
         }
     }

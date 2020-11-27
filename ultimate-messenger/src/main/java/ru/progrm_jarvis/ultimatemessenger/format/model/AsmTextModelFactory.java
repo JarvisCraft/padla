@@ -10,6 +10,7 @@ import lombok.extern.java.Log;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.objectweb.asm.*;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
@@ -40,10 +41,10 @@ import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
  */
 @Log
 @ToString
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
+public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
@@ -53,18 +54,18 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     /**
      * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
      */
-    protected static final @NotNull ValueStorage<@NotNull String, @NotNull TextModel<?>> DYNAMIC_MODELS
+    private static final @NotNull ValueStorage<@NotNull String, @NotNull TextModel<?>> DYNAMIC_MODELS
             = SimpleValueStorage.create();
 
     /**
      * Flag indicating the availability of {@code java.lang.invoke.StringConcatFactory}
      */
-    protected static final boolean STRING_CONCAT_FACTORY_AVAILABLE;
+    private static final boolean STRING_CONCAT_FACTORY_AVAILABLE;
 
     /**
      * Class of {@code java.lang.invoke.StringConcatFactory}
      */
-    protected static final @Nullable Class<?> STRING_CONCAT_FACTORY_CLASS;
+    private static final @Nullable Class<?> STRING_CONCAT_FACTORY_CLASS;
 
     static {
         boolean stringConcatFactoryAvailable = false;
@@ -130,13 +131,90 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      *
      * @return builder of a {@link Configuration}
      */
-    public static @NotNull SimpleConfiguration.SimpleConfigurationBuilder configuration() {
+    public static @NotNull ConfigurationBuilder configuration() {
         return SimpleConfiguration.builder();
     }
 
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         return new AsmTextModelBuilder<>(configuration);
+    }
+
+    /**
+     * Algorithm used for concatenation vid {@code java.lang.invoke.StringConcatFactory}.
+     */
+    public enum StringConcatFactoryAlgorithm {
+        /**
+         * Linear algorithm
+         */
+        VECTOR
+        // TREE may be implemented later
+    }
+
+    /**
+     * Configuration of this {@link AsmTextModelFactory text model factory}
+     */
+    public interface Configuration {
+
+        /**
+         * Tests whether the configured {@link AsmTextModelBuilder text model builder} should attempt to use {@code
+         * java.lang.invoke.StringConcatFactory} for {@link String string}-concatenation.
+         *
+         * @return {@code true} if {@code StringConcatFactory} should be used (if available) for string concatenation
+         * and {@code false} otherwise
+         */
+        @Contract(pure = true)
+        boolean enableStringConcatFactory();
+
+        /**
+         * Gets the algorithm which should be used used for producing string concatenation logic via {@code
+         * java.lang.invoke.StringConcatFactory} when it is {@link #enableStringConcatFactory() enabled}.
+         *
+         * @return algorithm which should be used for producing string concatenation logic
+         */
+        @Contract(pure = true)
+        StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
+    }
+
+    /**
+     * Builder of {@link Configuration}.
+     */
+    public interface ConfigurationBuilder {
+
+        /**
+         * Sets the value of {@link Configuration#enableStringConcatFactory()} for the built configuration.
+         *
+         * @param enableStringConcatFactory set flag
+         * @return this builder
+         *
+         * @see Configuration#enableStringConcatFactory() meaning
+         */
+        @Contract("_ -> this")
+        @NotNull ConfigurationBuilder enableStringConcatFactory(
+                boolean enableStringConcatFactory
+        );
+
+        /**
+         * Sets the value of {@link Configuration#stringConcatFactoryAlgorithm()} for the built configuration.
+         *
+         * @param stringConcatFactoryAlgorithm set flag
+         * @return this builder
+         * @throws NullPointerException if {@code stringConcatFactoryAlgorithm} is {@code null}
+         *
+         * @see Configuration#stringConcatFactoryAlgorithm() meaning
+         */
+        @Contract("null -> fail; _ -> this")
+        @NotNull ConfigurationBuilder stringConcatFactoryAlgorithm(
+                @NonNull StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
+        );
+
+        /**
+         * Builds a new configuration from this builder.
+         *
+         * @return configuration of this object
+         */
+        @Contract("-> new")
+        @NotNull Configuration build();
     }
 
     /**
@@ -149,7 +227,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     @RequiredArgsConstructor
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
+    protected static final class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
             T, AsmTextModelBuilder.AsmNode<T>,
             AsmTextModelBuilder.StaticAsmNode<T>, AsmTextModelBuilder.DynamicAsmNode<T>
             > {
@@ -157,7 +235,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Lookup of this class.
          */
-        protected static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
         public static final @NotNull String STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE_CONCURRENCY_SYSTEM_PROPERTY_NAME
                 = AsmTextModelBuilder.class.getCanonicalName()
@@ -166,7 +244,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Cache of descriptors of methods accepting {@link String string arguments} returning {@link String a string}.
          */
-        protected static final @NotNull Cache<@NotNull Integer, @NotNull String>
+        private static final @NotNull Cache<@NotNull Integer, @NotNull String>
                 STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = CacheBuilder
                 .newBuilder()
                 .softValues()
@@ -178,7 +256,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        protected static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+        private static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
                 AsmTextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
@@ -191,7 +269,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * ASM type of {@link AsmTextModelBuilder}
          */
-        protected static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(AsmTextModelBuilder.class),
+        private static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(AsmTextModelBuilder.class),
         /**
          * ASM type of {@link StringBuilder}
          */
@@ -207,7 +285,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Prefix of generated fields after which the index will go
          */
-        protected static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D",
+        private static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D",
         /**
          * Name of parent generic in current context
          */
@@ -394,7 +472,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Array whose only value is {@link #TEXT_MODEL_INTERNAL_NAME}.
          */
-        protected static final @NotNull String @NotNull [] TEXT_MODEL_INTERNAL_NAME_ARRAY = {TEXT_MODEL_INTERNAL_NAME};
+        private static final @NotNull String @Unmodifiable @NotNull [] TEXT_MODEL_INTERNAL_NAME_ARRAY
+                = {TEXT_MODEL_INTERNAL_NAME};
 
         //</editor-fold>
 
@@ -404,17 +483,17 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         @NonNull Configuration configuration;
 
         /**
-         * Amount of {@link StaticAsmNode static nodes} whose text should be treated by {@code
+         * Amount of {@link SimpleStaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
-         * @see StaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
+         * @see SimpleStaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
         @NonFinal int staticNodeHandledAsDynamicCount,
         /**
-         * Length of texts of those {@link StaticAsmNode static nodes} whose text should be treated by {@code
+         * Length of texts of those {@link SimpleStaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
-         * @see StaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
+         * @see SimpleStaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
         staticSpecialNodeLength;
 
@@ -426,7 +505,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return {@code true} is {@link String string} concatenation via {@code java.lang.invoke.StringConcatFactory}
          * is available and enabled and {@code false} otherwise
          */
-        protected boolean isStringConcatFactoryEnabled() {
+        private boolean isStringConcatFactoryEnabled() {
             return STRING_CONCAT_FACTORY_AVAILABLE && configuration.enableStringConcatFactory();
         }
 
@@ -442,12 +521,12 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
 
         @Override
         protected @NotNull AsmNode<T> newStaticNode(final @NotNull String text) {
-            return new StaticAsmNode<>(text);
+            return SimpleStaticAsmNode.from(text);
         }
 
         @Override
         protected @NotNull AsmNode<T> newDynamicNode(final @NotNull TextModel<T> content) {
-            return new DynamicAsmNode<>(content);
+            return SimpleDynamicAsmNode.from(content);
         }
 
         /**
@@ -473,7 +552,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return descriptor of the name with the specified signature
          */
         @SneakyThrows(ExecutionException.class)
-        protected static @NotNull String stringsToStringDescriptor(final @Nonnegative int stringArgumentsCount) {
+        private static @NotNull String stringsToStringDescriptor(final @Nonnegative int stringArgumentsCount) {
             return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, () -> {
                 val result = new StringBuilder(
                         STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */
@@ -531,8 +610,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param clazz class-writer used for generating the implementation
          * @param internalClassName internal name of the generated class
          */
-        protected void asm$implementGetTextMethodViaStringBuilder(final @NotNull ClassWriter clazz,
-                                                                  final @NotNull String internalClassName) {
+        private void asm$implementGetTextMethodViaStringBuilder(final @NotNull ClassWriter clazz,
+                                                                final @NotNull String internalClassName) {
             // Implement `TextModel#getText(T)` method and add fields
             val method = clazz.visitMethod(
                     ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
@@ -660,8 +739,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param clazz class-writer used for generating the implementation
          * @param internalClassName internal name of the generated class
          */
-        protected void asm$implementGetTextMethodViaStringConcatFactory(final @NotNull ClassWriter clazz,
-                                                                        final @NotNull String internalClassName
+        private void asm$implementGetTextMethodViaStringConcatFactory(final @NotNull ClassWriter clazz,
+                                                                      final @NotNull String internalClassName
         ) {
             // The Lookup will be needed by the runtime for `invokedynamic` usage
             addLookup(clazz);
@@ -786,7 +865,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                     // The amount of dynamic nodes exceeds the maximal amount of those
                     // passed into the `StringConcatFactory`'s `makeConcat` methods
                 } else if (configuration.stringConcatFactoryAlgorithm()
-                        == Configuration.StringConcatFactoryAlgorithm.VECTOR) {
+                        == StringConcatFactoryAlgorithm.VECTOR) {
                     //<editor-fold desc="Not as fast implementation" defaultstate="collapsed">
                     // linearly append nodes making the result of the last `makeConcat` call
                     // the first argument of the new one
@@ -963,7 +1042,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param internalClassName internal name of this class
          * @param fieldName name of the field of type {@link TextModel}
          */
-        protected static void asm$pushStaticTextModelFieldGetTextInvocationResult(
+        private static void asm$pushStaticTextModelFieldGetTextInvocationResult(
                 final @NotNull MethodVisitor method,
                 final @NotNull String internalClassName,
                 final @NotNull String fieldName
@@ -984,7 +1063,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param method method visitor through which the code should be updated
          */
-        protected static void asm$invokeStringBuilderAppendString(final @NotNull MethodVisitor method) {
+        private static void asm$invokeStringBuilderAppendString(final @NotNull MethodVisitor method) {
             // Invoke `StringBuilder.append(String)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
@@ -997,7 +1076,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param method method visitor through which the code should be updated
          */
-        protected static void asm$invokeStringBuilderAppendChar(final @NotNull MethodVisitor method) {
+        private static void asm$invokeStringBuilderAppendChar(final @NotNull MethodVisitor method) {
             // Invoke `StringBuilder.append(char)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
@@ -1015,11 +1094,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param fieldName name of the field to store value
          * @param value value of the field (dynamic text model)
          */
-        protected static void asm$addStaticFieldWithInitializer(final @NotNull ClassVisitor clazz,
-                                                                final @NotNull String internalClassName,
-                                                                final @NotNull MethodVisitor staticInitializer,
-                                                                final @NotNull String fieldName,
-                                                                final @NotNull TextModel<?> value) {
+        private static void asm$addStaticFieldWithInitializer(final @NotNull ClassVisitor clazz,
+                                                              final @NotNull String internalClassName,
+                                                              final @NotNull MethodVisitor staticInitializer,
+                                                              final @NotNull String fieldName,
+                                                              final @NotNull TextModel<?> value) {
             // add field
             clazz.visitField(
                     OPCODES_ACC_PUBLIC_STATIC_FINAL /* less access checks & possible JIT folding */,
@@ -1044,35 +1123,66 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param <T> type of object according to which the created text models are formatted
          */
-        protected interface AsmNode<T>
-                extends AbstractGeneratingTextModelFactoryBuilder.Node<T, StaticAsmNode<T>, DynamicAsmNode<T>> {}
+        private interface AsmNode<T> extends Node<T, StaticAsmNode<T>, DynamicAsmNode<T>> {}
 
         /**
          * {@link StaticNode Static node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
          *
          * @param <T> type of object according to which the created text models are formatted
          */
+        private interface StaticAsmNode<T> extends StaticNode<T>, AsmNode<T> {
+
+            /**
+             * Checks if this node's text cannot be passed as a raw part
+             * of {@code java.lang.invoke.StringConcatFactory}'s concatenation recipe,
+             * e.g. due to it containing special characters ({@code '\1'} and {@code '\2'})
+             *
+             * @return {@code true} if this node's text should be treated as dynamic when used by string concat factory
+             */
+            boolean isTreatAsDynamicValueInStringConcatFactory();
+        }
+
+        /**
+         * {@link DynamicNode Dynamic node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+         *
+         * @param <T> type of object according to which the created text models are formatted
+         */
+        private interface DynamicAsmNode<T> extends DynamicNode<T>, AsmNode<T> {}
+
+        //<editor-fold desc="Node implementations" defaultstate="collapsed">
+        /**
+         * Simple implementation of {@link StaticAsmNode}.
+         *
+         * @param <T> type of object according to which the created text models are formatted
+         */
         @Value
+        @AllArgsConstructor(access = AccessLevel.PRIVATE)
         @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-        protected static class StaticAsmNode<T>
-                implements AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>, AsmNode<T> {
+        protected static class SimpleStaticAsmNode<T> implements StaticAsmNode<T> {
 
             /**
              * Text of this node
              */
-            @NotNull StringBuilder text;
+            @SuppressWarnings("StringBufferField") @NotNull StringBuilder text;
 
             /**
              * Marker indicating whether this node's text cannot be passed as a raw part of {@code
              * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
              * ({@code '\1'} and {@code '\2'})
              */
+            @SuppressWarnings("BooleanVariableAlwaysNegated") // simpler assignment
             @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
 
-            protected StaticAsmNode(final @NonNull String text) {
-                this.text = new StringBuilder(text);
-
-                treatAsDynamicValueInStringConcatFactory = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
+            /**
+             * Checks if the given string cannot be used as static by {@code java.lang.invoke.StringConcatFactory}.
+             * This happens when the string contains symbols which have special meaning in the latter's templates
+             * i.e. {@code \1} and {@code \2}.
+             *
+             * @param string string to get check
+             * @return {@code true} if the given string cannot be treated as static when used by string concat factory
+             */
+            private static boolean cannotBeStaticInStringConcatFactory(final @NotNull String string) {
+                return string.indexOf('\1') != -1 || string.indexOf('\2') != -1;
             }
 
             @Override
@@ -1104,20 +1214,31 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             public void appendText(final @NotNull String text) {
                 this.text.append(text);
 
-                // operator `|=` cannot be used here as it is not lazy (the right side of expression is always used)
+                // operator `|=` cannot be used here as it is not lazy
                 if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
-                        = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
+                        = cannotBeStaticInStringConcatFactory(text);
+            }
+
+            /**
+             * Creates a new {@link StaticAsmNode} from the gicen text.
+             *
+             * @param text initial text of the created node
+             * @param <T> type of object according to which the created text models are formatted
+             * @return created node
+             */
+            public static <T> @NotNull StaticAsmNode<T> from(final @NotNull String text) {
+                return new SimpleStaticAsmNode<>(new StringBuilder(text), cannotBeStaticInStringConcatFactory(text));
             }
         }
 
         /**
-         * {@link DynamicNode Dynamic node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+         * Simple implementation of {@link DynamicAsmNode}.
          *
          * @param <T> type of object according to which the created text models are formatted
          */
         @Value
-        protected static class DynamicAsmNode<T>
-                implements AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>, AsmNode<T> {
+        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+        protected static class SimpleDynamicAsmNode<T> implements DynamicAsmNode<T> {
 
             /**
              * Dynamic content of this node
@@ -1138,39 +1259,22 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             public @NotNull StaticAsmNode<T> asStatic() {
                 throw new UnsupportedOperationException("This is not a static node");
             }
+
+            /**
+             * Creates a new {@link DynamicAsmNode} from the given {@link TextModel text model}.
+             *
+             * @param content content of the created node
+             * @param <T> type of object according to which the created text models are formatted
+             * @return created node
+             */
+            public static <T> @NotNull DynamicAsmNode<T> from(final @NotNull TextModel<T> content) {
+                return new SimpleDynamicAsmNode<>(content);
+            }
         }
+        //</editor-fold>
     }
 
-    /**
-     * Configuration of this {@link AsmTextModelFactory text model factory}
-     */
-    public interface Configuration {
-
-        /**
-         * Tests whether the configured {@link AsmTextModelBuilder text model builder} should attempt to use {@code
-         * java.lang.invoke.StringConcatFactory} for {@link String string}-concatenation.
-         *
-         * @return {@code true} if {@code StringConcatFactory} should be used (if available) for string concatenation
-         * and {@code false} otherwise
-         */
-        @Contract(pure = true)
-        boolean enableStringConcatFactory();
-
-        /**
-         * Gets the algorithm which should be used used for producing string concatenation logic via {@code
-         * java.lang.invoke.StringConcatFactory} when it is {@link #enableStringConcatFactory() enabled}.
-         *
-         * @return algorithm which should be used for producing string concatenation logic
-         */
-        @Contract(pure = true)
-        StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
-
-        enum StringConcatFactoryAlgorithm {
-            //TREE,
-            VECTOR
-        }
-    }
-
+    //<editor-fold desc="Configuration implementation" defaultstate="collapsed">
     /**
      * Configuration of this {@link AsmTextModelFactory text model factory}/
      */
@@ -1178,7 +1282,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     @Builder
     @Accessors(fluent = true)
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    protected static @NonFinal class SimpleConfiguration implements Configuration {
+    private static class SimpleConfiguration implements Configuration {
 
         /**
          * Default configuration instance
@@ -1194,7 +1298,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return default configuration
          */
         @Contract(pure = true)
-        protected static Configuration getDefault() {
+        protected static @NotNull Configuration getDefault() {
             return DEFAULT;
         }
 
@@ -1207,7 +1311,13 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * Algorithm which should be used used for producing string concatenation logic via {@code
          * java.lang.invoke.StringConcatFactory}
          */
-        @Builder.Default StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
-                = StringConcatFactoryAlgorithm.VECTOR;
+        @Builder.Default AsmTextModelFactory.StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
+                = AsmTextModelFactory.StringConcatFactoryAlgorithm.VECTOR;
+
+        /**
+         * Simple implementation of {@link ConfigurationBuilder}.
+         */
+        private static final class SimpleConfigurationBuilder implements ConfigurationBuilder {}
     }
+    //</editor-fold>
 }

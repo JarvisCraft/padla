@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
  * @param <U> the type of the second argument to the function
  * @param <X> the type of the exception thrown by the function
  */
+@FunctionalInterface
 public interface ThrowingBiFunction<T, U, R, X extends Throwable> extends BiFunction<T, U, R> {
 
     /**

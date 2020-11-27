@@ -81,6 +81,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @return created lazy
      */
     static <T> Lazy<T> createThreadSafe(final @NonNull Supplier<T> valueSupplier) {
+        //noinspection ZeroLengthArrayAllocation: mutex object
         return new DoubleCheckedLazy<>(new Object[0], valueSupplier);
     }
 
@@ -136,7 +137,7 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Supplier used for creation of the value
          */
-        @Nullable Supplier<T> valueSupplier;
+        @Nullable Supplier<@Nullable T> valueSupplier;
 
         /**
          * The value stored
@@ -368,7 +369,9 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of wrapped value
      */
     @Value
-    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true) class ThreadLocalLazy<T> implements Lazy<T> {
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    @SuppressWarnings("ThreadLocalNotStaticFinal") // this is intentional
+    class ThreadLocalLazy<T> implements Lazy<T> {
 
         /**
          * Stub value used as the default value of {@code #value}

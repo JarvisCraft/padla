@@ -97,7 +97,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param text static text of the created node
      * @return created static node
      */
-    protected @NotNull abstract N newStaticNode(final @NotNull String text);
+    protected abstract @NotNull N newStaticNode(final @NotNull String text);
 
     /**
      * Creates a new dynamic node to be used for creation of the {@link TextModel text model}.
@@ -105,7 +105,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param content dynamic content of the created node
      * @return created dynamic node
      */
-    protected @NotNull abstract N newDynamicNode(final @NotNull TextModel<T> content);
+    protected abstract @NotNull N newDynamicNode(final @NotNull TextModel<T> content);
 
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
@@ -165,7 +165,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @apiNote gets called by {@link #buildTextModel(boolean)}
      * whenever it cannot create a fast universal implementation
      */
-    protected @NotNull abstract TextModel<T> performTextModelBuild(boolean release);
+    protected abstract @NotNull TextModel<T> performTextModelBuild(boolean release);
 
     /**
      * {@inheritDoc}
@@ -279,6 +279,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @apiNote this interface does not extend {@link Node} but it is a common practice to have a class implement both
      * in order to decrease the amount of allocated objects
      */
+    @FunctionalInterface
     protected interface DynamicNode<T> {
         /**
          * Gets this element's dynamic content.
@@ -303,7 +304,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         /**
          * Text of this node
          */
-        @NotNull StringBuilder text;
+        @SuppressWarnings("StringBufferField") @NotNull StringBuilder text;
 
         protected SimpleStaticNode(final @NonNull String text) {
             this(new StringBuilder(text));
@@ -315,7 +316,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public SimpleStaticNode<T> asStatic() {
+        public @NotNull StaticNode<T> asStatic() {
             return this;
         }
 
@@ -335,7 +336,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public DynamicNode<T> asDynamic() {
+        public @NotNull DynamicNode<T> asDynamic() {
             throw new UnsupportedOperationException("This is not a dynamic node");
         }
     }
@@ -360,12 +361,12 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public DynamicNode<T> asDynamic() {
+        public @NotNull DynamicNode<T> asDynamic() {
             return this;
         }
 
         @Override
-        public StaticNode<T> asStatic() {
+        public @NotNull StaticNode<T> asStatic() {
             throw new UnsupportedOperationException("This is not a static node");
         }
     }

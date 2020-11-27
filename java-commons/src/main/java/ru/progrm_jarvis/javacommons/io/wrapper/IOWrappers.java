@@ -62,7 +62,7 @@ public class IOWrappers {
      * Simple delegating {@link NonAutoCloseableInputStream}.
      */
     @Value
-    @EqualsAndHashCode
+    @EqualsAndHashCode(callSuper = false) // super has no logic
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
     private static class NonAutoCloseableInputStreamWrapper extends NonAutoCloseableInputStream {

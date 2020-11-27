@@ -155,16 +155,16 @@ class InvokeStaticFieldWrapperTest {
 
     @AllArgsConstructor
     private static final class Areg {
-        private int icq;
-        private String nut;
-        private final int id = 127;
-        private final String name = "Mr Areshek";
+        @SuppressWarnings("FieldMayBeFinal") private int icq;
+        @SuppressWarnings("FieldMayBeFinal") private String nut;
+        @SuppressWarnings("FieldMayBeStatic") private final int id = 127;
+        @SuppressWarnings("FieldMayBeStatic") private final String name = "Mr Areshek";
     }
 
     @UtilityClass // static (everything) + final (class) + no constructor
     private class StaticAreg {
-        private int icq;
-        private String nut;
+        @SuppressWarnings("StaticVariableMayNotBeInitialized") private int icq;
+        @SuppressWarnings("StaticVariableMayNotBeInitialized") private String nut;
         private final int id = 127;
         private final String name = "Mr Areshek";
     }

@@ -16,6 +16,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class UuidUtil {
 
     /**
+     * Amount of bytes from which the {@link UUID} consists.
+     */
+    private static final int UUID_BYTES = 16;
+
+    /**
      * Converts {@link UUID} into an array of 16 {@code byte}s.
      *
      * @param uuid UUID to convert
@@ -24,7 +29,7 @@ public class UuidUtil {
      * @see #uuidFromBytes(byte[]) for backward conversion
      */
     public byte[] uuidToBytes(final @NonNull UUID uuid) {
-        val buffer = ByteBuffer.wrap(new byte[16]);
+        val buffer = ByteBuffer.wrap(new byte[UUID_BYTES]);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
 
@@ -40,7 +45,7 @@ public class UuidUtil {
      * @see #uuidToBytes(UUID) for backward conversion
      */
     public UUID uuidFromBytes(final @NonNull byte[] bytes) {
-        checkArgument(bytes.length == 16, "bytes length should be 16");
+        checkArgument(bytes.length == UUID_BYTES, "bytes length should be " + UUID_BYTES);
 
         val buffer = ByteBuffer.wrap(bytes);
         return new UUID(buffer.getLong(), buffer.getLong());

@@ -36,17 +36,17 @@ public abstract class AbstractImmutableSet<E> implements Set<E> {
     }
 
     @Override
-    public boolean addAll(final @NonNull Collection<? extends E> c) {
+    public boolean addAll(final @NonNull Collection<? extends E> collection) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 
     @Override
-    public boolean retainAll(final @NonNull Collection<?> c) {
+    public boolean retainAll(final @NonNull Collection<?> collection) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 
     @Override
-    public boolean removeAll(final @NonNull Collection<?> c) {
+    public boolean removeAll(final @NonNull Collection<?> collection) {
         throw new UnsupportedOperationException(UNSUPPORTED_OPERATION_EXCEPTION_MESSAGE);
     }
 

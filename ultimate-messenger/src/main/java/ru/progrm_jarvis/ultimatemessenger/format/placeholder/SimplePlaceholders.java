@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.ultimatemessenger.format.StringFormatter;
 import ru.progrm_jarvis.ultimatemessenger.format.model.TextModel;
 import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelFactory;
-import ru.progrm_jarvis.ultimatemessenger.format.model.TextModelParser;
 import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUtil;
 
 import java.util.HashMap;

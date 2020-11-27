@@ -25,9 +25,9 @@ import java.lang.reflect.Modifier;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)
-public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
+public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
      * Lazy singleton of this text model factory
@@ -61,7 +61,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class JavassistTextModelBuilder<T>
+    private static final class JavassistTextModelBuilder<T>
             extends AbstractGeneratingTextModelFactoryBuilder<
             T, Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T>, DynamicNode<T>
             > {
@@ -69,7 +69,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Lookup of this class.
          */
-        protected static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
         @Override
         protected @NotNull Node<T, StaticNode<T>, DynamicNode<T>> newStaticNode(final @NotNull String text) {
@@ -84,7 +84,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Full name (including canonical class name) of {@link #internal$getDynamicTextModel(String)} method
          */
-        protected static final @NotNull String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME
+        private static final @NotNull String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME
                 = JavassistTextModelBuilder.class.getCanonicalName() + ".internal$getDynamicTextModel",
         /**
          * Prefix of generated fields after which the index will go
@@ -94,7 +94,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
          */
-        protected static final @NotNull ValueStorage<@NotNull String, @NotNull TextModel<?>> DYNAMIC_MODELS
+        private static final @NotNull ValueStorage<@NotNull String, @NotNull TextModel<?>> DYNAMIC_MODELS
                 = SimpleValueStorage.create();
 
         /**
@@ -122,7 +122,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        protected static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+        private static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
                 JavassistTextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
@@ -136,7 +136,7 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          */
         @Deprecated
         @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
-        public static TextModel<?> internal$getDynamicTextModel(final @NotNull String uniqueKey) {
+        public static @NotNull TextModel<?> internal$getDynamicTextModel(final @NotNull String uniqueKey) {
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }
 
@@ -230,9 +230,9 @@ public class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          * @param fieldName name of the field to store value
          * @param value value of the field (dynamic text model)
          */
-        protected static void javassist$addStaticFieldWithInitializer(final @NotNull CtClass clazz,
-                                                                      final @NotNull String fieldName,
-                                                                      final @NotNull TextModel<?> value) {
+        private static void javassist$addStaticFieldWithInitializer(final @NotNull CtClass clazz,
+                                                                    final @NotNull String fieldName,
+                                                                    final @NotNull TextModel<?> value) {
             try {
                 val field = new CtField(TEXT_MODEL_CT_CLASS.get(), fieldName, clazz);
                 field.setModifiers(PUBLIC_STATIC_FINAL_MODIFIERS);

@@ -85,7 +85,6 @@ public interface MapFiller<K, V> {
      * @param <V> type of values
      * @return map filler created for the specified map
      *
-     * @see MapFiller
      * @see #from(Map, Object, Object)
      */
     static <K, V> MapFiller<K, V> from(final @NonNull Map<K, V> map) {

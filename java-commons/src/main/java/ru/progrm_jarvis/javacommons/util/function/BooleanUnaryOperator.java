@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -24,13 +25,13 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
     boolean applyAsBoolean(boolean operand);
 
     @Override
-    default Boolean apply(boolean argument) {
+    default @NotNull Boolean apply(boolean argument) {
         return applyAsBoolean(argument);
     }
 
     @Override
-    default Boolean apply(final Boolean operand /* no need for explicit null-check */) {
-        return applyAsBoolean(operand);
+    default <V> @NotNull Function<V, Boolean> compose(final @NonNull Function<? super V, ? extends Boolean> before) {
+        return operand -> applyAsBoolean(before.apply(operand));
     }
 
     /**
@@ -44,8 +45,13 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      * @see #andThen(BooleanUnaryOperator) behaving in opposite manner
      */
     @Contract(value = "null -> fail; _ -> _", pure = true)
-    default @NotNull BooleanUnaryOperator compose(final @NonNull BooleanUnaryOperator before) {
+    default @NotNull BooleanUnaryOperator composePrimitive(final @NonNull BooleanUnaryOperator before) {
         return operand -> applyAsBoolean(before.applyAsBoolean(operand));
+    }
+
+    @Override
+    default <V> @NotNull Function<Boolean, V> andThen(final @NonNull Function<? super Boolean, ? extends V> after) {
+        return operand -> after.apply(applyAsBoolean(operand));
     }
 
     /**
@@ -56,11 +62,20 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      * @return a composed operator that first applies this operator and then the provided one
      * @throws NullPointerException if {@code after} is {@code null}
      *
-     * @see #compose(BooleanUnaryOperator) behaving in opposite manner
+     * @see #composePrimitive(BooleanUnaryOperator) behaving in opposite manner
      */
     @Contract(value = "null -> fail; _ -> _", pure = true)
     default @NotNull BooleanUnaryOperator andThen(final @NonNull BooleanUnaryOperator after) {
         return operand -> after.applyAsBoolean(applyAsBoolean(operand));
+    }
+
+    /**
+     * Returns a composed operator that first applies this operator and and then inverts the result.
+     *
+     * @return a composed operator that first applies this operator and then inverts the result
+     */
+    default @NotNull BooleanUnaryOperator invert() {
+        return operand -> !applyAsBoolean(operand);
     }
 
     /**

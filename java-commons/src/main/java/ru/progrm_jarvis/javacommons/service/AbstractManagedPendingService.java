@@ -67,7 +67,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
     }
 
     @Override
-    // while an auto-closeable instance is created, it should be closed in other place
+    @SuppressWarnings("resource") // while an auto-closeable instance is created, it should be closed in other place
     public @NotNull OwnedService<S, R> request(final @NonNull O owner) {
         final Lock lock;
         (lock = lifecycleLock).lock();
@@ -200,7 +200,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         /**
          * Owner of this service
          */
-        @NonNull O owner;
+        @NotNull O owner;
 
         /**
          * Actual owned service
@@ -210,7 +210,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         /**
          * Flag indicating whether or not this service can no longer be used.
          */
-        @NonNull AtomicBoolean closed;
+        @NotNull AtomicBoolean closed;
 
         /**
          * Creates a new safe owned service.
@@ -218,7 +218,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
          * @param owner owner of this service
          * @param service actual owned service
          */
-        protected SafeOwnedService(final O owner, final S service) {
+        protected SafeOwnedService(final @NotNull O owner, final S service) {
             this.owner = owner;
             this.service = service;
             closed = new AtomicBoolean();

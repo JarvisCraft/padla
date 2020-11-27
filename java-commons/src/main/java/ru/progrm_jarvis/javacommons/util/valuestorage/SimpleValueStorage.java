@@ -1,8 +1,6 @@
 package ru.progrm_jarvis.javacommons.util.valuestorage;
 
 import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,15 +18,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @ThreadSafe
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public final class SimpleValueStorage<V> extends AbstractValueStorage<String, V> {
+public final class SimpleValueStorage<V> extends AbstractValueStorage<@NotNull String, V> {
 
     /**
      * Counter used for generating new keys
      */
-    @NonNull AtomicReference<BigInteger> counter;
+    @NotNull AtomicReference<@NotNull BigInteger> counter;
 
-    private SimpleValueStorage(final @NotNull Map<String, V> values,
-                               final @NotNull AtomicReference<BigInteger> counter) {
+    private SimpleValueStorage(final @NotNull Map<@NotNull String, V> values,
+                               final @NotNull AtomicReference<@NotNull BigInteger> counter) {
         super(values);
         this.counter = counter;
     }
@@ -36,7 +34,7 @@ public final class SimpleValueStorage<V> extends AbstractValueStorage<String, V>
     /**
      * Creates a new simple value storage.
      */
-    public static <V> @NotNull SimpleValueStorage<V> create() {
+    public static <V> @NotNull ValueStorage<@NotNull String, V> create() {
         return new SimpleValueStorage<>(new ConcurrentHashMap<>(), new AtomicReference<>(BigInteger.ZERO));
     }
 

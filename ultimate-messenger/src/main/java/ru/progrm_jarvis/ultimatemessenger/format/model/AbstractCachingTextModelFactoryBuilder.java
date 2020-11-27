@@ -38,7 +38,7 @@ public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextM
      * @param release {@code true} if this text model builder will be released after the call and {@code false} otherwise
      * @return created text model
      */
-    protected @NotNull abstract TextModel<T> buildTextModel(boolean release);
+    protected abstract @NotNull TextModel<T> buildTextModel(boolean release);
 
     @Override
     public @NotNull TextModel<T> buildAndRelease() {
