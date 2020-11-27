@@ -83,6 +83,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{{@code value}}</i>.
      *
+     * @param value the only value contained by the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -93,6 +94,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &isin; {@code values}}</i>.
      *
+     * @param values the only values contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -108,6 +110,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &isin; {@code values}}</i>.
      *
+     * @param values the only values contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -120,6 +123,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &isin; {@code values}}</i>.
      *
+     * @param values the only values contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -133,6 +137,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &isin; {@code values}}</i>.
      *
+     * @param values the only values contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -145,6 +150,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &isin; {@code values}}</i>.
      *
+     * @param values the only values contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -167,6 +173,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>&not;{{@code value}}</i>.
      *
+     * @param value the only value not contained by the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -177,6 +184,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &notin; {@code values}}</i>.
      *
+     * @param values the only values not contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -192,6 +200,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &notin; {@code values}}</i>.
      *
+     * @param values the only values not contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -204,6 +213,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &notin; {@code values}}</i>.
      *
+     * @param values the only values not contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -217,6 +227,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &notin; {@code values}}</i>.
      *
+     * @param values the only values not contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -229,6 +240,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: x &notin; {@code values}}</i>.
      *
+     * @param values the only values not contained by the range
      * @param <T> type of range's elements
      * @return created range
      *
@@ -243,6 +255,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>({@code lowerBound}; +&infin;)</i>.
      *
+     * @param lowerBound lower exclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -253,6 +266,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>[{@code lowerBound}; +&infin;)</i>.
      *
+     * @param lowerBound lower inclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -263,6 +277,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>(&infin;; {@code upperBound})</i>.
      *
+     * @param upperBound upper inclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -273,6 +288,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>(&infin;; {@code upperBound}]</i>.
      *
+     * @param upperBound upper exclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -283,6 +299,8 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>({@code lowerBound}; {@code upperBound})</i>.
      *
+     * @param lowerBound lower exclusive bound of the range
+     * @param upperBound upper exclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -294,6 +312,8 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>[{@code lowerBound}; {@code upperBound}]</i>.
      *
+     * @param lowerBound lower inclusive bound of the range
+     * @param upperBound upper inclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -305,6 +325,8 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>({@code lowerBound}; {@code upperBound}]</i>.
      *
+     * @param lowerBound lower exclusive bound of the range
+     * @param upperBound upper inclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -316,6 +338,8 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>[{@code lowerBound}; {@code upperBound})</i>.
      *
+     * @param lowerBound lower inclusive bound of the range
+     * @param upperBound upper exclusive bound of the range
      * @param <T> type of range's elements
      * @return created range
      */
@@ -329,6 +353,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
      *
+     * @param ranges matched disjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -346,6 +371,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
      *
+     * @param ranges matched disjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -362,6 +388,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
      *
+     * @param ranges matched disjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -375,6 +402,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
      *
+     * @param ranges matched disjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -387,6 +415,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &exist; range &isin; ranges: x &isin; range}</i>.
      *
+     * @param ranges matched disjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -399,6 +428,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
      *
+     * @param ranges matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -416,6 +446,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
      *
+     * @param ranges matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -432,6 +463,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
      *
+     * @param ranges matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -445,6 +477,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
      *
+     * @param ranges matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -457,6 +490,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &isin; range}</i>.
      *
+     * @param ranges matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -469,6 +503,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
      *
+     * @param ranges not matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -486,6 +521,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
      *
+     * @param ranges not matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -502,6 +538,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
      *
+     * @param ranges not matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -515,6 +552,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
      *
+     * @param ranges not matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *
@@ -527,6 +565,7 @@ public interface Range<T> extends Predicate<T> {
     /**
      * Creates a range <i>{x: &forall; range &isin; ranges, x &notin; range}</i>.
      *
+     * @param ranges not matched conjunctive ranges
      * @param <T> type of range's elements
      * @return created range
      *

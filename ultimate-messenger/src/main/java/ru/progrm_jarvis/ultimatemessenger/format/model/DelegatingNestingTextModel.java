@@ -12,9 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@link NestingTextModel} which delegates its {@link List list} methods to the inner {@link List}/
+ * {@link NestingTextModel} which delegates its {@link List list} methods to the inner {@link List}.
  *
- * @param <T>
+ * @param <T> type of object according to which the text model is formatted
  */
 @Data
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED) // allow extension
