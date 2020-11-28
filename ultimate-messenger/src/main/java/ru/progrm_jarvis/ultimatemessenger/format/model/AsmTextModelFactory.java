@@ -16,9 +16,9 @@ import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
@@ -222,11 +222,12 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
      * generation and is capable of joining nearby static text blocks and optimizing {@link #buildAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
+     * @implNote this class is {@code protected} so that it is accessible by generated classes
      */
     @ToString
-    @RequiredArgsConstructor
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     protected static final class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
             T, AsmNode<T>, StaticAsmNode<T>, DynamicAsmNode<T>> {
 

@@ -7,9 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 import ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.DynamicNode;
@@ -25,7 +25,7 @@ import java.lang.reflect.Modifier;
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)
 public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
@@ -60,11 +60,14 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      * and is capable of joining nearby static text blocks and optimizing {@link #buildAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
+     *
+     * @implNote this class is {@code protected} so that it is accessible by generated classes
      */
     @ToString
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    private static final class JavassistTextModelBuilder<T>
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    protected static final class JavassistTextModelBuilder<T>
             extends AbstractGeneratingTextModelFactoryBuilder<
             T, Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T>, DynamicNode<T>
             > {
