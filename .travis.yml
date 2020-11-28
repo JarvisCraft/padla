@@ -13,8 +13,7 @@ jobs:
     # 2. Deploy
     - stage: Deploy
       if: |
-        repo == JarvisCraft/padla && type != pull_request \
-        && (branch == development || branch == master)
+        repo == JarvisCraft/padla && type != pull_request && (branch == development || branch == master)
       # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
       jdk: openjdk8
       before_deploy: ./.travis/scripts/import_code_signing_keys.sh
