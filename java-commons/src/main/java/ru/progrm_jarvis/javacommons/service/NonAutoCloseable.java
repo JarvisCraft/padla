@@ -21,6 +21,7 @@ public interface NonAutoCloseable extends AutoCloseable {
     /**
      * Actually closes this object as if it was done by calling {@link AutoCloseable#close()}.
      *
+     * @throws Exception if the resource cannot be closed
      * @see AutoCloseable#close() for this method's behaviour
      */
     void doClose() throws Exception;

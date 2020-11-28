@@ -35,6 +35,7 @@ public class ClassLoadingUtil {
      * Attempts to find a class by the given name using current class-loader wrapping it in an {@link Optional}.
      *
      * @param className name of the class to search for
+     * @param loadIfNeeded flag indicating whether the class should be loaded if it is available but not loaded yet
      * @param <T> type of the class
      * @return optional containing the class if it was found or an empty one otherwise
      */
@@ -71,8 +72,8 @@ public class ClassLoadingUtil {
      */
     @SuppressWarnings("unchecked")
     public <T> Class<? extends T> getNullableClass(final @NonNull String className,
-                                                             final boolean loadIfNeeded,
-                                                             final @NonNull ClassLoader classLoader) {
+                                                   final boolean loadIfNeeded,
+                                                   final @NonNull ClassLoader classLoader) {
         try {
             return (Class<? extends T>) Class.forName(className, loadIfNeeded, classLoader);
         } catch (final ClassNotFoundException e) {
@@ -84,11 +85,12 @@ public class ClassLoadingUtil {
      * Attempts to find a class by the given name using current class-loader.
      *
      * @param className name of the class to search for
+     * @param loadIfNeeded flag indicating whether the class should be loaded if it is available but not loaded yet
      * @param <T> type of the class
      * @return the class if it was found or {@code null}
      */
     public <T> Class<? extends T> getNullableClass(final @NonNull String className,
-                                                             final boolean loadIfNeeded) {
+                                                   final boolean loadIfNeeded) {
         return getNullableClass(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
 
@@ -132,6 +134,7 @@ public class ClassLoadingUtil {
      * Checks if the class is available using current class-loader.
      *
      * @param className name of the class to search for
+     * @param loadIfNeeded flag indicating whether the class should be loaded if it is available but not loaded yet
      * @return {@code true} if the class is available and {@code false} otherwise
      */
     public boolean isClassAvailable(final @NonNull String className,

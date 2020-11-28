@@ -7,7 +7,7 @@ import lombok.NonNull;
  * such as initializing static final fields of generated classes.
  *
  * @param <K> type of keys used for identifying values
- * @param <V> type of values stored
+ * @param <V> type of stored values
  */
 public interface ValueStorage<K, V> {
 

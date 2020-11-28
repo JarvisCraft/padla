@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Simple {@link ValueStorage value storage} based on {@link AbstractValueStorage}
  * using {@link String strings} as its keys.
  *
- * @param <V> type of values stored
+ * @param <V> type of stored values
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class SimpleValueStorage<V> extends AbstractValueStorage<@NotNull String, V> {
@@ -31,6 +31,9 @@ public final class SimpleValueStorage<V> extends AbstractValueStorage<@NotNull S
 
     /**
      * Creates a new simple value storage.
+     *
+     * @param <V> type of stored values
+     * @return created simple value storage
      */
     public static <V> @NotNull ValueStorage<@NotNull String, V> create() {
         return new SimpleValueStorage<>(new ConcurrentHashMap<>(), new AtomicReference<>(BigInteger.ZERO));

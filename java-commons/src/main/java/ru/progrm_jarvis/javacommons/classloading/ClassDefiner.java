@@ -14,7 +14,8 @@ public interface ClassDefiner {
     /**Uns
      * Defines a class which may be garbage-collected.
      *
-     * @param owner class whose permissions will be inherited by the defined one
+     * @param owner lookup whose access rights will be used for class definition
+     * @param name name of the defined class
      * @param bytecode bytecode of the class
      * @return defined class
      */
@@ -24,7 +25,7 @@ public interface ClassDefiner {
     /**
      * Defines multiple classes which may be garbage-collected.
      *
-     * @param owner class whose permissions will be inherited by the defined one
+     * @param owner lookup whose access rights will be used for class definition
      * @param bytecodes pairs whose first values are canonical class names
      * and the second values are those classes' bytecodes
      * @return defined class in the order their data was passed
@@ -36,7 +37,7 @@ public interface ClassDefiner {
     /**
      * Defines multiple classes which may be garbage-collected.
      *
-     * @param owner class whose permissions will be inherited by the defined one
+     * @param owner lookup whose access rights will be used for class definition
      * @param bytecodes bytecodes of the classes
      * @return defined class in the order their data was passed
      */
@@ -46,7 +47,7 @@ public interface ClassDefiner {
     /**
      * Defines multiple classes which may be garbage-collected.
      *
-     * @param owner class whose permissions will be inherited by the defined one
+     * @param owner lookup whose access rights will be used for class definition
      * @param bytecodes bytecodes of the classes
      * @return defined class in the order their data was passed
      */
@@ -56,6 +57,7 @@ public interface ClassDefiner {
     /**
      * Defines multiple classes which may be garbage-collected.
      *
+     * @param owner lookup whose access rights will be used for class definition
      * @param namedBytecode map containing bytecodes by their classes' canonical names
      * @return defined classes by their names
      */

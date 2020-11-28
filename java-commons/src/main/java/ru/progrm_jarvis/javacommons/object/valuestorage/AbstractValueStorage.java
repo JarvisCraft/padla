@@ -9,7 +9,7 @@ import java.util.Map;
  * Abstract base for {@link ValueStorage}.
  *
  * @param <K> type of keys used for identifying values
- * @param <V> type of values stored
+ * @param <V> type of stored values
  */
 @ToString
 @EqualsAndHashCode
