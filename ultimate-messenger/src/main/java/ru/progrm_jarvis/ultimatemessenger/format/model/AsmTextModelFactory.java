@@ -225,7 +225,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
      * @implNote this class is {@code protected} so that it is accessible by generated classes
      */
     @ToString
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     protected static final class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
