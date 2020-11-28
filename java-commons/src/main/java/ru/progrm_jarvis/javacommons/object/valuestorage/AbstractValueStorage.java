@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util.valuestorage;
+package ru.progrm_jarvis.javacommons.object.valuestorage;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -30,7 +30,7 @@ public abstract class AbstractValueStorage<K, V> implements ValueStorage<K, V> {
     protected abstract K generateNewKey();
 
     @Override
-    public K storeValue(@NonNull final V value) {
+    public K storeValue(final @NonNull V value) {
         val key = generateNewKey();
         values.put(key, value);
 

@@ -11,7 +11,7 @@
     <artifactId>unsafe-methods-access-generator</artifactId>
 
     <build>
-        <defaultGoal>pa</defaultGoal>
+        <defaultGoal>package</defaultGoal>
 
         <plugins>
             <plugin>

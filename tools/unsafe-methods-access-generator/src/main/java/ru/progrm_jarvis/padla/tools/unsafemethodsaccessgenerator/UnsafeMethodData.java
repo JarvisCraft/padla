@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 @Value
@@ -13,7 +14,8 @@ import java.util.regex.Pattern;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UnsafeMethodData {
 
-    private static final Pattern CAMEL_CASE_SPLIT_PATTERN = Pattern.compile("(?=\\p{Upper})");
+    private static final @NotNull Locale LOCALE = Locale.ENGLISH;
+    private static final @NotNull Pattern CAMEL_CASE_SPLIT_PATTERN = Pattern.compile("(?=\\p{Upper})");
 
     @NonNull Method method;
     @NonNull String upperCamelCaseName;
@@ -32,18 +34,19 @@ public class UnsafeMethodData {
         );
     }
 
-    private static String camelCaseToUpperSnakeCase(@NotNull final String methodName) {
+    private static String camelCaseToUpperSnakeCase(final @NotNull CharSequence methodName) {
         val words =  CAMEL_CASE_SPLIT_PATTERN.split(methodName);
-        val length = words.length;
 
+        val length = words.length;
         assert length != 0;
-        if (length == 1) return words[0].toUpperCase();
+        if (length == 1) return words[0].toUpperCase(LOCALE);
 
         val result = new StringBuilder(methodName.length() + length - 1)
                 .append(words[0]);
-        for (var i = 1; i < words.length; i++) result.append('_').append(words[i]);
 
-        return result.toString().toUpperCase();
+        for (var i = 1; i < length; i++) result.append('_').append(words[i]);
+
+        return result.toString().toUpperCase(LOCALE);
     }
 
     private static String getTypeName(@NotNull Class<?> type) {
@@ -61,12 +64,13 @@ public class UnsafeMethodData {
         return result.toString();
     }
 
-    private static String[] getSignature(@SuppressWarnings("rawtypes") @NotNull final Class[] parameterTypes) {
+    private static String[] getSignature(@SuppressWarnings("rawtypes") final @NotNull Class[] parameterTypes) {
         if (true) return Arrays.stream(parameterTypes)
                 .map(UnsafeMethodData::getTypeName)
                 .toArray(String[]::new);
-        val signature = new String[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
+        final int length;
+        val signature = new String[length = parameterTypes.length];
+        for (int i = 0; i < length; i++) {
             var parameterType = parameterTypes[i];
 
             final StringBuilder postfix = new StringBuilder();
@@ -74,14 +78,14 @@ public class UnsafeMethodData {
                 postfix.append('[').append(']');
                 parameterType = parameterType.getComponentType();
             }
-            signature[i] = parameterType.getSimpleName() + postfix.toString();
+            signature[i] = parameterType.getSimpleName() + postfix;
         }
 
         return signature;
     }
 
-    private static String appendParameterNames(@NotNull final String string,
-                                               @NotNull final Method method) {
+    private static String appendParameterNames(final @NotNull String string,
+                                               final @NotNull Method method) {
         final int parameterCount = method.getParameterCount();
         if (parameterCount == 0) return string;
 
@@ -95,7 +99,7 @@ public class UnsafeMethodData {
                 parameterType = parameterType.getComponentType();
             }
             if (parameterType.isPrimitive()) result.append('$');
-            result.append(parameterType.getSimpleName().toUpperCase());
+            result.append(parameterType.getSimpleName().toUpperCase(LOCALE));
             for (var i = 0; i < depth; i++) result.append('$');
         }
 

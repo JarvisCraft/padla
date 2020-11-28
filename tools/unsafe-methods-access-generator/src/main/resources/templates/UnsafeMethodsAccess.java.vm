@@ -1,9 +1,10 @@
+#* @vtlvariable name="method" type="ru.progrm_jarvis.padla.tools.unsafemethodsaccessgenerator.UnsafeMethodData" *#
 ## @vtlvariable name="packageName" type="java.lang.String"
 ## @vtlvariable name="className" type="java.lang.String"
 ## @vtlvariable name="unsafeClassName" type="java.lang.String"
 ## @vtlvariable name="importedClasses" type="java.lang.String[]"
 ## @vtlvariable name="unsafeMethods" type="ru.progrm_jarvis.padla.tools.unsafemethodsaccessgenerator.UnsafeMethodData[]"
-#if ($packageName && !$packageName.equals(""))package $packageName;
+#if (!$packageName.blank && !$packageName.equals(""))package $packageName;
 
 #end##
 import lombok.SneakyThrows;

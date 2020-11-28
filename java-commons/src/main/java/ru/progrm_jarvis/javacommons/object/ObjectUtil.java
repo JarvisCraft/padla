@@ -3,6 +3,8 @@ package ru.progrm_jarvis.javacommons.object;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -22,7 +24,7 @@ public class ObjectUtil {
      * @return first nonnull value found or {@code null} if none
      */
     @SafeVarargs
-    public <T> T nonNull(final T... variants) {
+    public <T> T nonNull(final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return variant;
 
         return null;
@@ -36,10 +38,10 @@ public class ObjectUtil {
      * @return first nonnull value found or {@code null} if none
      */
     @SafeVarargs
-    public <T> T nonNull(@NonNull final Supplier<T>... variants) {
+    public <T> T nonNull(final Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return value;
+            final T value;
+            if ((value = variant.get()) != null) return value;
         }
 
         return null;
@@ -53,7 +55,7 @@ public class ObjectUtil {
      * @return {@link Optional} containing first nonnull value found or empty if none
      */
     @SafeVarargs
-    public <T> Optional<T> optionalNonNull(final T... variants) {
+    public <T> Optional<T> optionalNonNull(final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return Optional.of(variant);
 
         return Optional.empty();
@@ -67,10 +69,10 @@ public class ObjectUtil {
      * @return {@link Optional} containing first nonnull value found or empty if none
      */
     @SafeVarargs
-    public <T> Optional<T> optionalNonNull(@NonNull final Supplier<T>... variants) {
+    public <T> Optional<T> optionalNonNull(final @NotNull Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return Optional.of(value);
+            final T value;
+            if ((value = variant.get()) != null) return Optional.of(value);
         }
 
         return Optional.empty();
@@ -82,10 +84,11 @@ public class ObjectUtil {
      * @param variants variants which may be nonnull
      * @param <T> type of value
      * @return first nonnull value found
+     *
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T> T nonNullOrThrow(@NonNull final T... variants) {
+    public <T> T nonNullOrThrow(final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return variant;
 
         throw new NullPointerException("No nonnull value found among variants");
@@ -97,13 +100,14 @@ public class ObjectUtil {
      * @param variants variant suppliers whose values may be null
      * @param <T> type of value
      * @return first nonnull value found
+     *
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T> T nonNullOrThrow(@NonNull final Supplier<T>... variants) {
+    public <T> T nonNullOrThrow(final @NotNull Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return value;
+            final T value;
+            if ((value = variant.get()) != null) return value;
         }
 
         throw new NullPointerException("No nonnull value found among variants");
@@ -116,10 +120,12 @@ public class ObjectUtil {
      * @param variants variants which may be nonnull
      * @param <T> type of value
      * @return first nonnull value found
+     *
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T> T nonNullOr(final @NonNull Supplier<T> nullHandler, @NonNull final T... variants) {
+    public <T> T nonNullOr(final @NonNull Supplier<T> nullHandler,
+                           final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return variant;
 
         return nullHandler.get();
@@ -132,13 +138,15 @@ public class ObjectUtil {
      * @param variants variant suppliers whose values may be null
      * @param <T> type of value
      * @return first nonnull value found
+     *
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T> T nonNullOr(final @NonNull Supplier<T> nullHandler, @NonNull final Supplier<T>... variants) {
+    public <T> T nonNullOr(final @NonNull Supplier<T> nullHandler,
+                           final @NotNull Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return value;
+            final T value;
+            if ((value = variant.get()) != null) return value;
         }
 
         return nullHandler.get();
@@ -154,7 +162,7 @@ public class ObjectUtil {
      * @param <R> type of resulting value
      * @return mapped (transformed) value
      */
-    public <T, R> R map(final T value, @NonNull final Function<T, R> mappingFunction) {
+    public <T, R> R map(final T value, final @NonNull Function<T, R> mappingFunction) {
         return mappingFunction.apply(value);
     }
 
@@ -169,7 +177,8 @@ public class ObjectUtil {
      * @return first nonnull value found or {@code null} if none found mapped using mapping function
      */
     @SafeVarargs
-    public <T, R> R mapNonNull(@NonNull final Function<T, R> mappingFunction, @NonNull final T... variants) {
+    public <T, R> R mapNonNull(final @NonNull Function<@Nullable T, R> mappingFunction,
+                               final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return mappingFunction.apply(variant);
 
         return mappingFunction.apply(null);
@@ -186,10 +195,11 @@ public class ObjectUtil {
      * @return first nonnull value found or {@code null} if none found mapped using mapping function
      */
     @SafeVarargs
-    public <T, R> R mapNonNull(@NonNull final Function<T, R> mappingFunction, @NonNull final Supplier<T>... variants) {
+    public <T, R> R mapNonNull(final @NonNull Function<@Nullable T, R> mappingFunction,
+                               final @NotNull Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return mappingFunction.apply(value);
+            final T value;
+            if ((value = variant.get()) != null) return mappingFunction.apply(value);
         }
 
         return mappingFunction.apply(null);
@@ -206,7 +216,8 @@ public class ObjectUtil {
      * @return first nonnull value found mapped using mapping function or {@code null} if none found
      */
     @SafeVarargs
-    public <T, R> R mapOnlyNonNull(@NonNull final Function<T, R> mappingFunction, @NonNull final T... variants) {
+    public <T, R> R mapOnlyNonNull(final @NonNull Function<@NotNull T, R> mappingFunction,
+                                   final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return mappingFunction.apply(variant);
 
         return null;
@@ -223,11 +234,11 @@ public class ObjectUtil {
      * @return first nonnull value found mapped using mapping function or {@code null} if none found
      */
     @SafeVarargs
-    public <T, R> R mapOnlyNonNull(@NonNull final Function<T, R> mappingFunction,
-                                   @NonNull final Supplier<T>... variants) {
+    public <T, R> R mapOnlyNonNull(final @NonNull Function<@NotNull T, R> mappingFunction,
+                                   final @NotNull Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return mappingFunction.apply(value);
+            final T value;
+            if ((value = variant.get()) != null) return mappingFunction.apply(value);
         }
 
         return null;
@@ -242,11 +253,12 @@ public class ObjectUtil {
      * @param <T> type of source value
      * @param <R> type of resulting value
      * @return first nonnull value found mapped using mapping function
+     *
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T, R> R mapNonNullOrThrow(@NonNull final Function<T, R> mappingFunction,
-                                      @NonNull final T... variants) {
+    public <T, R> R mapNonNullOrThrow(final @NonNull Function<@NotNull T, R> mappingFunction,
+                                      final @Nullable T @NonNull ... variants) {
         for (val variant : variants) if (variant != null) return mappingFunction.apply(variant);
 
         throw new NullPointerException("No nonnull value found among variants");
@@ -261,14 +273,15 @@ public class ObjectUtil {
      * @param <T> type of source value
      * @param <R> type of resulting value
      * @return first nonnull value found mapped using mapping function
+     *
      * @throws NullPointerException if none of the variants specified is nonnull
      */
     @SafeVarargs
-    public <T, R> R mapNonNullOrThrow(@NonNull final Function<T, R> mappingFunction,
-                                      @NonNull final Supplier<T>... variants) {
+    public <T, R> R mapNonNullOrThrow(final @NonNull Function<@NotNull T, R> mappingFunction,
+                                      final @NotNull Supplier<@Nullable T> @NonNull ... variants) {
         for (val variant : variants) {
-            val value = variant.get();
-            if (value != null) return mappingFunction.apply(value);
+            final T value;
+            if ((value = variant.get()) != null) return mappingFunction.apply(value);
         }
 
         throw new NullPointerException("No nonnull value found among variants");

@@ -10,7 +10,7 @@ import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.invoke.FullAccessLookupFactories;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.ObjectUtil;
-import ru.progrm_jarvis.javacommons.pair.Pair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 import ru.progrm_jarvis.javacommons.unsafe.UnsafeInternals;
 
 import java.lang.invoke.*;
@@ -143,13 +143,13 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Class<?> defineClass(@NonNull final Lookup owner,
-                                    @Nullable final String name, @NonNull final byte[] bytecode) {
+        public Class<?> defineClass(final @NonNull Lookup owner,
+                                    final @Nullable String name, final @NonNull byte[] bytecode) {
             return ANONYMOUS_CLASS_DEFINER.defineAnonymousClass(owner.lookupClass(), bytecode, null);
         }
 
         @Override
-        public Class<?>[] defineClasses(final @NonNull Lookup owner, @NonNull final byte[]... bytecodes) {
+        public Class<?>[] defineClasses(final @NonNull Lookup owner, final @NonNull byte[]... bytecodes) {
             val length = bytecodes.length;
             val classes = new Class<?>[length];
 
@@ -162,7 +162,7 @@ public class GcClassDefiners {
 
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
-                                            @NonNull final List<byte @NotNull []> bytecodes) {
+                                            final @NonNull List<byte @NotNull []> bytecodes) {
             val classes = new ArrayList<Class<?>>(bytecodes.size());
 
             val lookupClass = owner.lookupClass();
@@ -175,8 +175,8 @@ public class GcClassDefiners {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Class<?>[] defineClasses(@NonNull final Lookup owner,
-                                        @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
+        public Class<?>[] defineClasses(final @NonNull Lookup owner,
+                                        final @NonNull Pair<@Nullable String, byte @NotNull []>... bytecodes) {
             val length = bytecodes.length;
             val classes = new Class<?>[length];
 
@@ -188,8 +188,8 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Map<String, Class<?>> defineClasses(@NonNull final Lookup owner,
-                                                   @NonNull final Map<String, byte[]> namedBytecode) {
+        public Map<String, Class<?>> defineClasses(final @NonNull Lookup owner,
+                                                   final @NonNull Map<String, byte[]> namedBytecode) {
             val classes = new HashMap<String, Class<?>>(namedBytecode.size());
 
             val lookupClass = owner.lookupClass();
@@ -225,13 +225,13 @@ public class GcClassDefiners {
     private static final class TmpClassLoaderClassDefiner implements ClassDefiner {
 
         @Override
-        public Class<?> defineClass(@NonNull final Lookup owner,
-                                    @Nullable final String name, @NonNull final byte[] bytecode) {
+        public Class<?> defineClass(final @NonNull Lookup owner,
+                                    final @Nullable String name, final @NonNull byte[] bytecode) {
             return new TmpClassLoader(owner.lookupClass().getClassLoader()).define(name, bytecode);
         }
 
         @Override
-        public Class<?>[] defineClasses(final @NonNull Lookup owner, @NonNull final byte[]... bytecodes) {
+        public Class<?>[] defineClasses(final @NonNull Lookup owner, final @NonNull byte[]... bytecodes) {
             val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
@@ -243,7 +243,7 @@ public class GcClassDefiners {
 
         @Override
         public List<Class<?>> defineClasses(final @NonNull Lookup owner,
-                                            @NonNull final List<byte @NotNull []> bytecodes) {
+                                            final @NonNull List<byte @NotNull []> bytecodes) {
             val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new ArrayList<Class<?>>(bytecodes.size());
@@ -254,8 +254,8 @@ public class GcClassDefiners {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Class<?>[] defineClasses(@NonNull final Lookup owner,
-                                        @NonNull final Pair<@Nullable String, byte @NotNull []>... bytecodes) {
+        public Class<?>[] defineClasses(final @NonNull Lookup owner,
+                                        final @NonNull Pair<@Nullable String, byte @NotNull []>... bytecodes) {
             val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
@@ -269,8 +269,8 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Map<String, Class<?>> defineClasses(@NonNull final Lookup owner,
-                                                   @NonNull final Map<String, byte[]> namedBytecode) {
+        public Map<String, Class<?>> defineClasses(final @NonNull Lookup owner,
+                                                   final @NonNull Map<String, byte[]> namedBytecode) {
             val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new HashMap<String, Class<?>>(namedBytecode.size());
@@ -289,7 +289,7 @@ public class GcClassDefiners {
                 "This class-loader is intended only for internal usage and should never be accessed outside "
                         + "as there should be no strong references to it"
         )
-        private static class TmpClassLoader extends ClassLoader {
+        private static final class TmpClassLoader extends ClassLoader {
 
             /**
              * Instantiates a new temporary class-loader using the given parent.
@@ -307,9 +307,9 @@ public class GcClassDefiners {
              * @param bytecode bytecode of the class
              * @return defined class
              */
-            private Class<?> define(@Nullable final String name,
+            private Class<?> define(final @Nullable String name,
                                     @Internal("no need for check as the class is only locally available")
-                                    @NotNull final byte[] bytecode) {
+                                    final @NotNull byte[] bytecode) {
                 return defineClass(name, bytecode, 0, bytecode.length);
             }
         }

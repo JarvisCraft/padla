@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.util.ClassUtil;
+import ru.progrm_jarvis.javacommons.classloading.ClassUtil;
 
 import java.lang.invoke.MethodType;
 
@@ -44,7 +44,7 @@ public class MethodTypeUtil {
      */
     public @NotNull MethodType integrateTypes(@NonNull /* mutable */ MethodType original,
                                               /* mutable */ int originalStartIndex,
-                                              @NonNull final MethodType target,
+                                              final @NonNull MethodType target,
                                               /* mutable */ int targetStartIndex,
                                               final int parameterCount) {
         checkArgument(parameterCount >= 0, "Parameter count cannot be negative");
@@ -84,8 +84,8 @@ public class MethodTypeUtil {
      *
      * @see #integrateTypes(MethodType, int, MethodType, int, int) full form of this method
      */
-    public @NotNull MethodType integrateTypes(@NonNull final MethodType original,
-                                              @NonNull final MethodType target) {
+    public @NotNull MethodType integrateTypes(final @NonNull MethodType original,
+                                              final @NonNull MethodType target) {
         val originalParameterCount = original.parameterCount();
         checkArgument(
                 originalParameterCount == target.parameterCount(),

@@ -59,12 +59,12 @@ class ObjectUtilTest {
         assertEquals("f", ObjectUtil.map("foo", t -> t.substring(0, 1)));
         assertEquals("1", ObjectUtil.map(1, t -> Integer.toString(t)));
         assertNull(ObjectUtil.map(123, t -> null));
-        assertThrows(NullPointerException.class, () -> ObjectUtil.map(null, t -> {
-            if (t == null) throw new NullPointerException();
+        assertThrows(ExpectedRuntimeException.class, () -> ObjectUtil.map(null, t -> {
+            if (t == null) throw new ExpectedRuntimeException();
             return "nonnull";
         }));
-        assertThrows(NullPointerException.class, () -> ObjectUtil.map(null, t -> {
-            throw new NullPointerException();
+        assertThrows(ExpectedRuntimeException.class, () -> ObjectUtil.map(null, t -> {
+            throw new ExpectedRuntimeException();
         }));
 
         final class CustomException extends RuntimeException {}
@@ -117,7 +117,19 @@ class ObjectUtilTest {
         assertEquals("f", ObjectUtil.mapNonNullOrThrow(t -> t.substring(0, 1), null, "foo", "bar"));
         // mapping function should not be called so the one which allows nulls is used
         assertThrows(NullPointerException.class, () -> ObjectUtil.mapNonNullOrThrow(Objects::isNull, (Object) null));
-        assertThrows(NullPointerException.class, () -> ObjectUtil.mapNonNullOrThrow(Objects::isNull, (Object) null, null));
-        assertThrows(NullPointerException.class, () -> ObjectUtil.mapNonNullOrThrow(Objects::isNull, (Object) null, null, null));
+        assertThrows(NullPointerException.class,
+                () -> ObjectUtil.mapNonNullOrThrow(Objects::isNull, (Object) null, null)
+        );
+        assertThrows(NullPointerException.class,
+                () -> ObjectUtil.mapNonNullOrThrow(Objects::isNull, (Object) null, null, null)
+        );
+    }
+
+    private static final class ExpectedRuntimeException extends RuntimeException {
+
+        @SuppressWarnings("PublicConstructor")
+        public ExpectedRuntimeException() {
+            super(null, null, true, false);
+        }
     }
 }

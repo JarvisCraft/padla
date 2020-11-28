@@ -42,7 +42,7 @@ public class StaticTextModel<T> implements TextModel<T> {
      * @implNote this is not generated via Lombok because there is field dependency
      * ({@link #length} and {@link #hashCode}are based on {@link #text})
      */
-    public StaticTextModel(@NotNull final String text) {
+    public StaticTextModel(final @NotNull String text) {
         this.text = text;
         length = OptionalInt.of(text.length());
         hashCode = text.hashCode();
@@ -56,25 +56,25 @@ public class StaticTextModel<T> implements TextModel<T> {
 
     @Override
     @Contract(pure = true)
-    @NotNull public OptionalInt getMinLength() {
+    public @NotNull OptionalInt getMinLength() {
         return length;
     }
 
     @Override
     @Contract(pure = true)
-    @NotNull public OptionalInt getMaxLength() {
+    public @NotNull OptionalInt getMaxLength() {
         return length;
     }
 
     @Override
     @Contract(pure = true)
-    @NotNull public String getText(@Nullable final T target) {
+    public @NotNull String getText(final @Nullable T target) {
         return text;
     }
 
     @Override
     @Contract(pure = true)
-    public boolean equals(@Nullable final Object object) {
+    public boolean equals(final @Nullable Object object) {
         if (object == this) return true;
         if (object instanceof TextModel) {
             val textModel = (TextModel<?>) object;
@@ -96,7 +96,7 @@ public class StaticTextModel<T> implements TextModel<T> {
      * @param <T> type of object according to which the text model is formatted (actually, not used)
      * @return text model of the given text
      */
-    public static <T> TextModel<T> of(@NonNull final String text) {
+    public static <T> TextModel<T> of(final @NonNull String text) {
         return text.isEmpty() ? TextModel.empty() : new StaticTextModel<>(text);
     }
 }

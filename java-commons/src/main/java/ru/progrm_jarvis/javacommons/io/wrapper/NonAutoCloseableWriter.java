@@ -1,6 +1,6 @@
 package ru.progrm_jarvis.javacommons.io.wrapper;
 
-import ru.progrm_jarvis.javacommons.util.NonAutoCloseable;
+import ru.progrm_jarvis.javacommons.service.NonAutoCloseable;
 
 import java.io.IOException;
 import java.io.Writer;

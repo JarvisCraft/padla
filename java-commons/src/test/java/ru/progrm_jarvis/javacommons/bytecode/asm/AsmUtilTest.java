@@ -7,7 +7,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
-import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
@@ -74,7 +74,7 @@ class AsmUtilTest {
                 // a SuccessStatus should be thrown
                 fail();
             } catch (final InvocationTargetException e) {
-                assertThat(e.getCause(), instanceOf(SuccessStatus.class));
+                assertThat(e.getCause(), instanceOf(ExpectedException.class));
             }
         }
     }
@@ -107,20 +107,24 @@ class AsmUtilTest {
         assertDoesNotThrow(() -> constructor.newInstance().getClass());
     }
 
+    @SuppressWarnings("RedundantNoArgConstructor")
     public static class TestSubject {
 
+        @SuppressWarnings("PublicConstructor")
         public TestSubject() {}
     }
 
     public static class StatusSubject {
 
-        public StatusSubject() throws SuccessStatus {
-            throw new SuccessStatus();
+        @SuppressWarnings("PublicConstructor")
+        public StatusSubject() throws ExpectedException {
+            throw new ExpectedException();
         }
     }
 
-    private static class SuccessStatus extends Exception {
-        public SuccessStatus() {
+    @SuppressWarnings("PublicConstructor")
+    private static class ExpectedException extends Exception {
+        public ExpectedException() {
             super(null, null, true, false);
         }
     }

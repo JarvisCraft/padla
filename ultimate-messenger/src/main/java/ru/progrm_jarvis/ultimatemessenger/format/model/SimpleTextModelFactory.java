@@ -1,9 +1,6 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
@@ -15,28 +12,31 @@ import java.util.List;
 /**
  * Simple implementation of {@link TextModelFactory text model factory}.
  */
-public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<SimpleTextModelFactory<?>> INSTANCE
+    private static final Lazy<TextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(SimpleTextModelFactory::new);
 
     /**
-     * Returns this {@link TextModelFactory text model factory} singleton.
+     * Creates a simple {@link TextModelFactory text model factory}.
      *
      * @param <T> generic type of got {@link TextModelFactory text model factory}
-     * @return shared instance of this {@link TextModelFactory text model factory}
+     * @return created text model factory
+     *
+     * @implNote returned instance may be a singleton
      */
     @SuppressWarnings("unchecked")
-    @NotNull public static <T> SimpleTextModelFactory<T> get() {
-        return (SimpleTextModelFactory<T>) INSTANCE.get();
+    public static <T> @NotNull TextModelFactory<T> create() {
+        return (TextModelFactory<T>) INSTANCE.get();
     }
 
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
-        return new TextModelBuilder<>();
+        return new SimpleTextModelBuilder<>();
     }
 
     /**
@@ -49,14 +49,14 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this also allows instance caching)
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
+    protected static class SimpleTextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
 
         @NonNull List<TextModel<T>> elements = new ArrayList<>();
 
         @NonFinal transient String lastStaticText;
 
         @Override
-        @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
             if (!staticText.isEmpty()) {
                 if (lastStaticText == null) elements.add(StaticTextModel.of(lastStaticText = staticText));
                 else elements.set(elements.size() - 1, StaticTextModel.of(lastStaticText += staticText)); // ...
@@ -69,7 +69,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull public TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
             elements.add(dynamicText);
             lastStaticText = null;
             markAsChanged();
@@ -78,7 +78,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull public TextModelFactory.TextModelBuilder<T> clear() {
+        public @NotNull TextModelFactory.TextModelBuilder<T> clear() {
             if (!elements.isEmpty()) {
                 elements.clear();
                 lastStaticText = null;
@@ -90,7 +90,7 @@ public class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        @NotNull protected TextModel<T> buildTextModel(final boolean release) {
+        protected @NotNull TextModel<T> buildTextModel(final boolean release) {
             return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.fromCopyOf(elements);
         }
     }

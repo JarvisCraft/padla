@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ConcurrentDequeWrapper<E, W extends Deque<E>>
         extends ConcurrentQueueWrapper<E, W> implements Deque<E> {
 
-    protected ConcurrentDequeWrapper(@NotNull final W wrapped,
+    protected ConcurrentDequeWrapper(final @NotNull W wrapped,
                                      final @NotNull Lock readLock,
                                      final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);

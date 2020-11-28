@@ -3,7 +3,6 @@ package ru.progrm_jarvis.javacommons.collection.concurrent;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.function.UnaryOperator;
 
 public class ConcurrentListWrapper<E, W extends List<E>> extends ConcurrentCollectionWrapper<E, W> implements List<E> {
 
-    protected ConcurrentListWrapper(@NotNull final W wrapped,
+    protected ConcurrentListWrapper(final @NotNull W wrapped,
                                     final @NotNull Lock readLock,
                                     final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);
@@ -52,10 +51,10 @@ public class ConcurrentListWrapper<E, W extends List<E>> extends ConcurrentColle
     }
 
     @Override
-    public void sort(final @NonNull Comparator<? super E> c) {
+    public void sort(final @NonNull Comparator<? super E> comparator) {
         writeLock.lock();
         try {
-            wrapped.sort(c);
+            wrapped.sort(comparator);
         } finally {
             writeLock.unlock();
         }
@@ -130,8 +129,7 @@ public class ConcurrentListWrapper<E, W extends List<E>> extends ConcurrentColle
     }
 
     @Override
-    @Nonnull
-    public ListIterator<E> listIterator() {
+    public @NotNull ListIterator<E> listIterator() {
         readLock.lock();
         try {
             return wrapped.listIterator();

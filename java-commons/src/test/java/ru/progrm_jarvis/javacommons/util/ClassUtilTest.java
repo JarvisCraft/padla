@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import ru.progrm_jarvis.javacommons.classloading.ClassUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -107,61 +108,61 @@ class ClassUtilTest {
 
     @ParameterizedTest
     @MethodSource("providePrimitiveWrappers")
-    void testIsPrimitiveWrapperWithPrimitiveWrappers(@NotNull final Class<?> primitiveWrapper) {
+    void testIsPrimitiveWrapperWithPrimitiveWrappers(final @NotNull Class<?> primitiveWrapper) {
         assertTrue(ClassUtil.isPrimitiveWrapper(primitiveWrapper));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitives")
-    void testIsPrimitiveWrapperWithPrimitives(@NotNull final Class<?> primitive) {
+    void testIsPrimitiveWrapperWithPrimitives(final @NotNull Class<?> primitive) {
         assertFalse(ClassUtil.isPrimitiveWrapper(primitive));
     }
 
     @ParameterizedTest
     @MethodSource("provideNonPrimitiveOrWrappers")
-    void testIsPrimitiveWrapperWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
+    void testIsPrimitiveWrapperWithNonPrimitiveOrWrapperClasses(final @NotNull Class<?> nonPrimitiveOrWrapper) {
         assertFalse(ClassUtil.isPrimitiveWrapper(nonPrimitiveOrWrapper));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitivesToPrimitiveWrappers")
-    void testToPrimitiveWrapperWithValid(@NotNull final Class<?> primitive, @NotNull final Class<?> wrapper) {
+    void testToPrimitiveWrapperWithValid(final @NotNull Class<?> primitive, final @NotNull Class<?> wrapper) {
         assertSame(wrapper, ClassUtil.toPrimitiveWrapper(primitive));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitiveWrappers")
-    void testToPrimitiveWrapperWithPrimitiveWrappers(@NotNull final Class<?> wrapper) {
+    void testToPrimitiveWrapperWithPrimitiveWrappers(final @NotNull Class<?> wrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitiveWrapper(wrapper));
     }
 
     @ParameterizedTest
     @MethodSource("provideNonPrimitiveOrWrappers")
-    void testToPrimitiveWrapperWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
+    void testToPrimitiveWrapperWithNonPrimitiveOrWrapperClasses(final @NotNull Class<?> nonPrimitiveOrWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitiveWrapper(nonPrimitiveOrWrapper));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitivesToPrimitiveWrappers")
-    void testToPrimitiveWithValid(@NotNull final Class<?> primitive, @NotNull final Class<?> wrapper) {
+    void testToPrimitiveWithValid(final @NotNull Class<?> primitive, final @NotNull Class<?> wrapper) {
         assertSame(primitive, ClassUtil.toPrimitive(wrapper));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitives")
-    void testToPrimitiveWithPrimitives(@NotNull final Class<?> primitive) {
+    void testToPrimitiveWithPrimitives(final @NotNull Class<?> primitive) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(primitive));
     }
 
     @ParameterizedTest
     @MethodSource("provideNonPrimitiveOrWrappers")
-    void testToPrimitiveWithNonPrimitiveOrWrapperClasses(@NotNull final Class<?> nonPrimitiveOrWrapper) {
+    void testToPrimitiveWithNonPrimitiveOrWrapperClasses(final @NotNull Class<?> nonPrimitiveOrWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(nonPrimitiveOrWrapper));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitives")
-    void testIntegrateTypeWithPrimitiveTypes(@NonNull final Class<?> primitive) {
+    void testIntegrateTypeWithPrimitiveTypes(final @NonNull Class<?> primitive) {
         assertTrue(primitive.isAssignableFrom(
                 ClassUtil.integrateType(primitive, primitive))
         );
@@ -172,7 +173,7 @@ class ClassUtilTest {
 
     @ParameterizedTest
     @MethodSource("providePrimitiveWrappers")
-    void testIntegrateTypeWithPrimitiveWrapperTypes(@NonNull final Class<?> primitiveWrapper) {
+    void testIntegrateTypeWithPrimitiveWrapperTypes(final @NonNull Class<?> primitiveWrapper) {
         assertTrue(primitiveWrapper.isAssignableFrom(
                 ClassUtil.integrateType(primitiveWrapper, primitiveWrapper)
         ));
@@ -183,7 +184,7 @@ class ClassUtilTest {
 
     @ParameterizedTest
     @MethodSource("provideNonPrimitiveOrWrappers")
-    void testIntegrateTypeWithNonPrimitiveOrWrapperClasses(@NonNull final Class<?> nonPrimitiveOrWrappers) {
+    void testIntegrateTypeWithNonPrimitiveOrWrapperClasses(final @NonNull Class<?> nonPrimitiveOrWrappers) {
         assertTrue(nonPrimitiveOrWrappers.isAssignableFrom(
                 ClassUtil.integrateType(nonPrimitiveOrWrappers, nonPrimitiveOrWrappers)
         ));
@@ -194,51 +195,51 @@ class ClassUtilTest {
 
     @ParameterizedTest
     @MethodSource("providePrimitivesToPrimitiveWrappers")
-    void testIntegrateTypeWithPrimitivesToPrimitiveWrappers(@NonNull final Class<?> primitive,
-                                                            @NotNull final Class<?> primitiveWrapper) {
+    void testIntegrateTypeWithPrimitivesToPrimitiveWrappers(final @NonNull Class<?> primitive,
+                                                            final @NotNull Class<?> primitiveWrapper) {
         assertTrue(primitiveWrapper.isAssignableFrom(ClassUtil.integrateType(primitive, primitiveWrapper)));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitivesToPrimitiveWrappers")
-    void testIntegrateTypeWithPrimitiveWrappersToPrimitives(@NonNull final Class<?> primitive,
-                                                            @NotNull final Class<?> primitiveWrapper) {
+    void testIntegrateTypeWithPrimitiveWrappersToPrimitives(final @NonNull Class<?> primitive,
+                                                            final @NotNull Class<?> primitiveWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(primitiveWrapper, primitive));
     }
 
     @ParameterizedTest
     @MethodSource("providePrimitives")
-    void testIntegrateTypeWithPrimitivesToString(@NonNull final Class<?> primitive) {
+    void testIntegrateTypeWithPrimitivesToString(final @NonNull Class<?> primitive) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(primitive, String.class));
     }
 
     @ParameterizedTest
     @MethodSource("provideDifferentPrimitivePairs")
-    void testIntegrateTypeWithDifferentPrimitivePairs(@NonNull final Class<?> first,
-                                                      @NotNull final Class<?> second) {
+    void testIntegrateTypeWithDifferentPrimitivePairs(final @NonNull Class<?> first,
+                                                      final @NotNull Class<?> second) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(first, second));
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(second, first));
     }
 
     @ParameterizedTest
     @MethodSource("provideDifferentPrimitiveWrapperPairs")
-    void testIntegrateTypeWithDifferentPrimitiveWrapperPairs(@NonNull final Class<?> first,
-                                                             @NotNull final Class<?> second) {
+    void testIntegrateTypeWithDifferentPrimitiveWrapperPairs(final @NonNull Class<?> first,
+                                                             final @NotNull Class<?> second) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(first, second));
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(second, first));
     }
 
     @ParameterizedTest
     @MethodSource("provideOneSideIntegrableNonPrimitivePairs")
-    void testIntegrateTypeWithOneSideIntegrableNonPrimitivePairs(@NonNull final Class<?> original,
-                                                                 @NotNull final Class<?> target) {
+    void testIntegrateTypeWithOneSideIntegrableNonPrimitivePairs(final @NonNull Class<?> original,
+                                                                 final @NotNull Class<?> target) {
         assertTrue(target.isAssignableFrom(ClassUtil.integrateType(original, target)));
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(target, original));
     }
 
     @ParameterizedTest
     @MethodSource("provideUnassignablePairs")
-    void testIntegrateTypeWithUnassignablePairs(@NonNull final Class<?> first, @NotNull final Class<?> second) {
+    void testIntegrateTypeWithUnassignablePairs(final @NonNull Class<?> first, final @NotNull Class<?> second) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(first, second));
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.integrateType(second, first));
     }

@@ -3,7 +3,7 @@ package ru.progrm_jarvis.javacommons.random;
 import lombok.val;
 import lombok.var;
 import org.junit.jupiter.api.Test;
-import ru.progrm_jarvis.javacommons.map.MapUtil;
+import ru.progrm_jarvis.javacommons.collection.MapUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,11 +68,10 @@ class RandomUtilTest {
     void testGetRandomFromCollection() {
         val random = ThreadLocalRandom.current();
 
-        final Collection<String> values;
         var valuesList = new ArrayList<String>();
         var iterations = 64 + random.nextInt(65);
         for (var i = 0; i < iterations; i++) valuesList.add(Integer.toString(random.nextInt()));
-        values = valuesList;
+        final Collection<String> values = valuesList;
 
         iterations = 128 + random.nextInt(129);
         for (var i = 0; i < iterations; i++) assertThat(                RandomUtil.getRandom(values), isIn(values));

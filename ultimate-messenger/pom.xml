@@ -2,24 +2,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>padla</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
         <version>1.0.0-rc.1</version>
     </parent>
-
     <artifactId>ultimate-messenger</artifactId>
 
     <name>Ultimate Messenger</name>
-    <description>API for messaging with support of placeholders and custom message-types</description>
+    <description>API whose primary purpose is providing flexible API for creating configurable messages</description>
 
     <dependencies>
-        <!-- padla -->
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>java-commons</artifactId>
         </dependency>
-        <!-- Basic dependencies -->
+
+        <!-- Bytecode generation -->
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
@@ -28,16 +28,20 @@
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-        <!-- Annotations -->
+
+        <!-- Code-generation -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
+        <!-- Documenting -->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
-        <!-- Test dependencies -->
+
+        <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.invoke;
 
-import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.lang.invoke.MethodHandles;
@@ -55,9 +54,10 @@ class SimpleInvokeFactoryTest {
 
     private static final class SociophobicClass {
 
-        @NonNull private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-        @NonNull private static final LookupFactory LOOKUP_FACTORY = clazz -> LOOKUP;
+        private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        private static final LookupFactory LOOKUP_FACTORY = clazz -> LOOKUP;
 
+        @SuppressWarnings("MethodMayBeStatic")
         public String foo(int number) {
             return "foo-" + number;
         }

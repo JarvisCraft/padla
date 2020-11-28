@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ConcurrentSetWrapper<E, W extends Set<E>>
         extends ConcurrentCollectionWrapper<E, W> implements Set<E> {
-    protected ConcurrentSetWrapper(@NotNull final W wrapped,
+    protected ConcurrentSetWrapper(final @NotNull W wrapped,
                                    final @NotNull Lock readLock,
                                    final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);

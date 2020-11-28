@@ -9,8 +9,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
-import ru.progrm_jarvis.javacommons.pair.Pair;
-import ru.progrm_jarvis.javacommons.pair.SimplePair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 import ru.progrm_jarvis.reflector.wrapper.AbstractFieldWrapper;
 import ru.progrm_jarvis.reflector.wrapper.StaticFieldWrapper;
 
@@ -126,7 +125,7 @@ public class InvokeStaticFieldWrapper<@NotNull T, V>
     public static <@NonNull T, V> @NotNull StaticFieldWrapper<T, V> from(
             final @NonNull Field field, final @NonNull T target
     ) {
-        return (StaticFieldWrapper<T, V>) BOUND_WRAPPER_CACHE.get(SimplePair.of(field, target), () -> {
+        return (StaticFieldWrapper<T, V>) BOUND_WRAPPER_CACHE.get(Pair.of(field, target), () -> {
             checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
 
             return new InvokeStaticFieldWrapper<>(

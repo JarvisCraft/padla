@@ -200,7 +200,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         /**
          * Owner of this service
          */
-        @NonNull O owner;
+        @NotNull O owner;
 
         /**
          * Actual owned service
@@ -210,7 +210,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         /**
          * Flag indicating whether or not this service can no longer be used.
          */
-        @NonNull AtomicBoolean closed;
+        @NotNull AtomicBoolean closed;
 
         /**
          * Creates a new safe owned service.
@@ -218,28 +218,34 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
          * @param owner owner of this service
          * @param service actual owned service
          */
-        protected SafeOwnedService(final O owner, final S service) {
+        protected SafeOwnedService(final @NotNull O owner, final S service) {
             this.owner = owner;
             this.service = service;
             closed = new AtomicBoolean();
         }
 
+        protected void failOnClosed() {
+            throw new IllegalStateException("This managed service has already been closed");
+        }
+
         @Override
         public @NotNull S service() {
-            if (closed.get()) throw new IllegalStateException("This managed service has already been closed");
+            if (closed.get()) failOnClosed();
+
             return service;
         }
 
         @Override
         public void onceReady(final @NonNull Consumer<R> serviceCallback) {
-            if (closed.get()) throw new IllegalStateException("This managed service has already been closed");
+            if (closed.get()) failOnClosed();
+
             addReadyCallback(owner, serviceCallback);
         }
 
         @Override
         public void close() {
             if (closed.compareAndSet(false, true)) markAsReady(owner);
-            else throw new IllegalStateException("This managed service has already been closed");
+            else failOnClosed();
         }
     }
 }

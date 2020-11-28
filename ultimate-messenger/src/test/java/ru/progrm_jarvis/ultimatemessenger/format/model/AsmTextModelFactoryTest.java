@@ -1,7 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.ultimatemessenger.format.model.AsmTextModelFactory.Configuration.StringConcatFactoryAlgorithm;
+import ru.progrm_jarvis.ultimatemessenger.format.model.AsmTextModelFactory.StringConcatFactoryAlgorithm;
 
 import java.util.stream.Stream;
 
