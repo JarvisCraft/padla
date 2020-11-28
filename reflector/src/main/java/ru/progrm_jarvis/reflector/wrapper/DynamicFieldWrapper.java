@@ -11,7 +11,21 @@ import java.util.function.UnaryOperator;
  * @param <T> type of the object containing the wrapped method
  * @param <V> type of the field's value
  */
-public interface DynamicFieldWrapper<T, V> extends FieldWrapper<T, V> {
+public interface DynamicFieldWrapper<@NotNull T, V> extends FieldWrapper<T, V> {
+
+    /**
+     * Gets the field's value and sets it to the new one.
+     *
+     * @param instance instance whose field it is
+     * @param value new value of the field
+     * @return old value of the field
+     */
+    default V getAndSet(final @NotNull T instance, final V value) {
+        val previousValue = get(instance);
+        set(instance, value);
+
+        return previousValue;
+    }
 
     /**
      * Gets the field's value.
@@ -30,27 +44,13 @@ public interface DynamicFieldWrapper<T, V> extends FieldWrapper<T, V> {
     void set(@NotNull T instance, V value);
 
     /**
-     * Gets the field's value and sets it to the new one.
-     *
-     * @param instance instance whose field it is
-     * @param value new value of the field
-     * @return old value of the field
-     */
-    default V getAndSet(@NotNull T instance, V value) {
-        val previousValue = get(instance);
-        set(instance, value);
-
-        return previousValue;
-    }
-
-    /**
      * Sets the field's value and gets it.
      *
      * @param instance instance whose field it is
      * @param value new value of the field
      * @return new value of the field (literally, {@code value})
      */
-    default V setAndGet(@NotNull T instance, V value) {
+    default V setAndGet(final @NotNull T instance, final V value) {
         set(instance, value);
 
         return value;
@@ -63,7 +63,7 @@ public interface DynamicFieldWrapper<T, V> extends FieldWrapper<T, V> {
      * @param operator operator to transform the old value to the new one
      * @return old value of the field
      */
-    default V getAndUpdate(@NotNull T instance, @NotNull UnaryOperator<V> operator) {
+    default V getAndUpdate(final @NotNull T instance, final @NotNull UnaryOperator<V> operator) {
         val previousValue = get(instance);
         set(instance, operator.apply(previousValue));
 
@@ -77,7 +77,7 @@ public interface DynamicFieldWrapper<T, V> extends FieldWrapper<T, V> {
      * @param operator operator to transform the old value to the new one
      * @return new value of the field
      */
-    default V updateAndGet(@NotNull T instance, @NotNull UnaryOperator<V> operator) {
+    default V updateAndGet(final @NotNull T instance, final @NotNull UnaryOperator<V> operator) {
         val newValue = operator.apply(get(instance));
         set(instance, newValue);
 

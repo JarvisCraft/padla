@@ -3,6 +3,7 @@ package ru.progrm_jarvis.reflector.wrapper.invoke;
 import lombok.AllArgsConstructor;
 import lombok.val;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -10,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InvokeDynamicFieldWrapperTest {
 
@@ -25,7 +27,8 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo(icq), equalTo(instance.icq)));
         // set
         val newIcq = icq + random.nextInt(1, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(instance, newIcq));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newIcq));
         assertThat(field.get(instance), allOf(equalTo(newIcq), equalTo(instance.icq)));
     }
 
@@ -41,7 +44,8 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo(nut), equalTo(instance.nut)));
         // set
         val newNut = nut + random.nextInt();
-        assertDoesNotThrow(() -> field.set(instance, newNut));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newNut));
         assertThat(field.get(instance), allOf(equalTo(newNut), equalTo(instance.nut)));
     }
 
@@ -56,9 +60,10 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo(127), equalTo(instance.id)));
         // set
         val newId = random.nextInt(128, Integer.MAX_VALUE);
-        assertDoesNotThrow(() -> field.set(instance, newId));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newId));
         // value gets cached (?)
-        assertThat(field.get(instance), /*allOf(*/equalTo(newId)/*, equalTo(instance.id))*/);
+        assertEquals(field.get(instance), newId);
     }
 
     @Test
@@ -72,16 +77,17 @@ class InvokeDynamicFieldWrapperTest {
         assertThat(field.get(instance), allOf(equalTo("Mr Areshek"), equalTo(instance.name)));
         // set
         val newName = "Mr. " + random.nextInt();
-        assertDoesNotThrow(() -> field.set(instance, newName));
+        //noinspection RedundantCast Java 11 issue
+        assertDoesNotThrow((Executable) () -> field.set(instance, newName));
         // value gets cached (?)
-        assertThat(field.get(instance), /*allOf(*/equalTo(newName)/*, equalTo(instance.name))*/);
+        assertEquals(newName, field.get(instance));
     }
 
     @AllArgsConstructor
     private static final class Areg {
-        private int icq;
-        private String nut;
-        private final int id = 127;
-        private final String name = "Mr Areshek";
+        @SuppressWarnings("FieldMayBeFinal") private int icq;
+        @SuppressWarnings("FieldMayBeFinal") private String nut;
+        @SuppressWarnings("FieldMayBeStatic") private final int id = 127;
+        @SuppressWarnings("FieldMayBeStatic") private final String name = "Mr Areshek";
     }
 }

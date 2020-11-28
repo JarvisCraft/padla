@@ -6,17 +6,21 @@
     <parent>
         <artifactId>padla</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-rc.1</version>
     </parent>
     <artifactId>java-commons</artifactId>
 
     <name>Java Commons</name>
-    <description>Common utilities for Java</description>
+    <description>Various generic utilities for Java</description>
 
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>
@@ -37,8 +41,16 @@
             <artifactId>junit-jupiter-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
         </dependency>
     </dependencies>
 </project>

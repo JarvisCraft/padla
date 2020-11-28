@@ -1,30 +1,41 @@
-# Programming language
+os: linux
+dist: bionic
 language: java
 
 ### Maven basic build ###
-# Build project, installing to local repo (skip testing and javadoc generation (if those exist))
-install:
-  # Normal build part
-  - mvn clean install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 jobs:
   include:
-    # 1. Test project against OpenJDK8
-    - stage: test
+    # 1. Test
+    - stage: Test
       jdk: openjdk8
-      script: mvn -q verify
+    - jdk: openjdk11
 
     # 2. Deploy
-    - stage: deploy
+    - stage: Deploy
+      # Don't trigger deployment on forks, also skip it if deployment conditions will surely not get be met
       if: repo = JarvisCraft/padla AND branch IN (master, development) AND type != pull_request
+      # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
       jdk: openjdk8
-      script:
-        # Enable access to bash-scripts
-        - chmod +x ./attempt-travis-deploy.sh
-        - chmod +x ./project-version.sh
-        - chmod +x ./.travis/ossrh-deploy.sh
-        - ./attempt-travis-deploy.sh
+      before_deploy: ./.travis/scripts/import_code_signing_keys.sh
+      # Use deployment strategy corresponding to current
+      deploy:
+        # Deploy snapshot to Sonatype OSSRH
+        - provider: script
+          edge: true
+          script: ./.travis/scripts/maven_deploy.sh
+          on:
+            branch: development
+            condition: "\"$(./.travis/scripts/get_version.sh)\" == *-SNAPSHOT"
 
-# Cached directories
+        # Deploy release to Maven Central
+        - provider: script
+          edge: true
+          script: ./.travis/scripts/maven_deploy.sh release
+          on:
+            branch: master
+            tags: true
+            condition: "\"$(./.travis/scripts/get_version.sh)\" != *-SNAPSHOT"
+
 cache:
   directories:
-    - ~/.m2/repository # Maven repository
+    - ~/.m2/repository

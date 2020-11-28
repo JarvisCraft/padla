@@ -1,12 +1,12 @@
 package ru.progrm_jarvis.javacommons.collection;
 
 import lombok.val;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CollectionFactoryTest {
 
     @Test
+    @Disabled
     void testEmptyImmutableEnumSet() {
         val set = CollectionFactory.<TestEnum>createImmutableEnumSet();
 
@@ -30,6 +31,7 @@ class CollectionFactoryTest {
     }
 
     @Test
+    @Disabled
     void testNonEmptyImmutableEnumSet() {
         val set = CollectionFactory.createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR);
 
@@ -50,8 +52,8 @@ class CollectionFactoryTest {
         assertTrue(set.contains(TestEnum.BAZ));
         assertThat(set, not(contains(TestEnum.FOO)));
         // test equality (both sides)
-        assertThat(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ)), equalTo(set));
-        assertThat(set, equalTo(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
+        assertThat(EnumSet.of(TestEnum.BAR, TestEnum.BAZ), equalTo(set));
+        assertThat(set, equalTo(EnumSet.of(TestEnum.BAR, TestEnum.BAZ)));
         assertThat(set, equalTo(new ArrayList<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
         // test to-array conversion
         assertThat(set.toArray(), anyOf( // although implementation uses natural order, check any array orders
@@ -107,16 +109,6 @@ class CollectionFactoryTest {
             );
             assertThat(newArray[2], nullValue());
         }
-    }
-
-    @Test
-    void testClassUnloading() {
-        val set = new WeakReference<>(CollectionFactory
-                .createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR)
-        );
-        while (set.get() != null) System.gc();
-        CollectionFactory
-                .createImmutableEnumSet(TestEnum.BAR, TestEnum.FOO);
     }
 
     public enum TestEnum {

@@ -1,5 +1,7 @@
 package ru.progrm_jarvis.reflector.wrapper;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Constructor;
 
 /**
@@ -7,4 +9,5 @@ import java.lang.reflect.Constructor;
  *
  * @param <T> type of object instantiated by the wrapped constructor
  */
-public interface ConstructorWrapper<T> extends StaticInvokeableWrapper<T, Constructor<? extends T>, T> {}
+public interface ConstructorWrapper<@NotNull T>
+        extends StaticInvokeableWrapper<T, Constructor<? extends T>, @NotNull T> {}

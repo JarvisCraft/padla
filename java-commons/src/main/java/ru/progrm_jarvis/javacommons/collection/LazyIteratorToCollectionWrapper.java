@@ -6,13 +6,10 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 
 /**
- * A wrapper for {@link Iterator<E>} to make it treated as a {@link Collection<E>}.
+ * A wrapper for {@link Iterator} to make it treated as a {@link Collection}.
  * It provides lazy access to its entries so that iteration happens only when needed.
  *
  * @param <E> type of element stored
@@ -34,8 +31,9 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      *
      * @return next element in iterator if any or {@code null} if its end was reached.
      */
-    @Nullable protected E readNextIteratorElement() {
+    protected @Nullable E readNextIteratorElement() {
         if (iterator.hasNext()) return iterator.next();
+
         return null;
     }
 
@@ -45,13 +43,12 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      * @param element element to try to reach
      * @return found element reference if found and {@code null} false otherwise
      */
-    @Nullable protected E readIteratorUntilReached(final E element) {
-        if (iterator.hasNext()) {
-            while (iterator.hasNext()) {
-                val nextElement = iterator.next();
-                if (Objects.equals(element, nextElement)) return nextElement;
-            }
+    protected @Nullable E readIteratorUntilReached(final E element) {
+        if (iterator.hasNext()) while (iterator.hasNext()) {
+            val nextElement = iterator.next();
+            if (Objects.equals(element, nextElement)) return nextElement;
         }
+
         return null;
     }
 
@@ -62,12 +59,11 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      * @return {@code true} if the element is contained in the wrapped iterator and {@code false} otherwise
      */
     protected boolean isIteratorContaining(final Object element) {
-        if (iterator.hasNext()) {
-            while (iterator.hasNext()) {
-                val nextElement = iterator.next();
-                if (Objects.equals(element, nextElement)) return true;
-            }
+        if (iterator.hasNext()) while (iterator.hasNext()) {
+            val nextElement = iterator.next();
+            if (Objects.equals(element, nextElement)) return true;
         }
+
         return false;
     }
 
@@ -112,7 +108,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     @NotNull
     @Override
     @SuppressWarnings({"unchecked", "SuspiciousToArrayCall"})
-    public <T> T[] toArray(@NotNull final T... a) {
+    public <T> T[] toArray(final T @NotNull ... a) {
         readIteratorFully();
 
         return targetCollection.toArray(a);
@@ -156,7 +152,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     }
 
     @Override
-    public boolean addAll(@NotNull final Collection<? extends E> elements) {
+    public boolean addAll(final @NotNull Collection<? extends E> elements) {
         return targetCollection.addAll(elements);
     }
 
@@ -175,7 +171,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     }
 
     @Override
-    public boolean retainAll(@NotNull final Collection<?> valuesToRetain) {
+    public boolean retainAll(final @NotNull Collection<?> valuesToRetain) {
         if (valuesToRetain.isEmpty()) {
             val changed = !targetCollection.isEmpty();
             targetCollection.clear();
@@ -242,7 +238,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
                 return iterator.next();
             }
 
-            throw new IllegalStateException();
+            throw new NoSuchElementException("No more elements available");
         }
 
         @Override

@@ -4,40 +4,39 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InvokeConstructorWrapperTest {
 
     @Test
     void testInvokePrivateNoArgs() throws NoSuchMethodException {
-        assertThat(
-                InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor())
-                        .invoke().args, equalTo(0)
-        );
+        assertEquals(InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor()).invoke().args, 0);
     }
 
     @Test
     void testInvokePrivate1Arg() throws NoSuchMethodException {
-        assertThat(
-                InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor(String.class))
-                        .invoke("Hello world").args, equalTo(1)
+        assertEquals(1, InvokeConstructorWrapper
+                .from(Petya.class.getDeclaredConstructor(String.class))
+                .invoke("Hello world")
+                .args
         );
     }
 
     @Test
     void testInvokePrivate2Args() throws NoSuchMethodException {
-        assertThat(
-                InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor(int.class, int.class))
-                        .invoke(23, 42).args, equalTo(2)
+        assertEquals(2, InvokeConstructorWrapper
+                .from(Petya.class.getDeclaredConstructor(int.class, int.class))
+                .invoke(23, 42)
+                .args
         );
     }
 
     @Test
     void testInvokePrivate3Args() throws NoSuchMethodException {
-        assertThat(
-                InvokeConstructorWrapper.from(Petya.class.getDeclaredConstructor(int.class, int.class, int.class))
-                        .invoke(743, 523, 24).args, equalTo(3)
+        assertEquals(3, InvokeConstructorWrapper
+                .from(Petya.class.getDeclaredConstructor(int.class, int.class, int.class))
+                .invoke(743, 523, 24)
+                .args
         );
     }
 
@@ -51,15 +50,15 @@ class InvokeConstructorWrapperTest {
             this(0);
         }
 
-        private Petya(final String a) {
+        private Petya(final String first) {
             this(1);
         }
 
-        private Petya(final int a, final int b) {
+        private Petya(final int first, final int second) {
             this(2);
         }
 
-        private Petya(final int a, final int b, final int c) {
+        private Petya(final int first, final int second, final int third) {
             this(3);
         }
     }

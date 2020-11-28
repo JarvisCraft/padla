@@ -1,5 +1,7 @@
 package ru.progrm_jarvis.reflector.wrapper;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Field;
 
 /**
@@ -8,4 +10,5 @@ import java.lang.reflect.Field;
  * @param <T> type of the object containing the wrapped method
  * @param <V> type of the field's value
  */
-public interface FieldWrapper<T, V> extends ReflectorWrapper<T, Field> {}
+public interface FieldWrapper<@NotNull T, V>
+        extends ReflectorWrapper<T, Field> {}

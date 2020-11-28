@@ -6,14 +6,12 @@
     <parent>
         <artifactId>padla</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0.0-rc.1</version>
     </parent>
     <artifactId>reflector</artifactId>
 
     <name>Reflector</name>
-    <description>
-        Utilities and wrappers for common Java scenarios involving runtime access to class elements
-    </description>
+    <description>Wrappers for common objects of Java Reflection API</description>
 
     <dependencies>
         <dependency>
