@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.bytecode.asm;
 
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -273,7 +272,7 @@ public class AsmUtil {
      * @param clazz visitor of the class
      * @return static initializer block of the class
      */
-    public MethodVisitor visitStaticInitializer(@NonNull final ClassVisitor clazz) {
+    public MethodVisitor visitStaticInitializer(final @NonNull ClassVisitor clazz) {
         return clazz.visitMethod(ACC_STATIC, STATIC_INITIALIZER_METHOD_NAME, VOID_METHOD_DESCRIPTOR, null, null);
     }
 
@@ -282,7 +281,7 @@ public class AsmUtil {
      *
      * @param clazz visitor of the class
      */
-    public void addLookup(@NonNull final ClassVisitor clazz) {
+    public void addLookup(final @NonNull ClassVisitor clazz) {
         clazz.visitInnerClass(
                 LOOKUP_INTERNAL_NAME, METHOD_HANDLES_INTERNAL_NAME,
                 LOOKUP_INNER_CLASS_NAME, OPCODES_ACC_PUBLIC_STATIC_FINAL
@@ -295,8 +294,8 @@ public class AsmUtil {
      * @param classVisitor visitor of the class modified
      * @param superClassInternalName internal name of the super-class whose constructor should be invoked
      */
-    public void addEmptyConstructor(@NonNull final ClassVisitor classVisitor,
-                                    @NonNull final String superClassInternalName) {
+    public void addEmptyConstructor(final @NonNull ClassVisitor classVisitor,
+                                    final @NonNull String superClassInternalName) {
         // visit (create) empty constructor method
         val constructor = classVisitor.visitMethod(
                 ACC_PUBLIC, CONSTRUCTOR_METHOD_NAME, VOID_METHOD_DESCRIPTOR,
@@ -325,7 +324,7 @@ public class AsmUtil {
      *
      * @see #addEmptyConstructor(ClassVisitor, String) the method for handlin super-classes other than {@link Object}
      */
-    public void addEmptyConstructor(@NonNull final ClassVisitor classVisitor) {
+    public void addEmptyConstructor(final @NonNull ClassVisitor classVisitor) {
         addEmptyConstructor(classVisitor, OBJECT_INTERNAL_NAME);
     }
 
@@ -457,7 +456,7 @@ public class AsmUtil {
      * @param method method visitor used for appending code to the method
      * @param value value to get pushed onto the stack
      */
-    public void pushInt(@NonNull final MethodVisitor method, final int value) {
+    public void pushInt(final @NonNull MethodVisitor method, final int value) {
         switch (value) {
             case -1: {
                 method.visitInsn(ICONST_M1);
@@ -501,7 +500,7 @@ public class AsmUtil {
      * @param method method visitor used for appending code to the method
      * @param value value to get pushed onto the stack
      */
-    public void pushLong(@NonNull final MethodVisitor method, final long value) {
+    public void pushLong(final @NonNull MethodVisitor method, final long value) {
         if (value == 0) method.visitInsn(LCONST_0);
         else if (value == 1) method.visitInsn(LCONST_1);
         else method.visitLdcInsn(value);
@@ -513,7 +512,7 @@ public class AsmUtil {
      * @param method method visitor used for appending code to the method
      * @param value value to get pushed onto the stack
      */
-    public void pushFloat(@NonNull final MethodVisitor method, final float value) {
+    public void pushFloat(final @NonNull MethodVisitor method, final float value) {
         if (value == 0) method.visitInsn(FCONST_0);
         else if (value == 1) method.visitInsn(FCONST_1);
         else if (value == 2) method.visitInsn(FCONST_2);
@@ -526,7 +525,7 @@ public class AsmUtil {
      * @param method method visitor used for appending code to the method
      * @param value value to get pushed onto the stack
      */
-    public void pushDouble(@NonNull final MethodVisitor method, final double value) {
+    public void pushDouble(final @NonNull MethodVisitor method, final double value) {
         if (value == 0) method.visitInsn(DCONST_0);
         else if (value == 1) method.visitInsn(DCONST_1);
         else method.visitLdcInsn(value);
@@ -545,7 +544,7 @@ public class AsmUtil {
      *
      * @see #pushInt(MethodVisitor, int) can be used as a safe alternative
      */
-    public void pushCharUnsafely(@NonNull final MethodVisitor method, final char value) {
+    public void pushCharUnsafely(final @NonNull MethodVisitor method, final char value) {
         switch (value) {
             case 0: {
                 method.visitInsn(ICONST_0);

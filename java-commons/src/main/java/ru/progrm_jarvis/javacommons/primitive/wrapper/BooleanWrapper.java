@@ -87,8 +87,8 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
      */
     @ToString
     @NoArgsConstructor
+    @EqualsAndHashCode
     @AllArgsConstructor
-    @EqualsAndHashCode(callSuper = false)
     @FieldDefaults(level = AccessLevel.PRIVATE)
     final class BooleanBooleanWrapper implements BooleanWrapper {
 
@@ -117,7 +117,7 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
      * {@link BooleanWrapper} implementation based on {@link AtomicBoolean}.
      */
     @ToString
-    @EqualsAndHashCode(callSuper = false)
+    @EqualsAndHashCode
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicBooleanWrapper implements BooleanWrapper {
 

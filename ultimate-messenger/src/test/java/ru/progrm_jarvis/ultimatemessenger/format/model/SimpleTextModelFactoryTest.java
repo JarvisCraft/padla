@@ -8,6 +8,6 @@ class SimpleTextModelFactoryTest extends AbstractTextModelFactoryTest {
 
     @Override
     protected @NotNull Stream<@NotNull TextModelFactory<@NotNull User>> provideTestSubjects() {
-        return Stream.of(new SimpleTextModelFactory<>());
+        return Stream.of(SimpleTextModelFactory.create());
     }
 }

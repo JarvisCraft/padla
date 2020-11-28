@@ -21,9 +21,9 @@ public class ClassLoadingUtil {
      * @return optional containing the class if it was found or an empty one otherwise
      */
     @SuppressWarnings("unchecked")
-    public <T> Optional<Class<? extends T>> getClass(@NonNull final String className,
+    public <T> Optional<Class<? extends T>> getClass(final @NonNull String className,
                                                      final boolean loadIfNeeded,
-                                                     @NonNull final ClassLoader classLoader) {
+                                                     final @NonNull ClassLoader classLoader) {
         try {
             return Optional.of((Class<? extends T>) Class.forName(className, loadIfNeeded, classLoader));
         } catch (final ClassNotFoundException e) {
@@ -38,7 +38,7 @@ public class ClassLoadingUtil {
      * @param <T> type of the class
      * @return optional containing the class if it was found or an empty one otherwise
      */
-    public <T> Optional<Class<? extends T>> getClass(@NonNull final String className,
+    public <T> Optional<Class<? extends T>> getClass(final @NonNull String className,
                                                      final boolean loadIfNeeded) {
         return getClass(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
@@ -52,7 +52,7 @@ public class ClassLoadingUtil {
      * @return optional containing the class if it was found or an empty one otherwise
      */
     @SuppressWarnings("unchecked")
-    public <T> Optional<Class<? extends T>> getClass(@NonNull final String className) {
+    public <T> Optional<Class<? extends T>> getClass(final @NonNull String className) {
         try {
             return Optional.of((Class<? extends T>) Class.forName(className));
         } catch (final ClassNotFoundException e) {
@@ -70,9 +70,9 @@ public class ClassLoadingUtil {
      * @return the class if it was found or {@code null}
      */
     @SuppressWarnings("unchecked")
-    public <T> Class<? extends T> getNullableClass(@NonNull final String className,
+    public <T> Class<? extends T> getNullableClass(final @NonNull String className,
                                                              final boolean loadIfNeeded,
-                                                             @NonNull final ClassLoader classLoader) {
+                                                             final @NonNull ClassLoader classLoader) {
         try {
             return (Class<? extends T>) Class.forName(className, loadIfNeeded, classLoader);
         } catch (final ClassNotFoundException e) {
@@ -87,7 +87,7 @@ public class ClassLoadingUtil {
      * @param <T> type of the class
      * @return the class if it was found or {@code null}
      */
-    public <T> Class<? extends T> getNullableClass(@NonNull final String className,
+    public <T> Class<? extends T> getNullableClass(final @NonNull String className,
                                                              final boolean loadIfNeeded) {
         return getNullableClass(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
@@ -101,7 +101,7 @@ public class ClassLoadingUtil {
      * @return the class if it was found or {@code null}
      */
     @SuppressWarnings("unchecked")
-    public <T> Class<? extends T> getNullableClass(@NonNull final String className) {
+    public <T> Class<? extends T> getNullableClass(final @NonNull String className) {
         try {
             return (Class<? extends T>) Class.forName(className);
         } catch (final ClassNotFoundException e) {
@@ -117,9 +117,9 @@ public class ClassLoadingUtil {
      * @param classLoader class-loader to use for lookup
      * @return {@code true} if the class is available and {@code false} otherwise
      */
-    public boolean isClassAvailable(@NonNull final String className,
+    public boolean isClassAvailable(final @NonNull String className,
                                     final boolean loadIfNeeded,
-                                    @NonNull final ClassLoader classLoader) {
+                                    final @NonNull ClassLoader classLoader) {
         try {
             Class.forName(className, loadIfNeeded, classLoader);
         } catch (final ClassNotFoundException e) {
@@ -134,7 +134,7 @@ public class ClassLoadingUtil {
      * @param className name of the class to search for
      * @return {@code true} if the class is available and {@code false} otherwise
      */
-    public boolean isClassAvailable(@NonNull final String className,
+    public boolean isClassAvailable(final @NonNull String className,
                                     final boolean loadIfNeeded) {
         return isClassAvailable(className, loadIfNeeded, ClassLoadingUtil.class.getClassLoader());
     }
@@ -145,7 +145,7 @@ public class ClassLoadingUtil {
      * @param className name of the class to search for
      * @return {@code true} if the class is available and {@code false} otherwise
      */
-    public boolean isClassAvailable(@NonNull final String className) {
+    public boolean isClassAvailable(final @NonNull String className) {
         try {
             Class.forName(className);
         } catch (final ClassNotFoundException e) {

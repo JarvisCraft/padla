@@ -1,6 +1,7 @@
 package ru.progrm_jarvis.javacommons.util.function;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
@@ -25,6 +26,14 @@ public interface BooleanConsumer extends Consumer<Boolean> {
         accept(value.booleanValue());
     }
 
+    @Override
+    default @NotNull Consumer<Boolean> andThen(final @NonNull Consumer<? super Boolean> after) {
+        return value -> {
+            accept(value);
+            after.accept(value);
+        };
+    }
+
     /**
      * Returns a composed consumer that performs, in sequence, this operation followed by the {@code after} operation.
      *
@@ -32,7 +41,7 @@ public interface BooleanConsumer extends Consumer<Boolean> {
      * @return a composed operator that first performs this operation and then the provided one
      * @throws NullPointerException if {@code after} is {@code null}
      */
-    default BooleanConsumer andThen(@NonNull final BooleanConsumer after) {
+    default BooleanConsumer andThenPrimitive(final @NonNull BooleanConsumer after) {
         return value -> {
             accept(value);
             after.accept(value);

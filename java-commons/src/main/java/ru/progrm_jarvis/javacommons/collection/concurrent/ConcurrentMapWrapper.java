@@ -6,7 +6,6 @@ import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +20,7 @@ import java.util.function.Function;
 public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
         extends AbstractConcurrentSizedCollectionWrapper<W> implements Map<K, V> {
 
-    protected ConcurrentMapWrapper(@NotNull final W wrapped,
+    protected ConcurrentMapWrapper(final @NotNull W wrapped,
                                    final @NotNull Lock readLock,
                                    final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);
@@ -121,8 +120,7 @@ public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
     }
 
     @Override
-    @Nonnull
-    public Set<K> keySet() {
+    public @NotNull Set<K> keySet() {
         readLock.lock();
         try {
             return wrapped.keySet();
@@ -142,8 +140,7 @@ public class ConcurrentMapWrapper<K, V, W extends Map<K, V>>
     }
 
     @Override
-    @Nonnull
-    public Set<Entry<K, V>> entrySet() {
+    public @NotNull Set<Entry<K, V>> entrySet() {
         readLock.lock();
         try {
             return wrapped.entrySet();

@@ -4,7 +4,6 @@ package ru.progrm_jarvis.javacommons.collection.concurrent;
 import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -19,7 +18,7 @@ public class ConcurrentCollectionWrapper<E, W extends Collection<E>>
         extends AbstractConcurrentSizedCollectionWrapper<W> implements Collection<E> {
 
 
-    protected ConcurrentCollectionWrapper(@NotNull final W wrapped,
+    protected ConcurrentCollectionWrapper(final @NotNull W wrapped,
                                           final @NotNull Lock readLock,
                                           final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);
@@ -59,8 +58,7 @@ public class ConcurrentCollectionWrapper<E, W extends Collection<E>>
     }
 
     @Override
-    @Nonnull
-    public Iterator<E> iterator() {
+    public @NotNull Iterator<E> iterator() {
         readLock.lock();
         try {
             return wrapped.iterator();

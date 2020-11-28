@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.util.ReferenceUtil;
+import ru.progrm_jarvis.javacommons.object.ReferenceUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
@@ -69,7 +69,7 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @apiNote might be thread-unsafe
      */
-    static <T> Lazy<T> create(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> create(final @NonNull Supplier<T> valueSupplier) {
         return new SimpleLazy<>(valueSupplier);
     }
 
@@ -80,8 +80,9 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of value wrapped
      * @return created lazy
      */
-    static <T> Lazy<T> createThreadSafe(@NonNull final Supplier<T> valueSupplier) {
-        return new DoubleCheckedLazy<>(valueSupplier);
+    static <T> Lazy<T> createThreadSafe(final @NonNull Supplier<T> valueSupplier) {
+        //noinspection ZeroLengthArrayAllocation: mutex object
+        return new DoubleCheckedLazy<>(new Object[0], valueSupplier);
     }
 
     /**
@@ -95,8 +96,8 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    static <T> Lazy<T> createWeak(@NonNull final Supplier<@NotNull T> valueSupplier) {
-        return new SimpleWeakLazy<>(valueSupplier);
+    static <T> Lazy<@NotNull T> createWeak(final @NonNull Supplier<@NotNull T> valueSupplier) {
+        return new SimpleWeakLazy<>(valueSupplier, ReferenceUtil.weakReferenceStub());
     }
 
     /**
@@ -109,7 +110,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    static <T> Lazy<T> createWeakThreadSafe(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> createWeakThreadSafe(final @NonNull Supplier<T> valueSupplier) {
         return new LockingWeakLazy<>(valueSupplier);
     }
 
@@ -120,7 +121,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of value wrapped
      * @return created lazy
      */
-    static <T> Lazy<T> createThreadLocal(@NonNull final Supplier<T> valueSupplier) {
+    static <T> Lazy<T> createThreadLocal(final @NonNull Supplier<T> valueSupplier) {
         return new ThreadLocalLazy<>(valueSupplier);
     }
 
@@ -136,16 +137,16 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Supplier used for creation of the value
          */
-        @Nullable Supplier<T> valueSupplier;
-
-        protected SimpleLazy(@NonNull final Supplier<T> valueSupplier) {
-            this.valueSupplier = valueSupplier;
-        }
+        @Nullable Supplier<@Nullable T> valueSupplier;
 
         /**
          * The value stored
          */
         T value;
+
+        private SimpleLazy(final @NotNull Supplier<T> valueSupplier) {
+            this.valueSupplier = valueSupplier;
+        }
 
         @Override
         public T get() {
@@ -176,12 +177,13 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class DoubleCheckedLazy<T> implements Lazy<T> {
 
         /**
          * Mutex used for synchronizations
          */
-        @NonNull final Object mutex;
+        final @NonNull Object mutex;
 
         /**
          * Supplier used for creation of the value
@@ -193,8 +195,8 @@ public interface Lazy<T> extends Supplier<T> {
          */
         volatile T value;
 
-        protected DoubleCheckedLazy(@NonNull final Supplier<T> valueSupplier) {
-            mutex = new Object[0];
+        private DoubleCheckedLazy(final @NotNull Object mutex, final @NotNull Supplier<T> valueSupplier) {
+            this.mutex = mutex;
             this.valueSupplier = valueSupplier;
         }
 
@@ -226,7 +228,7 @@ public interface Lazy<T> extends Supplier<T> {
         @Override
         public @Nullable T getInitializedOrNull() {
             if (valueSupplier != null) synchronized (mutex) {
-                if (this.valueSupplier != null) return null;
+                if (valueSupplier != null) return null;
             }
             return value;
         }
@@ -242,18 +244,23 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
          * Supplier used for creation of the value
          */
-        @NonNull final Supplier<T> valueSupplier;
+        final @NonNull Supplier<@NotNull T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
          */
-        @NonNull WeakReference<T> value = ReferenceUtil.weakReferenceStub();
+        @NonNull WeakReference<T> value;
+
+        private SimpleWeakLazy(@NonNull final Supplier<@NotNull T> valueSupplier,
+                               @NonNull final WeakReference<T> value) {
+            this.valueSupplier = valueSupplier;
+            this.value = value;
+        }
 
         @Override
         public T get() {
@@ -293,19 +300,19 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Mutex used for synchronizations
          */
-        @NonNull final Lock readLock, writeLock;
+        final @NonNull Lock readLock, writeLock;
 
         /**
          * Supplier used for creation of the value
          */
-        @NonNull final Supplier<T> valueSupplier;
+        final @NonNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
          */
         @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
 
-        protected LockingWeakLazy(@NonNull final Supplier<T> valueSupplier) {
+        protected LockingWeakLazy(final @NonNull Supplier<T> valueSupplier) {
             this.valueSupplier = valueSupplier;
 
             {
@@ -363,7 +370,8 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Value
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    final class ThreadLocalLazy<T> implements Lazy<T> {
+    @SuppressWarnings("ThreadLocalNotStaticFinal") // this is intentional
+    class ThreadLocalLazy<T> implements Lazy<T> {
 
         /**
          * Stub value used as the default value of {@code #value}

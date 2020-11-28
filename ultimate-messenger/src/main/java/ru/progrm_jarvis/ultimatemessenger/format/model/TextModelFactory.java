@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T> type of object according to which the created text models are formatted
  */
+@FunctionalInterface
 public interface TextModelFactory<T> {
 
     /**

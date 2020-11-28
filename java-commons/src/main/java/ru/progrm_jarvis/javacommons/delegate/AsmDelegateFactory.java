@@ -15,7 +15,7 @@ import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
-import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -120,7 +120,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
      */
     private static <T> @NotNull Class<? extends T> generateWrapperClass(final @NotNull Class<T> targetClass) {
         final String className;
-        final ClassWriter clazz = new ClassWriter(0);
+        val clazz = new ClassWriter(0);
 
         //<editor-fold desc="Class generation" defaultstate="collapsed">
         {

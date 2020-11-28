@@ -126,23 +126,26 @@ class InvokeUtilTest {
         );
     }
 
+    @SuppressWarnings("PublicConstructor")
     @EqualsAndHashCode // to test constructors
     public static class TestClass {
 
         private static final int privateStaticFinalIntField = 777;
 
-        private static int privateStaticIntField = 345;
+        @SuppressWarnings("FieldMayBeFinal") private static int privateStaticIntField = 345;
 
         private int privateIntField = 1337;
 
         private static void staticVoidMethod() {}
 
+        @SuppressWarnings("SameReturnValue")
         private static String staticStringMethod() {
             return "hi";
         }
 
         private void nonStaticVoidMethod() {}
 
+        @SuppressWarnings({"SameReturnValue", "MethodMayBeStatic"})
         private String nonStaticStringMethod() {
             return "bro";
         }
@@ -150,6 +153,7 @@ class InvokeUtilTest {
 
     private static class StrToInter {
 
+        @SuppressWarnings("MethodMayBeStatic")
         private int strToInt(final String possibleInteger) {
             if (possibleInteger == null) throw new NullPointerException("string is null");
 

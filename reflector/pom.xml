@@ -11,9 +11,7 @@
     <artifactId>reflector</artifactId>
 
     <name>Reflector</name>
-    <description>
-        Utilities and wrappers for common Java scenarios involving runtime access to class elements
-    </description>
+    <description>Wrappers for common objects of Java Reflection API</description>
 
     <dependencies>
         <dependency>

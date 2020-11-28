@@ -13,6 +13,7 @@ import java.util.function.Consumer;
  * @param <S> type of service owned while pending
  * @param <R> type of value passed to hooks indicating that the service's pending has ended (the service became ready)
  */
+@FunctionalInterface
 public interface PendingService<O, S, R> {
 
     /**

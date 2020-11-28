@@ -19,9 +19,9 @@ import java.util.function.Consumer;
  * @param <T> type of object according to which the created text models are formatted
  */
 @DontOverrideEqualsAndHashCode
-@RequiredArgsConstructor(staticName = "create")
-@FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
      * Text model factory who is used for actual logic implementation
@@ -32,6 +32,19 @@ public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
      * Handler accepting debug messages on each method called
      */
     @NonNull Consumer<String> debugHandler;
+
+    /**
+     * Creates a new debugging {@link TextModel text model factory}.
+     *
+     * @param textModelFactory text model factory who is used for actual logic implementation
+     * @param debugHandler handler accepting debug messages on each method called
+     * @param <T> type of object according to which the created text models are formatted
+     * @return created text model factory
+     */
+    public static <T> @NotNull TextModelFactory<T> create(final @NonNull TextModelFactory<T> textModelFactory,
+                                                          final @NonNull Consumer<String> debugHandler) {
+        return new DebuggingTextModelFactory<>(textModelFactory, debugHandler);
+    }
 
     @Override
     public @NotNull TextModel<T> empty() {
@@ -44,18 +57,18 @@ public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
         debugHandler.accept("TextModelFactory#newBuilder()");
 
-        return new TextModelBuilder(textModelFactory.newBuilder());
+        return new DebuggingTextModelBuilder(textModelFactory.newBuilder());
     }
 
     @RequiredArgsConstructor
     @DontOverrideEqualsAndHashCode
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected class TextModelBuilder implements TextModelFactory.TextModelBuilder<T> {
+    private final class DebuggingTextModelBuilder implements TextModelFactory.TextModelBuilder<T> {
 
         @NonNull TextModelFactory.TextModelBuilder<T> textModelBuilder;
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> append(@NonNull final String staticText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
             debugHandler.accept(
                     "TextModelBuilder#append(\""
                             + StringMicroOptimizationUtil.escapeJavaStringLiteral(staticText) + "\")"
@@ -65,7 +78,7 @@ public class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> append(@NonNull final TextModel<T> dynamicText) {
+        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
             debugHandler.accept("TextModelBuilder#append(" + dynamicText + ')');
 
             return textModelBuilder.append(dynamicText);

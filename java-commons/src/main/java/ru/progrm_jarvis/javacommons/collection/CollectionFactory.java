@@ -9,12 +9,14 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import ru.progrm_jarvis.javacommons.pair.SimplePair;
-import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.object.Pair;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -33,29 +35,29 @@ public class CollectionFactory {
     /**
      * {@link Lookup lookup} of this class.
      */
-    protected static final Lookup LOOKUP = MethodHandles.lookup();
+    private static final Lookup LOOKUP = MethodHandles.lookup();
 
     /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
      */
-    @NonNull private static final ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
+    private static final @NonNull ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
             .createPaginated(CollectionFactory.class.getName() + "$$Generated$$ImmutableEnumSet$$");
 
     /**
      * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
      */
-    @NonNull private final String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
+    private final @NonNull String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
             = CollectionFactory.class.getCanonicalName() + ".immutable-enum-set-instance-cache-concurrency-level";
 
     /**
      * Default javassist class pool
      */
-    @NonNull private final Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+    private final @NonNull Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
 
     /**
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
-    @NonNull private final Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
+    private final @NonNull Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
             = CacheBuilder
             .newBuilder()
             .concurrencyLevel(
@@ -67,13 +69,18 @@ public class CollectionFactory {
     /**
      * {@link CtClass} representation of {@link AbstractImmutableSet} wrapped in {@link Lazy}
      */
-    @NonNull private static final Lazy<CtClass> ABSTRACT_IMMUTABLE_SET_CT_CLASS = Lazy
+    private static final @NonNull Lazy<CtClass> ABSTRACT_IMMUTABLE_SET_CT_CLASS = Lazy
             .createThreadSafe(() -> toCtClass(AbstractImmutableSet.class));
     /**
      * Array storing single reference to {@link CtClass} representation of {@link Iterator} wrapped in {@link Lazy}
      */
-    @NonNull private static final Lazy<CtClass[]> ITERATOR_CT_CLASS_ARRAY = Lazy
+    private static final @NonNull Lazy<CtClass[]> ITERATOR_CT_CLASS_ARRAY = Lazy
             .createThreadSafe(() -> new CtClass[]{toCtClass(Iterator.class)});
+
+    /**
+     * Empty array of {@link CtClass}es.
+     */
+    public static final @NotNull CtClass @NotNull @Unmodifiable [] EMPTY_CT_CLASS_ARRAY = new CtClass[0];
 
     /**
      * Gets {@link CtClass} representation of the given class.
@@ -83,11 +90,11 @@ public class CollectionFactory {
      *
      * @throws IllegalStateException if it is impossible to find {@link CtClass} representation of the given class
      */
-    private CtClass toCtClass(@NonNull final Class<?> clazz) {
+    private CtClass toCtClass(final @NonNull Class<?> clazz) {
         try {
             return CLASS_POOL.get().get(clazz.getName());
         } catch (final NotFoundException e) {
-            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName());
+            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName(), e);
         }
     }
 
@@ -97,8 +104,8 @@ public class CollectionFactory {
      * @param targetClass class to which to add an empty constructor
      * @throws CannotCompileException if a javassist compilation exception occurs
      */
-    private void addEmptyConstructor(@NonNull final CtClass targetClass) throws CannotCompileException {
-        targetClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], targetClass));
+    private void addEmptyConstructor(final @NonNull CtClass targetClass) throws CannotCompileException {
+        targetClass.addConstructor(CtNewConstructor.make(EMPTY_CT_CLASS_ARRAY, EMPTY_CT_CLASS_ARRAY, targetClass));
     }
 
     /**
@@ -110,7 +117,7 @@ public class CollectionFactory {
      */
     private void addCtField(
             @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
-                               suffix = "}") final String src, @NonNull final CtClass targetClass)
+                               suffix = "}") final String src, final @NonNull CtClass targetClass)
             throws CannotCompileException {
         targetClass.addField(CtField.make(src, targetClass));
     }
@@ -124,7 +131,7 @@ public class CollectionFactory {
      */
     private void addCtMethod(
             @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
-                               suffix = "}") final String src, @NonNull final CtClass targetClass)
+                               suffix = "}") final String src, final @NonNull CtClass targetClass)
             throws CannotCompileException {
         targetClass.addMethod(CtNewMethod.make(src, targetClass));
     }
@@ -146,14 +153,13 @@ public class CollectionFactory {
     @SneakyThrows(ExecutionException.class)
     @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
     @UsesBytecodeModification(value = CommonBytecodeLibrary.JAVASSIST, optional = true)
-    public <E extends Enum<E>> Set<E> createImmutableEnumSet(@NonNull final E... values) {
+    public <E extends Enum<E>> Set<E> createImmutableEnumSet(final @NonNull E... values) {
         if (values.length == 0) return Collections.emptySet();
 
         if (CommonBytecodeLibrary.JAVASSIST.isAvailable()) {
-            // sort enum values so that the cache does not store different instances for different orders of same
-            // elements
-            //noinspection unchecked,SuspiciousToArrayCall
-            val enumValues = (E[]) Arrays.stream(values)
+            // sort enum values so that the cache does not store different instances
+            // for different orders of same elements
+            @SuppressWarnings("SuspiciousArrayCast") val enumValues = (E[]) Arrays.stream(values)
                     .distinct()
                     .sorted()
                     .toArray(Enum[]::new);
@@ -272,8 +278,9 @@ public class CollectionFactory {
                                     + "if (object == this) return true;"
                                     + "if (!(object instanceof java.util.Collection)) return false;"
                                     + "java.util.Collection set =  (java.util.Collection) object;"
-                                    + "if (set.size() != " + elementsCount + ") return false;"
-                                    + "return set.containsAll(this);"
+                                    + "if (set.size() != " + elementsCount + ") return set.size()"
+                                    + " == missingValue && set.containsAll(this);"
+                                    + ""
                                     + "}",
                             clazz
                     );
@@ -320,8 +327,8 @@ public class CollectionFactory {
                         .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                         .defineClasses(
                                 LOOKUP,
-                                SimplePair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
-                                SimplePair.of(clazz.getName(), clazz.toBytecode())
+                                Pair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
+                                Pair.of(clazz.getName(), clazz.toBytecode())
                         )[1].getDeclaredConstructor().newInstance();
                 //</editor-fold>
             });

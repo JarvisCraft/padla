@@ -133,7 +133,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Self dependencies -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>java-commons</artifactId>
@@ -144,27 +143,15 @@
                 <artifactId>reflector</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <!-- Annotations -->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.16</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>20.1.0</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
+
             <!-- Libraries -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>30.0-jre</version>
             </dependency>
+
+            <!-- Bytecode generation -->
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
@@ -179,6 +166,25 @@
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
+
+            <!-- Code generation -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.16</version>
+                <scope>provided</scope>
+                <optional>true</optional>
+            </dependency>
+
+            <!-- Documenting -->
+            <dependency>
+                <groupId>org.jetbrains</groupId>
+                <artifactId>annotations</artifactId>
+                <version>20.1.0</version>
+                <scope>provided</scope>
+                <optional>true</optional>
+            </dependency>
+
             <!-- Testing -->
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -299,7 +305,6 @@
         </profile>
 
         <!-- Repository profiles -->
-
         <profile>
             <id>sonatype-ossrh-deployment</id>
             <distributionManagement>
@@ -314,7 +319,6 @@
                 </snapshotRepository>
             </distributionManagement>
         </profile>
-
         <profile>
             <id>github-package-registry-deployment</id>
             <distributionManagement>
@@ -324,7 +328,6 @@
                 </repository>
             </distributionManagement>
         </profile>
-
         <profile>
             <id>automatic-central-release</id>
             <build>

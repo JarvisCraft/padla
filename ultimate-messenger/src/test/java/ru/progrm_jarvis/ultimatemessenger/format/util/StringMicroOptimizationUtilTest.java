@@ -43,8 +43,8 @@ class StringMicroOptimizationUtilTest {
                 equalTo("Hello \\nw\\borld!")
         );
         assertThat(
-                StringMicroOptimizationUtil.escapeJavaStringLiteral("\b\t\r\f\n\'\"\\"),
-                equalTo("\\b\\t\\r\\f\\n\\'\\\"\\\\")
+                StringMicroOptimizationUtil.escapeJavaStringLiteral("\b\t\r\f\n'\"\\"),
+                equalTo("\\b\\t\\r\\f\\n'\\\"\\\\")
         );
     }
 }

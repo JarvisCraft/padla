@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.annotation.ownership;
+package ru.progrm_jarvis.javacommons.ownership.annotation;
 
 import java.lang.annotation.*;
 
@@ -19,5 +19,5 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.CLASS) // keep even if sources are unavailable
-@Target({ElementType.TYPE_USE /* to allow on return type */})
+@Target(ElementType.TYPE_USE /* to allow on return type */)
 public @interface Ref {}

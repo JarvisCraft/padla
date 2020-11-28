@@ -213,78 +213,78 @@ class SimplePlaceholdersTest {
                 default: return UNKNOWN_VALUE_PLACEHOLDER;
             }
         });
-        modelFactory = new SimpleTextModelFactory<>();
+        modelFactory = SimpleTextModelFactory.create();
     }
 
     @ParameterizedTest
     @MethodSource("provideWithoutRegisteredPlaceholders")
-    void testFormatWithoutRegisteredPlaceholders(@NotNull final Target target,
-                                                 @NotNull final String raw,
-                                                 @NotNull final String formatted) {
+    void testFormatWithoutRegisteredPlaceholders(final @NotNull Target target,
+                                                 final @NotNull String raw,
+                                                 final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithSinglePlaceholder")
-    void testFormatWithSinglePlaceholder(@NotNull final Target target,
-                                         @NotNull final String raw,
-                                         @NotNull final String formatted) {
+    void testFormatWithSinglePlaceholder(final @NotNull Target target,
+                                         final @NotNull String raw,
+                                         final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithMultiplePlaceholders")
-    void testFormatWithMultiplePlaceholders(@NotNull final Target target,
-                                            @NotNull final String raw,
-                                            @NotNull final String formatted) {
+    void testFormatWithMultiplePlaceholders(final @NotNull Target target,
+                                            final @NotNull String raw,
+                                            final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithoutRegisteredPlaceholdersAndEscaping")
-    void testFormatWithoutRegisteredPlaceholdersAndEscaping(@NotNull final Target target,
-                                                            @NotNull final String raw,
-                                                            @NotNull final String formatted) {
+    void testFormatWithoutRegisteredPlaceholdersAndEscaping(final @NotNull Target target,
+                                                            final @NotNull String raw,
+                                                            final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithSinglePlaceholderAndEscaping")
-    void testFormatWithSinglePlaceholderAndEscaping(@NotNull final Target target,
-                                                    @NotNull final String raw,
-                                                    @NotNull final String formatted) {
+    void testFormatWithSinglePlaceholderAndEscaping(final @NotNull Target target,
+                                                    final @NotNull String raw,
+                                                    final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithMultiplePlaceholdersAndEscaping")
-    void testFormatWithMultiplePlaceholdersAndEscaping(@NotNull final Target target,
-                                                       @NotNull final String raw,
-                                                       @NotNull final String formatted) {
+    void testFormatWithMultiplePlaceholdersAndEscaping(final @NotNull Target target,
+                                                       final @NotNull String raw,
+                                                       final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithEscapedPlaceholders")
-    void testFormatWithEscapedPlaceholders(@NotNull final Target target,
-                                           @NotNull final String raw,
-                                           @NotNull final String formatted) {
+    void testFormatWithEscapedPlaceholders(final @NotNull Target target,
+                                           final @NotNull String raw,
+                                           final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithSingleCharacterPlaceholderName")
-    void testFormatWithSingleCharacterPlaceholderName(@NotNull final Target target,
-                                                      @NotNull final String raw,
-                                                      @NotNull final String formatted) {
+    void testFormatWithSingleCharacterPlaceholderName(final @NotNull Target target,
+                                                      final @NotNull String raw,
+                                                      final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithEscapedChars")
-    void testFormatWithEscapedChars(@NotNull final Target target,
-                                    @NotNull final String raw,
-                                    @NotNull final String formatted) {
+    void testFormatWithEscapedChars(final @NotNull Target target,
+                                    final @NotNull String raw,
+                                    final @NotNull String formatted) {
         assertEquals(formatted, placeholders.format(raw, target));
     }
 
@@ -292,79 +292,79 @@ class SimplePlaceholdersTest {
 
     @ParameterizedTest
     @MethodSource("provideWithoutRegisteredPlaceholders")
-    void testFactoryParseWithoutRegisteredPlaceholders(@NotNull final Target target,
-                                                       @NotNull final String raw,
-                                                       @NotNull final String formatted) {
+    void testFactoryParseWithoutRegisteredPlaceholders(final @NotNull Target target,
+                                                       final @NotNull String raw,
+                                                       final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithSinglePlaceholder")
-    void testFactoryParseWithSinglePlaceholder(@NotNull final Target target,
-                                               @NotNull final String raw,
-                                               @NotNull final String formatted) {
+    void testFactoryParseWithSinglePlaceholder(final @NotNull Target target,
+                                               final @NotNull String raw,
+                                               final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithMultiplePlaceholders")
-    void testFactoryParseWithMultiplePlaceholders(@NotNull final Target target,
-                                                  @NotNull final String raw,
-                                                  @NotNull final String formatted) {
+    void testFactoryParseWithMultiplePlaceholders(final @NotNull Target target,
+                                                  final @NotNull String raw,
+                                                  final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithoutRegisteredPlaceholdersAndEscaping")
-    void testFactoryParseWithoutRegisteredPlaceholdersAndEscaping(@NotNull final Target target,
-                                                                  @NotNull final String raw,
-                                                                  @NotNull final String formatted) {
+    void testFactoryParseWithoutRegisteredPlaceholdersAndEscaping(final @NotNull Target target,
+                                                                  final @NotNull String raw,
+                                                                  final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithSinglePlaceholderAndEscaping")
-    void testFactoryParseWithSinglePlaceholderAndEscaping(@NotNull final Target target,
-                                                          @NotNull final String raw,
-                                                          @NotNull final String formatted) {
+    void testFactoryParseWithSinglePlaceholderAndEscaping(final @NotNull Target target,
+                                                          final @NotNull String raw,
+                                                          final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithMultiplePlaceholdersAndEscaping")
-    void testFactoryParseWithMultiplePlaceholdersAndEscaping(@NotNull final Target target,
-                                                             @NotNull final String raw,
-                                                             @NotNull final String formatted) {
+    void testFactoryParseWithMultiplePlaceholdersAndEscaping(final @NotNull Target target,
+                                                             final @NotNull String raw,
+                                                             final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithEscapedPlaceholders")
-    void testFactoryParseWithEscapedPlaceholders(@NotNull final Target target,
-                                                 @NotNull final String raw,
-                                                 @NotNull final String formatted) {
+    void testFactoryParseWithEscapedPlaceholders(final @NotNull Target target,
+                                                 final @NotNull String raw,
+                                                 final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithSingleCharacterPlaceholderName")
-    void testFactoryParseWithSingleCharacterPlaceholderName(@NotNull final Target target,
-                                                            @NotNull final String raw,
-                                                            @NotNull final String formatted) {
+    void testFactoryParseWithSingleCharacterPlaceholderName(final @NotNull Target target,
+                                                            final @NotNull String raw,
+                                                            final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @ParameterizedTest
     @MethodSource("provideWithEscapedChars")
-    void testFactoryParseWithEscapedChars(@NotNull final Target target,
-                                          @NotNull final String raw,
-                                          @NotNull final String formatted) {
+    void testFactoryParseWithEscapedChars(final @NotNull Target target,
+                                          final @NotNull String raw,
+                                          final @NotNull String formatted) {
         assertEquals(formatted, placeholders.parse(modelFactory, raw).getText(target));
     }
 
     @RequiredArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    enum Target {
+    private enum Target {
         FOO("Foo"),
         BAR("Bar"),
         BAZ("Baz");

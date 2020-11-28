@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.classloading.ClassLoadingUtil;
 
 /**
- * List of commonly used unsafe internals.
+ * Commonly used unsafe Java internals.
  */
 @UtilityClass
 public class UnsafeInternals {
@@ -13,7 +13,7 @@ public class UnsafeInternals {
     /**
      * {@code Unsafe} Class object
      */
-    @Nullable public final Class<?> UNSAFE_CLASS,
+    public final @Nullable Class<?> UNSAFE_CLASS,
     /**
      * {@code MagicAccessorImpl} Class object
      */

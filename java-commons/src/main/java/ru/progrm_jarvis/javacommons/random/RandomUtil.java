@@ -35,7 +35,7 @@ public class RandomUtil {
      *
      * @throws IllegalArgumentException if {@code values is empty}
      */
-    public <T> T getRandom(@NonNull final Map<T, Integer> chancedValues) {
+    public <T> T getRandom(final @NonNull Map<T, Integer> chancedValues) {
         {
             val size = chancedValues.size();
 
@@ -65,7 +65,7 @@ public class RandomUtil {
      *
      * @throws IllegalArgumentException if {@code values is empty}
      */
-    public <T> T getRandom(@NonNull final List<T> values) {
+    public <T> T getRandom(final @NonNull List<T> values) {
         val size = values.size();
         Preconditions.checkArgument(size > 0, "There should be at least one chanced value");
         if (size == 1) return values.get(0);
@@ -82,7 +82,7 @@ public class RandomUtil {
      *
      * @throws IllegalArgumentException if {@code values is empty}
      */
-    public <T> T getRandom(@NonNull final Collection<T> values) {
+    public <T> T getRandom(final @NonNull Collection<T> values) {
         int index;
         {
             val size = values.size();

@@ -5,10 +5,14 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Arrays;
 
 /**
  * This is a mostly internal utility (although useful externally) for specific {@link String string} operations.
@@ -23,25 +27,21 @@ public class StringMicroOptimizationUtil {
     /**
      * Method handle for accessing {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} if it is possible
      */
-    @Nullable private final MethodHandle STRING_VALUE_FIELD_GETTER_METHOD_HANDLE;
-    /**
-     * Marker indicating whether access to {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} is available
-     */
-    private final boolean STRING_VALUE_FIELD_AVAILABLE;
+    private final @NotNull MethodHandle STRING_VALUE_FIELD_GETTER_METHOD_HANDLE;
 
     static {
-        MethodHandle stringValueFieldGetterMethodHandle = null;
-        boolean stringValueFieldAvailable = false;
-        try {
-            val stringValueField = String.class.getDeclaredField(STRING_VALUE_FIELD_NAME);
-            if (stringValueField.getType() == char[].class) {
-                stringValueFieldGetterMethodHandle = InvokeUtil.toGetterMethodHandle(stringValueField);
-                stringValueFieldAvailable = true;
-            }
-        } catch (final Throwable ignored) {} // use default String's implementation
-
-        STRING_VALUE_FIELD_GETTER_METHOD_HANDLE = stringValueFieldGetterMethodHandle;
-        STRING_VALUE_FIELD_AVAILABLE = stringValueFieldAvailable;
+        STRING_VALUE_FIELD_GETTER_METHOD_HANDLE = Arrays.stream(String.class.getDeclaredFields())
+                .filter(field -> field.getName().equals(STRING_VALUE_FIELD_NAME) && field.getType() == char[].class)
+                .findAny()
+                .map(InvokeUtil::toGetterMethodHandle)
+                .orElseGet(() -> {
+                    val lookup = MethodHandles.publicLookup();
+                    try {
+                        return lookup.findVirtual(String.class, "toCharArray", MethodType.methodType(char[].class));
+                    } catch (final NoSuchMethodException | IllegalAccessException e) {
+                        throw new Error("java.lang.String.toCharArray() is unavailable", e);
+                    }
+                });
     }
 
     /**
@@ -54,10 +54,9 @@ public class StringMicroOptimizationUtil {
      * @apiNote modifications to the array may reflect on {@code string}
      */
     @SneakyThrows
-    @SuppressWarnings("ConstantConditions") // null check goes by field STRING_VALUE_FIELD_AVAILABLE
-    public char[] getStringChars(@NonNull final String string) {
-        if (STRING_VALUE_FIELD_AVAILABLE) return (char[]) STRING_VALUE_FIELD_GETTER_METHOD_HANDLE.invokeExact(string);
-        return string.toCharArray();
+    // null check goes by field STRING_VALUE_FIELD_AVAILABLE
+    public char @NotNull [] getStringChars(final @NonNull String string) {
+        return (char[]) STRING_VALUE_FIELD_GETTER_METHOD_HANDLE.invokeExact(string);
     }
 
     /**
@@ -67,7 +66,7 @@ public class StringMicroOptimizationUtil {
      * @param source source {@link String string}
      * @return valid value for copying into {@link String string literal} {@code "}s
      */
-    public String escapeJavaStringLiteral(@NonNull final String source) {
+    public String escapeJavaStringLiteral(final @NonNull String source) {
         @Nullable StringBuilder result = null;
         val characters = getStringChars(source);
         int lastWriteIndex = -1;
@@ -110,13 +109,6 @@ public class StringMicroOptimizationUtil {
                             .append('\\').append('f');
                     break;
                 }
-                case '\'': {
-                    (result == null
-                            ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
-                            : result.append(source, lastWriteIndex + 1, lastWriteIndex = index))
-                            .append('\\').append('\'');
-                    break;
-                }
                 case '"': {
                     (result == null
                             ? result = new StringBuilder(length + 1).append(source, 0, lastWriteIndex = index)
@@ -147,14 +139,9 @@ public class StringMicroOptimizationUtil {
      */
     public String escapeJavaCharacterLiteral(final char source) {
         switch (source) {
-            /* Commented branches are those of characters which may but are not obliged to be represented via escapes */
-            // case '\t': return "\\t";
-            // case '\b': return "\\b";
             case '\n': return "\\n";
             case '\r': return "\\r";
-            // case '\f': return "\\f";
             case '\'': return "\\'";
-            // case '"': return "\\\"";
             case '\\': return "\\\\";
             default: return Character.toString(source);
         }

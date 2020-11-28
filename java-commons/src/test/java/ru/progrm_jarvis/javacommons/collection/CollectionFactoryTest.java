@@ -1,20 +1,16 @@
 package ru.progrm_jarvis.javacommons.collection;
 
 import lombok.val;
-import lombok.var;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,8 +52,8 @@ class CollectionFactoryTest {
         assertTrue(set.contains(TestEnum.BAZ));
         assertThat(set, not(contains(TestEnum.FOO)));
         // test equality (both sides)
-        assertThat(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ)), equalTo(set));
-        assertThat(set, equalTo(new HashSet<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
+        assertThat(EnumSet.of(TestEnum.BAR, TestEnum.BAZ), equalTo(set));
+        assertThat(set, equalTo(EnumSet.of(TestEnum.BAR, TestEnum.BAZ)));
         assertThat(set, equalTo(new ArrayList<>(Arrays.asList(TestEnum.BAR, TestEnum.BAZ))));
         // test to-array conversion
         assertThat(set.toArray(), anyOf( // although implementation uses natural order, check any array orders
@@ -113,21 +109,6 @@ class CollectionFactoryTest {
             );
             assertThat(newArray[2], nullValue());
         }
-    }
-
-    @Test
-    @Disabled
-    @EnabledIfSystemProperty(named = "test.gc.always-respects-System.gc()", matches = "true|yes|\\+|1|enabled")
-    void testImmutableEnumSetClassUnloading() {
-        val setReference = new WeakReference<>(CollectionFactory
-                .createImmutableEnumSet(TestEnum.BAR, TestEnum.BAZ, TestEnum.BAR)
-        );
-
-        {
-            var gcAttempts = 8;
-            while (setReference.get() != null && gcAttempts-- != 0) System.gc();
-        }
-        assertNull(setReference.get());
     }
 
     public enum TestEnum {

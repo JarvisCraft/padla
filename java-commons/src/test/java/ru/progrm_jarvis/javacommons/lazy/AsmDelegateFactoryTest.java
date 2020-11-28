@@ -69,6 +69,7 @@ class AsmDelegateFactoryTest {
         verify(implementation, times(1)).toString(3);
     }
 
+    @SuppressWarnings("InterfaceNeverImplemented")
     public interface SimpleInterface {
 
         int getInt();

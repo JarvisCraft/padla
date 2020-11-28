@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util;
+package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -62,37 +62,48 @@ public class ClassUtil {
         SORTED_PRIMITIVE_CLASSES = PRIMITIVE_CLASSES.clone();
         Arrays.sort(SORTED_PRIMITIVE_CLASSES, CLASS_HASH_CODE_COMPARATOR);
 
-        PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES = new Class<?>[SORTED_PRIMITIVE_CLASSES.length];
-        for (var i = 0; i < SORTED_PRIMITIVE_CLASSES.length; i++) {
-            val type = SORTED_PRIMITIVE_CLASSES[i];
-
-            if (type == boolean.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Boolean.class;
-            else if (type == byte.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Byte.class;
-            else if (type == char.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Character.class;
-            else if (type == short.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Short.class;
-            else if (type == int.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Integer.class;
-            else if (type == long.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Long.class;
-            else if (type == float.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Float.class;
-            else if (type == double.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Double.class;
-            else throw new Error("Unknown primitive class: " + type); // Failsafe, just in case
+        {
+            final int length;
+            PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES
+                    = new Class<?>[length = SORTED_PRIMITIVE_CLASSES.length];
+            for (var i = 0; i < length; i++) {
+                final Class<?> type;
+                //noinspection ChainOfInstanceofChecks: done ones and is irreplaceable
+                if ((type = SORTED_PRIMITIVE_CLASSES[i])
+                        == boolean.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Boolean.class;
+                else if (type == byte.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Byte.class;
+                else if (type == char.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Character.class;
+                else if (type == short.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Short.class;
+                else if (type == int.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Integer.class;
+                else if (type == long.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Long.class;
+                else if (type == float.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Float.class;
+                else if (type == double.class) PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[i] = Double.class;
+                else throw new Error("Unknown primitive class: " + type); // Failsafe, just in case
+            }
         }
 
         SORTED_PRIMITIVE_WRAPPER_CLASSES = PRIMITIVE_WRAPPER_CLASSES.clone();
         Arrays.sort(SORTED_PRIMITIVE_WRAPPER_CLASSES, CLASS_HASH_CODE_COMPARATOR);
 
-        PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES = new Class<?>[SORTED_PRIMITIVE_WRAPPER_CLASSES.length];
-        for (var i = 0; i < SORTED_PRIMITIVE_WRAPPER_CLASSES.length; i++) {
-            val type = SORTED_PRIMITIVE_WRAPPER_CLASSES[i];
+        {
+            final int length;
+            PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES
+                    = new Class<?>[length = SORTED_PRIMITIVE_WRAPPER_CLASSES.length];
 
-            if (type == Boolean.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = boolean.class;
-            else if (type == Byte.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = byte.class;
-            else if (type == Character.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = char.class;
-            else if (type == Short.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = short.class;
-            else if (type == Integer.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = int.class;
-            else if (type == Long.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = long.class;
-            else if (type == Float.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = float.class;
-            else if (type == Double.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = double.class;
-            else throw new Error("Unknown primitive-wrapper class: " + type); // Failsafe, just in case
+            for (var i = 0; i < length; i++) {
+                final Class<?> type;
+                //noinspection ChainOfInstanceofChecks: done ones and is irreplaceable
+                if ((type = SORTED_PRIMITIVE_WRAPPER_CLASSES[i])
+                        == Boolean.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = boolean.class;
+                else if (type == Byte.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = byte.class;
+                else if (type == Character.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = char.class;
+                else if (type == Short.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = short.class;
+                else if (type == Integer.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = int.class;
+                else if (type == Long.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = long.class;
+                else if (type == Float.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = float.class;
+                else if (type == Double.class) PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[i] = double.class;
+                else throw new Error("Unknown primitive-wrapper class: " + type); // Failsafe, just in case
+            }
         }
     }
 

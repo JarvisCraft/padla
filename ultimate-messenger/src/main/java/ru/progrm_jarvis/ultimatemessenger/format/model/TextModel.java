@@ -1,5 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +20,7 @@ public interface TextModel<T> {
     /**
      * {@code 0} wrapped in {@link OptionalInt}
      */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NotNull OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
 
     /**
      * Gets the text formatted for the given target.
@@ -33,9 +35,9 @@ public interface TextModel<T> {
     @NotNull String getText(T target);
 
     /**
-     * Retrieves whether this {@link TextModel text model} is dynamic.
+     * Retrieves whether this text model is dynamic.
      *
-     * @return {@code true} if this {@link TextModel text model} may produce different values
+     * @return {@code true} if this text model may produce different values
      * and {@code false} if it produces equal values for all calls to {@link #getText(Object)}
      */
     @Contract(pure = true)
@@ -62,41 +64,43 @@ public interface TextModel<T> {
     }
 
     /**
-     * Returns an empty static {@link TextModel text model}.
+     * Returns an empty static text model.
      *
      * @param <T> type of object according to which the text model is formatted
-     * @return singleton of an empty static {@link TextModel text model}
+     * @return singleton of an empty static text model
      */
     @SuppressWarnings("unchecked")
     @NotNull static <T> TextModel<T> empty() {
-        return EmptyTextModel.INSTANCE;
+        return (TextModel<T>) EmptyTextModel.INSTANCE;
     }
 
     /**
-     * Empty static {@link TextModel text model}.
+     * Empty static text model.
      */
+    @SuppressWarnings("rawtypes") // behaviour is independent of the generic type
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class EmptyTextModel implements TextModel {
 
         /**
-         * Singleton instance of this {@link TextModel text model}
+         * Singleton instance of this text model
          */
-        private static EmptyTextModel INSTANCE = new EmptyTextModel();
+        private static final TextModel<?> INSTANCE = new EmptyTextModel();
 
         @Override
         @Contract(pure = true)
-        @NotNull public String getText(@Nullable final Object target) {
+        public @NotNull String getText(final @Nullable Object target) {
             return ""; // thanks to JVM magic this is always the same object (got using LDC)
         }
 
         @Override
         @Contract(pure = true)
-        @NotNull public OptionalInt getMinLength() {
+        public @NotNull OptionalInt getMinLength() {
             return OPTIONAL_ZERO;
         }
 
         @Override
         @Contract(pure = true)
-        @NotNull public OptionalInt getMaxLength() {
+        public @NotNull OptionalInt getMaxLength() {
             return OPTIONAL_ZERO;
         }
 
@@ -108,7 +112,7 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        public boolean equals(@Nullable final Object object) {
+        public boolean equals(final @Nullable Object object) {
             if (object == this) return true;
             if (object instanceof TextModel) {
                 val textModel = (TextModel<?>) object;
@@ -119,9 +123,8 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        // usual hashcode for empty values
         public int hashCode() {
-            return 0;
+            return 0; // usual hashcode for empty values
         }
 
         @Override

@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util;
+package ru.progrm_jarvis.javacommons.service;
 
 /**
  * <p>A wrapper for {@link AutoCloseable} which disables its {@link AutoCloseable#close()} method
@@ -7,6 +7,7 @@ package ru.progrm_jarvis.javacommons.util;
  * <p>This may come in handy when passing {@link AutoCloseable} objects to foreign methods
  * which may close this object although this should happen later</p>
  */
+@FunctionalInterface
 public interface NonAutoCloseable extends AutoCloseable {
 
     /**

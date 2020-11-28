@@ -11,6 +11,7 @@ import java.util.function.Function;
  * @param <R> the type of the result of the function
  * @param <X> the type of the exception thrown by the function
  */
+@FunctionalInterface
 public interface ThrowingFunction<T, R, X extends Throwable> extends Function<T, R> {
 
     /**

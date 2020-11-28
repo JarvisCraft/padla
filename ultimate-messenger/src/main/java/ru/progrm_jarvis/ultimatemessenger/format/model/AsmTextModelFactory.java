@@ -10,18 +10,18 @@ import lombok.extern.java.Log;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.objectweb.asm.*;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
+import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
-import ru.progrm_jarvis.javacommons.util.ClassNamingStrategy;
-import ru.progrm_jarvis.javacommons.util.valuestorage.SimpleValueStorage;
-import ru.progrm_jarvis.javacommons.util.valuestorage.ValueStorage;
+import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
+import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
-import javax.annotation.Nonnegative;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -40,29 +40,31 @@ import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
  */
 @Log
 @ToString
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
+public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<TextModelFactory<?>> INSTANCE = Lazy.createThreadSafe(AsmTextModelFactory::create);
+    private static final @NotNull Lazy<@NotNull TextModelFactory<?>> INSTANCE
+            = Lazy.createThreadSafe(AsmTextModelFactory::create);
 
     /**
      * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
      */
-    protected static final ValueStorage<String, TextModel<?>> DYNAMIC_MODELS = new SimpleValueStorage<>();
+    private static final @NotNull ValueStorage<@NotNull String, @NotNull TextModel<?>> DYNAMIC_MODELS
+            = SimpleValueStorage.create();
 
     /**
      * Flag indicating the availability of {@code java.lang.invoke.StringConcatFactory}
      */
-    protected static final boolean STRING_CONCAT_FACTORY_AVAILABLE;
+    private static final boolean STRING_CONCAT_FACTORY_AVAILABLE;
 
     /**
      * Class of {@code java.lang.invoke.StringConcatFactory}
      */
-    @Nullable protected static final Class<?> STRING_CONCAT_FACTORY_CLASS;
+    private static final @Nullable Class<?> STRING_CONCAT_FACTORY_CLASS;
 
     static {
         boolean stringConcatFactoryAvailable = false;
@@ -92,21 +94,21 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     @NonNull C configuration;
 
     /**
-     * Creates a new {@link AsmTextModelFactory ASM-based text model factory} with the given configuration.
+     * Creates a new ASM-based text model factory with the given configuration.
      *
      * @param configuration configuration to be used by the created text model factory
      * @param <T> type of object according to which the created text models are formatted
-     * @return created {@link AsmTextModelFactory ASM-based text model factory} with the given configuration
+     * @return created ASM-based text model factory with the given configuration
      */
-    public static <T> @NotNull TextModelFactory<T> create(@NonNull final Configuration configuration) {
+    public static <T> @NotNull TextModelFactory<T> create(final @NonNull Configuration configuration) {
         return new AsmTextModelFactory<>(configuration);
     }
 
     /**
-     * Creates a new {@link AsmTextModelFactory ASM-based text model factory} with the default configuration.
+     * Creates a new ASM-based text model factory with the default configuration.
      *
      * @param <T> type of object according to which the created text models are formatted
-     * @return created {@link AsmTextModelFactory ASM-based text model factory} with the default configuration
+     * @return created AsmTextModelFactory ASM-based text model factory with the default configuration
      */
     public static <T> @NotNull TextModelFactory<T> create() {
         return create(SimpleConfiguration.getDefault());
@@ -123,9 +125,95 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         return (TextModelFactory<T>) INSTANCE.get();
     }
 
+    /**
+     * Creates a new builder of the configuration.
+     *
+     * @return builder of a {@link Configuration}
+     */
+    public static @NotNull ConfigurationBuilder configuration() {
+        return SimpleConfiguration.builder();
+    }
+
     @Override
     public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
-        return new TextModelBuilder<>(configuration);
+        return new AsmTextModelBuilder<>(configuration);
+    }
+
+    /**
+     * Algorithm used for concatenation vid {@code java.lang.invoke.StringConcatFactory}.
+     */
+    public enum StringConcatFactoryAlgorithm {
+        /**
+         * Linear algorithm
+         */
+        VECTOR
+        // TREE may be implemented later
+    }
+
+    /**
+     * Configuration of this {@link AsmTextModelFactory text model factory}
+     */
+    public interface Configuration {
+
+        /**
+         * Tests whether the configured {@link AsmTextModelBuilder text model builder} should attempt to use {@code
+         * java.lang.invoke.StringConcatFactory} for {@link String string}-concatenation.
+         *
+         * @return {@code true} if {@code StringConcatFactory} should be used (if available) for string concatenation
+         * and {@code false} otherwise
+         */
+        @Contract(pure = true)
+        boolean enableStringConcatFactory();
+
+        /**
+         * Gets the algorithm which should be used used for producing string concatenation logic via {@code
+         * java.lang.invoke.StringConcatFactory} when it is {@link #enableStringConcatFactory() enabled}.
+         *
+         * @return algorithm which should be used for producing string concatenation logic
+         */
+        @Contract(pure = true)
+        StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
+    }
+
+    /**
+     * Builder of {@link Configuration}.
+     */
+    public interface ConfigurationBuilder {
+
+        /**
+         * Sets the value of {@link Configuration#enableStringConcatFactory()} for the built configuration.
+         *
+         * @param enableStringConcatFactory set flag
+         * @return this builder
+         *
+         * @see Configuration#enableStringConcatFactory() meaning
+         */
+        @Contract("_ -> this")
+        @NotNull ConfigurationBuilder enableStringConcatFactory(
+                boolean enableStringConcatFactory
+        );
+
+        /**
+         * Sets the value of {@link Configuration#stringConcatFactoryAlgorithm()} for the built configuration.
+         *
+         * @param stringConcatFactoryAlgorithm set flag
+         * @return this builder
+         * @throws NullPointerException if {@code stringConcatFactoryAlgorithm} is {@code null}
+         *
+         * @see Configuration#stringConcatFactoryAlgorithm() meaning
+         */
+        @Contract("null -> fail; _ -> this")
+        @NotNull ConfigurationBuilder stringConcatFactoryAlgorithm(
+                @NonNull StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
+        );
+
+        /**
+         * Builds a new configuration from this builder.
+         *
+         * @return configuration of this object
+         */
+        @Contract("-> new")
+        @NotNull Configuration build();
     }
 
     /**
@@ -133,26 +221,28 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
      * generation and is capable of joining nearby static text blocks and optimizing {@link #buildAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
+     * @implNote this class is {@code protected} so that it is accessible by generated classes
      */
     @ToString
-    @RequiredArgsConstructor
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class TextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder
-            <T, TextModelBuilder.Node<T>, TextModelBuilder.Node.StaticNode<T>, TextModelBuilder.Node.DynamicNode<T>> {
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    protected static final class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
+            T, AsmNode<T>, StaticAsmNode<T>, DynamicAsmNode<T>> {
 
         /**
          * Lookup of this class.
          */
-        protected static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
+        private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
         public static final @NotNull String STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE_CONCURRENCY_SYSTEM_PROPERTY_NAME
-                = TextModelBuilder.class.getCanonicalName() + ".strings-to-string-method-descriptor-cache-concurrency";
+                = AsmTextModelBuilder.class.getCanonicalName()
+                + ".strings-to-string-method-descriptor-cache-concurrency";
 
         /**
          * Cache of descriptors of methods accepting {@link String string arguments} returning {@link String a string}.
          */
-        protected static final @NotNull Cache<@NotNull Integer, @NotNull String>
+        private static final @NotNull Cache<@NotNull Integer, @NotNull String>
                 STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = CacheBuilder
                 .newBuilder()
                 .softValues()
@@ -164,8 +254,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Class naming strategy used to allocate names for generated classes
          */
-        protected static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
-                TextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
+        private static final @NotNull ClassNamingStrategy CLASS_NAMING_STRATEGY = ClassNamingStrategy.createPaginated(
+                AsmTextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
         //<editor-fold desc="Bytecode generation constants" defaultstate="collapsed">
@@ -175,9 +265,9 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         ///////////////////////////////////////////////////////////////////////////
         /* ******************************************** ASM Type objects ******************************************** */
         /**
-         * ASM type of {@link TextModelBuilder}
+         * ASM type of {@link AsmTextModelBuilder}
          */
-        protected static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(TextModelBuilder.class),
+        private static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(AsmTextModelBuilder.class),
         /**
          * ASM type of {@link StringBuilder}
          */
@@ -193,7 +283,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Prefix of generated fields after which the index will go
          */
-        protected static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D",
+        private static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D",
         /**
          * Name of parent generic in current context
          */
@@ -208,7 +298,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          */
         APPEND_METHOD_NAME = "append",
         /**
-         * Name of {@link TextModelBuilder#internal$getDynamicTextModel(String)} method
+         * Name of {@link AsmTextModelBuilder#internal$getDynamicTextModel(String)} method
          */
         INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME = "internal$getDynamicTextModel",
         /* ********************************************* Internal names ********************************************* */
@@ -380,7 +470,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         /**
          * Array whose only value is {@link #TEXT_MODEL_INTERNAL_NAME}.
          */
-        protected static final @NotNull String @NotNull [] TEXT_MODEL_INTERNAL_NAME_ARRAY = {TEXT_MODEL_INTERNAL_NAME};
+        private static final @NotNull String @Unmodifiable @NotNull [] TEXT_MODEL_INTERNAL_NAME_ARRAY
+                = {TEXT_MODEL_INTERNAL_NAME};
 
         //</editor-fold>
 
@@ -390,17 +481,17 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         @NonNull Configuration configuration;
 
         /**
-         * Amount of {@link Node.StaticNode static nodes} whose text should be treated by {@code
+         * Amount of {@link SimpleStaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
-         * @see Node.StaticNode#isTreatAsDynamicValueInStringConcatFactory()
+         * @see SimpleStaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
         @NonFinal int staticNodeHandledAsDynamicCount,
         /**
-         * Length of texts of those {@link Node.StaticNode static nodes} whose text should be treated by {@code
+         * Length of texts of those {@link SimpleStaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
-         * @see Node.StaticNode#isTreatAsDynamicValueInStringConcatFactory()
+         * @see SimpleStaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
         staticSpecialNodeLength;
 
@@ -412,28 +503,28 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return {@code true} is {@link String string} concatenation via {@code java.lang.invoke.StringConcatFactory}
          * is available and enabled and {@code false} otherwise
          */
-        protected boolean isStringConcatFactoryEnabled() {
+        private boolean isStringConcatFactoryEnabled() {
             return STRING_CONCAT_FACTORY_AVAILABLE && configuration.enableStringConcatFactory();
         }
 
         @Override
-        protected void endModification(final @NotNull Node.StaticNode<T> staticNode) {
+        protected void endModification(final @NotNull StaticAsmNode<T> staticNode) {
             super.endModification(staticNode);
 
-            if (isStringConcatFactoryEnabled() &&staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+            if (isStringConcatFactoryEnabled() && staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
                 staticNodeHandledAsDynamicCount++;
                 staticSpecialNodeLength += staticNode.getTextLength();
             }
         }
 
         @Override
-        protected @NotNull Node<T> newStaticNode(final @NotNull String text) {
-            return new Node.StaticNode<>(text);
+        protected @NotNull AsmNode<T> newStaticNode(final @NotNull String text) {
+            return SimpleStaticAsmNode.from(text);
         }
 
         @Override
-        protected @NotNull Node<T> newDynamicNode(final @NotNull TextModel<T> content) {
-            return new Node.DynamicNode<>(content);
+        protected @NotNull AsmNode<T> newDynamicNode(final @NotNull TextModel<T> content) {
+            return SimpleDynamicAsmNode.from(content);
         }
 
         /**
@@ -459,7 +550,9 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return descriptor of the name with the specified signature
          */
         @SneakyThrows(ExecutionException.class)
-        protected static @NotNull String stringsToStringDescriptor(final @Nonnegative int stringArgumentsCount) {
+        private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
+            assert stringArgumentsCount >= 0 : "stringArgumentsCount should be non-negative";
+
             return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, () -> {
                 val result = new StringBuilder(
                         STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */
@@ -472,8 +565,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
         }
 
         @Override
-        @NotNull
-        protected TextModel<T> performTextModelBuild(final boolean release) {
+        protected @NotNull TextModel<T> performTextModelBuild(final boolean release) {
             val clazz = new ClassWriter(0); // MAXs are already computed 😎
 
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
@@ -488,7 +580,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                     TEXT_MODEL_INTERNAL_NAME_ARRAY /* implement TextModel interface */
             );
             // add an empty constructor
-            AsmUtil.addEmptyConstructor(clazz);
+            addEmptyConstructor(clazz);
 
             if (isStringConcatFactoryEnabled()) asm$implementGetTextMethodViaStringConcatFactory(
                     clazz, internalClassName
@@ -518,8 +610,8 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param clazz class-writer used for generating the implementation
          * @param internalClassName internal name of the generated class
          */
-        protected void asm$implementGetTextMethodViaStringBuilder(final @NotNull ClassWriter clazz,
-                                                                  final @NotNull String internalClassName) {
+        private void asm$implementGetTextMethodViaStringBuilder(final @NotNull ClassWriter clazz,
+                                                                final @NotNull String internalClassName) {
             // Implement `TextModel#getText(T)` method and add fields
             val method = clazz.visitMethod(
                     ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
@@ -530,7 +622,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
 
             //<editor-fold desc="Method code generation" defaultstate="collapsed">
             {
-                val staticInitializer = AsmUtil.visitStaticInitializer(clazz);
+                val staticInitializer = visitStaticInitializer(clazz);
                 staticInitializer.visitCode();
 
                 val staticLength = this.staticLength;
@@ -580,7 +672,6 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                      * - the `TextModel` whose `getText` is being invoked
                      * - the parameter passed to `getText`
                      */
-                    method.visitMaxs(3, 2 /* [this + local variable] */);
                 } else { // there are static nodes
                     /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
                     method.visitTypeInsn(NEW, STRING_BUILDER_INTERNAL_NAME);
@@ -595,27 +686,24 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                     /* ********************************** Append all nodes ********************************** */
                     var dynamicIndex = -1;
                     // Lists are commonly faster with random access
-                    for (val node : nodes) {
-                        // Load static text value from dynamic constant
-                        if (node.isDynamic()) {
-                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                            asm$addStaticFieldWithInitializer(
-                                    clazz, internalClassName, staticInitializer,
-                                    fieldName, node.asDynamic().getContent()
-                            );
-                            asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                    method, internalClassName, fieldName
-                            );
-                            asm$invokeStringBuilderAppendString(method);
+                    for (val node : nodes) if (node.isDynamic()) { // Load static text value from dynamic constant
+                        val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                        asm$addStaticFieldWithInitializer(
+                                clazz, internalClassName, staticInitializer,
+                                fieldName, node.asDynamic().getContent()
+                        );
+                        asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                method, internalClassName, fieldName
+                        );
+                        asm$invokeStringBuilderAppendString(method);
+                    } else {
+                        val staticText = node.asStatic().getText();
+                        if (staticText.length() == 1) {
+                            pushCharUnsafely(method, staticText.charAt(0));
+                            asm$invokeStringBuilderAppendChar(method);
                         } else {
-                            val staticText = node.asStatic().getText();
-                            if (staticText.length() == 1) {
-                                pushCharUnsafely(method, staticText.charAt(0));
-                                asm$invokeStringBuilderAppendChar(method);
-                            } else {
-                                method.visitLdcInsn(node.asStatic().getText()); // get constant String value
-                                asm$invokeStringBuilderAppendString(method);
-                            }
+                            method.visitLdcInsn(node.asStatic().getText()); // get constant String value
+                            asm$invokeStringBuilderAppendString(method);
                         }
                     }
                     /*
@@ -624,8 +712,9 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                      * - the `TextModel` whose `getText` is being invoked
                      * - the parameter passed to `getText`
                      */
-                    method.visitMaxs(3, 2 /* [this + local variable] */);
                 }
+                method.visitMaxs(3, 2 /* [this + local variable] */);
+
                 staticInitializer.visitInsn(RETURN);
                 staticInitializer.visitMaxs(2, 0);
                 staticInitializer.visitEnd();
@@ -650,11 +739,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param clazz class-writer used for generating the implementation
          * @param internalClassName internal name of the generated class
          */
-        protected void asm$implementGetTextMethodViaStringConcatFactory(final @NotNull ClassWriter clazz,
-                                                                        final @NotNull String internalClassName
+        private void asm$implementGetTextMethodViaStringConcatFactory(final @NotNull ClassWriter clazz,
+                                                                      final @NotNull String internalClassName
         ) {
             // The Lookup will be needed by the runtime for `invokedynamic` usage
-            AsmUtil.addLookup(clazz);
+            addLookup(clazz);
 
             // Implement `TextModel#getText(T)` method and add fields
             val method = clazz.visitMethod(
@@ -666,7 +755,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
 
             //<editor-fold desc="Method code generation" defaultstate="collapsed">
             {
-                val staticInitializer = AsmUtil.visitStaticInitializer(clazz);
+                val staticInitializer = visitStaticInitializer(clazz);
                 staticInitializer.visitCode();
 
                 val dynamicNodes = dynamicNodeCount;
@@ -692,80 +781,74 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                 MAKE_CONCAT_METHOD_NAME, stringsToStringDescriptor(dynamicNodes),
                                 MAKE_CONCAT_HANDLE /* no bootstrap arguments */
                         );
-                    } else {// there are static nodes
-                        if (staticNodeHandledAsDynamicCount == 0) {
-                            val recipe = new StringBuilder(staticLength + dynamicNodes);
+                    } else if (staticNodeHandledAsDynamicCount == 0) {// there are static nodes
+                        val recipe = new StringBuilder(staticLength + dynamicNodes);
 
-                            var dynamicIndex = -1;
-                            // Lists are commonly faster with random access
-                            for (val node : nodes) {
-                                if (node.isDynamic()) {
-                                    val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                                    // push String (got from dynamic TextModel's `getText(T)` invocation) ...
-                                    asm$addStaticFieldWithInitializer(
-                                            clazz, internalClassName, staticInitializer,
-                                            fieldName, node.asDynamic().getContent()
-                                    );
-                                    asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                            method, internalClassName, fieldName
-                                    );
-                                    // ... which is referenced in the recipe as a dynamic one (it may differ from
-                                    // call to call)
-                                    recipe.append('\1');
-                                } else recipe.append(node.asStatic().getText());
-                            }
-
-                            method.visitInvokeDynamicInsn(
-                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodes),
-                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, recipe.toString() /* bootstrap argument */
+                        var dynamicIndex = -1;
+                        // Lists are commonly faster with random access
+                        for (val node : nodes) if (node.isDynamic()) {
+                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                            // push String (got from dynamic TextModel's `getText(T)` invocation) ...
+                            asm$addStaticFieldWithInitializer(
+                                    clazz, internalClassName, staticInitializer,
+                                    fieldName, node.asDynamic().getContent()
                             );
+                            asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                    method, internalClassName, fieldName
+                            );
+                            // ... which is referenced in the recipe as a dynamic one (it may differ from
+                            // call to call)
+                            recipe.append('\1');
+                        } else recipe.append(node.asStatic().getText());
+
+                        method.visitInvokeDynamicInsn(
+                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodes),
+                                MAKE_CONCAT_WITH_CONSTANTS_HANDLE, recipe.toString() /* bootstrap argument */
+                        );
+                    } else {
+                        val recipe = new StringBuilder(
+                                staticLength + dynamicNodes + staticNodeHandledAsDynamicCount
+                        );
+
+                        Object[] bootstrapArguments = new Object[1 + staticNodeHandledAsDynamicCount];
+
+                        int dynamicIndex = -1, bootstrapArgumentIndex = 0;
+                        // Lists are commonly faster with random access
+                        for (val node : nodes) if (node.isDynamic()) {
+                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                            // push String (got from dynamic TextModel's `getText(T)` invocation) ...
+                            asm$addStaticFieldWithInitializer(
+                                    clazz, internalClassName, staticInitializer,
+                                    fieldName, node.asDynamic().getContent()
+                            );
+                            asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                    method, internalClassName, fieldName
+                            );
+                            // ... which is referenced in the recipe as a dynamic one (it may differ from
+                            // call to call)
+                            recipe.append('\1');
                         } else {
-                            val recipe = new StringBuilder(
-                                    staticLength + dynamicNodes + staticNodeHandledAsDynamicCount
-                            );
+                            val staticNode = node.asStatic();
+                            if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+                                // add as static value pushed as bootstrap argument because
+                                // StringConcatFactory ...
+                                // ... would otherwise consider `\1` or `\2` as parts of pattern)
 
-                            Object[] bootstrapArguments = new Object[1 + staticNodeHandledAsDynamicCount];
-
-                            int dynamicIndex = -1, bootstrapArgumentIndex = 0;
-                            // Lists are commonly faster with random access
-                            for (val node : nodes) {
-                                if (node.isDynamic()) {
-                                    val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                                    // push String (got from dynamic TextModel's `getText(T)` invocation) ...
-                                    asm$addStaticFieldWithInitializer(
-                                            clazz, internalClassName, staticInitializer,
-                                            fieldName, node.asDynamic().getContent()
-                                    );
-                                    asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                            method, internalClassName, fieldName
-                                    );
-                                    // ... which is referenced in the recipe as a dynamic one (it may differ from
-                                    // call to call)
-                                    recipe.append('\1');
-                                } else {
-                                    val staticNode = node.asStatic();
-                                    if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
-                                        // add as static value pushed as bootstrap argument because
-                                        // StringConcatFactory ...
-                                        // ... would otherwise consider `\1` or `\2` as parts of pattern)
-
-                                        // add the String value (which cannot be part of the raw recipe) to the array
-                                        // ...
-                                        // ... of bootstrap arguments at index (starting from [1] as [0] is for the
-                                        // recipe)
-                                        bootstrapArguments[++bootstrapArgumentIndex] = staticNode.getText();
-                                        // ... and make the recipe aware of this always static node
-                                        recipe.append('\2'); // this one is used only for strings containing \1 anf \2
-                                    } else recipe.append(staticNode.getText());
-                                }
-                            }
-
-                            bootstrapArguments[0] = recipe.toString();
-                            method.visitInvokeDynamicInsn(
-                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodeCount),
-                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments
-                            );
+                                // add the String value (which cannot be part of the raw recipe) to the array
+                                // ...
+                                // ... of bootstrap arguments at index (starting from [1] as [0] is for the
+                                // recipe)
+                                bootstrapArguments[++bootstrapArgumentIndex] = staticNode.getText();
+                                // ... and make the recipe aware of this always static node
+                                recipe.append('\2'); // this one is used only for strings containing \1 anf \2
+                            } else recipe.append(staticNode.getText());
                         }
+
+                        bootstrapArguments[0] = recipe.toString();
+                        method.visitInvokeDynamicInsn(
+                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodeCount),
+                                MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments
+                        );
                     }
                     /*
                      * Each dynamic node gets pushed because it gets passed as a dynamic parameter
@@ -779,55 +862,95 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                      */
                     method.visitMaxs(dynamicNodeCount + 1, 2 /* [this + local variable] */);
                     //</editor-fold>
-                } else {
                     // The amount of dynamic nodes exceeds the maximal amount of those
                     // passed into the `StringConcatFactory`'s `makeConcat` methods
+                } else if (configuration.stringConcatFactoryAlgorithm()
+                        == StringConcatFactoryAlgorithm.VECTOR) {
                     //<editor-fold desc="Not as fast implementation" defaultstate="collapsed">
-                    /*
-                        case TREE: {
-                            // log(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS, dynamicNodes)
-                            val stringConcatFactoryCalls = Math.round(
-                                    Math.log(dynamicNodes) / STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS_LOGARITHM
+                    // linearly append nodes making the result of the last `makeConcat` call
+                    // the first argument of the new one
+                    // Nodes -> Concatenations:
+                    // 200 -> impossible here, (min) 201 -> 2, 399 -> 2, 400 -> 3...
+
+                    // create an iterator to go through nodes between loops
+                    val nodes = this.nodes.iterator();
+
+                    // index of the dynamic TextModel field
+
+                    // for the first `makeConcat` use all slots for the dynamic elements
+                    // also, don't add static elements after the last dynamic one
+
+                    val bootstrapArguments = new ArrayList<>(1);
+                    bootstrapArguments.add(null); // gets set to `recipe` when needed
+                    val recipe = new StringBuilder(dynamicNodes);
+
+                    var containsConstants = false;
+                    var dynamicIndex = -1;
+                    var dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS;
+                    while (true) {
+                        val node = nodes.next();
+                        if (node.isDynamic()) {
+                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                            asm$addStaticFieldWithInitializer(
+                                    clazz, internalClassName, staticInitializer,
+                                    fieldName, node.asDynamic().getContent()
                             );
-
-                            val nodes = this.nodes.iterator();
-
-
-
-                            // The worst stack size happens for the following situation:
-                            // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
-                            // - target is on the stack
-                            // - currently `getText`ed TextModel is on the stack
-                            method.visitMaxs(
-                                    STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 / * [this + local variable] * /
+                            asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                    method, internalClassName, fieldName
                             );
+                            recipe.append('\1');
 
-                            break;
+                            // when all dynamic slots get occupied, do `makeConcat`
+                            if (--dynamicSlotsRemaining == 0) break;
+                        } else {
+                            val staticNode = node.asStatic();
+                            if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+                                bootstrapArguments.add(staticNode.getText());
+                                recipe.append('\2');
+                            } else {
+                                recipe.append(staticNode.getText());
+                                containsConstants = true;
+                            }
                         }
-                        */
-                    if (configuration.stringConcatFactoryAlgorithm()
-                            == Configuration.StringConcatFactoryAlgorithm.VECTOR) {// linearly append nodes making
-                        // the result of the last `makeConcat` call the
-                        // first argument of the new one
-                        // Nodes -> Concatenations:
-                        // 200 -> impossible here, (min) 201 -> 2, 399 -> 2, 400 -> 3...
+                    }
 
-                        // create an iterator to go through nodes between loops
-                        val nodes = this.nodes.iterator();
+                    /*
+                     * Make the first concatenation
+                     */
+                    val maxDynamicArgumentsStringDescriptor
+                            = stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+                    if (containsConstants) {
+                        bootstrapArguments.set(0, recipe.toString());
+                        method.visitInvokeDynamicInsn(
+                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, maxDynamicArgumentsStringDescriptor,
+                                MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
+                        );
+                    } else method.visitInvokeDynamicInsn(
+                            MAKE_CONCAT_METHOD_NAME,
+                            maxDynamicArgumentsStringDescriptor,
+                            MAKE_CONCAT_HANDLE /* no bootstrap arguments */
+                    );
+                    // < now the result of concatenation is on stack >
+                    /*
+                     * Make all other concatenations
+                     */
 
-                        // index of the dynamic TextModel field
-                        var dynamicIndex = -1;
+                    while (nodes.hasNext()) {
+                        // the beginning of the new concatenation group
+                        if (dynamicSlotsRemaining == 0) {
+                            // 1 dynamic slot get occupied for the result of the previous concatenation
+                            dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - 1;
 
-                        // for the first `makeConcat` use all slots for the dynamic elements
-                        // also, don't add static elements after the last dynamic one
-                        var dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS;
+                            // reset the recipe without reallocating the `StringBuilder` object
+                            // indicating that the String starts from the dynamic value (previous String)
+                            recipe.delete(1, recipe.length()).setCharAt(0, '\1');
+                            containsConstants = false;
+                            bootstrapArguments.clear();
+                            bootstrapArguments.add(null);
+                        }
 
-                        val bootstrapArguments = new ArrayList<Object>(1);
-                        bootstrapArguments.add(null); // gets set to `recipe` when needed
-                        val recipe = new StringBuilder(dynamicNodes);
-
-                        var containsConstants = false;
-                        while (true) {
+                        // add the node
+                        {
                             val node = nodes.next();
                             if (node.isDynamic()) {
                                 val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
@@ -841,7 +964,23 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                 recipe.append('\1');
 
                                 // when all dynamic slots get occupied, do `makeConcat`
-                                if (--dynamicSlotsRemaining == 0) break;
+
+                                // If needed, make the concatenation not breaking out of the loop
+                                // BREAK ME OOOOUT (c) Muse 2017
+                                // this happens as soon as the dynamic element boofer is filled
+                                // so that the bigger String gets created closer to the end
+                                if (--dynamicSlotsRemaining == 0) if (containsConstants) {
+                                    bootstrapArguments.set(0, recipe.toString());
+                                    method.visitInvokeDynamicInsn(
+                                            MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
+                                            maxDynamicArgumentsStringDescriptor,
+                                            MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
+                                    );
+                                } else method.visitInvokeDynamicInsn(
+                                        MAKE_CONCAT_METHOD_NAME,
+                                        maxDynamicArgumentsStringDescriptor,
+                                        MAKE_CONCAT_HANDLE /* no bootstrap arguments */
+                                );
                             } else {
                                 val staticNode = node.asStatic();
                                 if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
@@ -853,121 +992,34 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
                                 }
                             }
                         }
-
-                        /*
-                         * Make the first concatenation
-                         */
-                        val maxDynamicArgumentsStringDescriptor
-                                = stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
-                        if (containsConstants) {
-                            bootstrapArguments.set(0, recipe.toString());
-                            method.visitInvokeDynamicInsn(
-                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, maxDynamicArgumentsStringDescriptor,
-                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
-                            );
-                        } else method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_METHOD_NAME,
-                                maxDynamicArgumentsStringDescriptor,
-                                MAKE_CONCAT_HANDLE /* no bootstrap arguments */
-                        );
-                        // < now the result of concatenation is on stack >
-                        /*
-                         * Make all other concatenations
-                         */
-
-                        while (nodes.hasNext()) {
-                            // the beginning of the new concatenation group
-                            if (dynamicSlotsRemaining == 0) {
-                                // 1 dynamic slot get occupied for the result of the previous concatenation
-                                dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - 1;
-
-                                // reset the recipe without reallocating the `StringBuilder` object
-                                // indicating that the String starts from the dynamic value (previous String)
-                                recipe.delete(1, recipe.length()).setCharAt(0, '\1');
-                                containsConstants = false;
-                                bootstrapArguments.clear();
-                                bootstrapArguments.add(null);
-                            }
-
-                            // add the node
-                            {
-                                val node = nodes.next();
-                                if (node.isDynamic()) {
-                                    val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                                    asm$addStaticFieldWithInitializer(
-                                            clazz, internalClassName, staticInitializer,
-                                            fieldName, node.asDynamic().getContent()
-                                    );
-                                    asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                            method, internalClassName, fieldName
-                                    );
-                                    recipe.append('\1');
-
-                                    // when all dynamic slots get occupied, do `makeConcat`
-                                    if (--dynamicSlotsRemaining == 0) {
-                                        // make the concatenation not breaking out of the loop
-                                        // BREAK ME OOOOUT (c) Muse 2017
-                                        // this happens as soon as the dynamic element boofer is filled
-                                        // so that the bigger String gets created closer to the end
-                                        if (containsConstants) {
-                                            bootstrapArguments.set(0, recipe.toString());
-                                            method.visitInvokeDynamicInsn(
-                                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
-                                                    maxDynamicArgumentsStringDescriptor,
-                                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
-                                            );
-                                        } else method.visitInvokeDynamicInsn(
-                                                MAKE_CONCAT_METHOD_NAME,
-                                                maxDynamicArgumentsStringDescriptor,
-                                                MAKE_CONCAT_HANDLE /* no bootstrap arguments */
-                                        );
-                                    }
-                                } else {
-                                    val staticNode = node.asStatic();
-                                    if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
-                                        bootstrapArguments.add(staticNode.getText());
-                                        recipe.append('\2');
-                                    } else {
-                                        recipe.append(staticNode.getText());
-                                        containsConstants = true;
-                                    }
-                                }
-                            }
-                        }
-
-                        // There are no more unhandled nodes but some the last ones)
-                        // might have not been used for concatenation
-
-                        if (dynamicSlotsRemaining != 0) { // the last stack content was not used for concatenation
-                            // note: amount of dynamic elements may even be
-
-                            if (containsConstants) {
-                                bootstrapArguments.set(0, recipe.toString());
-                                method.visitInvokeDynamicInsn(
-                                        MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
-                                                STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - dynamicSlotsRemaining
-                                        ), MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
-                                );
-                            } else method.visitInvokeDynamicInsn(
-                                    MAKE_CONCAT_METHOD_NAME,
-                                    maxDynamicArgumentsStringDescriptor,
-                                    MAKE_CONCAT_HANDLE /* no bootstrap arguments */
-                            );
-
-                        }
-
-                        // The worst stack size happens for the following situation:
-                        // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
-                        // - target is on the stack
-                        // - currently `getText`ed TextModel is on the stack
-                        method.visitMaxs(
-                                STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 /* [this + local variable] */
-                        );
-                    } else {
-                        throw new IllegalStateException("Unknown StringConcatFactory algorithm");
                     }
-                    //</editor-fold>
-                }
+
+                    // There are no more unhandled nodes but some the last ones)
+                    // might have not been used for concatenation
+
+                    // Non-zero indicates that the last stack content was not used for concatenation
+                    if (dynamicSlotsRemaining != 0) if (containsConstants) {
+                        bootstrapArguments.set(0, recipe.toString());
+                        method.visitInvokeDynamicInsn(
+                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
+                                        STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - dynamicSlotsRemaining
+                                ), MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
+                        );
+                    } else method.visitInvokeDynamicInsn(
+                            MAKE_CONCAT_METHOD_NAME,
+                            maxDynamicArgumentsStringDescriptor,
+                            MAKE_CONCAT_HANDLE /* no bootstrap arguments */
+                    );
+
+                    // The worst stack size happens for the following situation:
+                    // - ([maximal possible amount of dynamic arguments ] - 1) elements are on the stack
+                    // - target is on the stack
+                    // - currently `getText`ed TextModel is on the stack
+                    method.visitMaxs(
+                            STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1, 2 /* [this + local variable] */
+                    );
+                } else throw new IllegalStateException("Unknown StringConcatFactory algorithm");
+                //</editor-fold>
 
                 staticInitializer.visitInsn(RETURN);
                 staticInitializer.visitMaxs(2, 0);
@@ -990,10 +1042,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param internalClassName internal name of this class
          * @param fieldName name of the field of type {@link TextModel}
          */
-        protected static void asm$pushStaticTextModelFieldGetTextInvocationResult(
+        private static void asm$pushStaticTextModelFieldGetTextInvocationResult(
                 final @NotNull MethodVisitor method,
                 final @NotNull String internalClassName,
-                final @NotNull String fieldName) {
+                final @NotNull String fieldName
+        ) {
             // Get value of field storing dynamic value
             method.visitFieldInsn(GETSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
             // Push target
@@ -1010,7 +1063,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param method method visitor through which the code should be updated
          */
-        protected static void asm$invokeStringBuilderAppendString(final @NotNull MethodVisitor method) {
+        private static void asm$invokeStringBuilderAppendString(final @NotNull MethodVisitor method) {
             // Invoke `StringBuilder.append(String)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
@@ -1023,7 +1076,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          *
          * @param method method visitor through which the code should be updated
          */
-        protected static void asm$invokeStringBuilderAppendChar(@NotNull final MethodVisitor method) {
+        private static void asm$invokeStringBuilderAppendChar(final @NotNull MethodVisitor method) {
             // Invoke `StringBuilder.append(char)`
             method.visitMethodInsn(
                     INVOKEVIRTUAL, STRING_BUILDER_INTERNAL_NAME,
@@ -1041,11 +1094,11 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @param fieldName name of the field to store value
          * @param value value of the field (dynamic text model)
          */
-        protected static void asm$addStaticFieldWithInitializer(final @NotNull ClassVisitor clazz,
-                                                                final @NotNull String internalClassName,
-                                                                final @NotNull MethodVisitor staticInitializer,
-                                                                final @NotNull String fieldName,
-                                                                final @NotNull TextModel<?> value) {
+        private static void asm$addStaticFieldWithInitializer(final @NotNull ClassVisitor clazz,
+                                                              final @NotNull String internalClassName,
+                                                              final @NotNull MethodVisitor staticInitializer,
+                                                              final @NotNull String fieldName,
+                                                              final @NotNull TextModel<?> value) {
             // add field
             clazz.visitField(
                     OPCODES_ACC_PUBLIC_STATIC_FINAL /* less access checks & possible JIT folding */,
@@ -1064,142 +1117,9 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
             // set the field to the computed value
             staticInitializer.visitFieldInsn(PUTSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
         }
-
-        /**
-         * A {@link ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.Node node}
-         * specific for {@link AsmTextModelFactory ASM-based text model factory}.
-         *
-         * @param <T> type of object according to which the created text models are formatted
-         */
-        protected interface Node<T>
-                extends AbstractGeneratingTextModelFactoryBuilder.Node<T, Node.StaticNode<T>, Node.DynamicNode<T>> {
-
-            /**
-             * A
-             * {@link ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.StaticNode
-             * static node} specific for {@link AsmTextModelFactory ASM-based text model factory}.
-             *
-             * @param <T> type of object according to which the created text models are formatted
-             */
-            @Value
-            @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-            class StaticNode<T> implements AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>, Node<T> {
-
-                /**
-                 * Text of this node
-                 */
-                @NotNull StringBuilder text;
-
-                /**
-                 * Marker indicating whether this node's text cannot be passed as a raw part of {@code
-                 * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
-                 * ({@code '\1'} and {@code '\2'})
-                 */
-                @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
-
-                public StaticNode(@NonNull final String text) {
-                    this.text = new StringBuilder(text);
-
-                    treatAsDynamicValueInStringConcatFactory = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
-                }
-
-                @Override
-                public boolean isDynamic() {
-                    return false;
-                }
-
-                @Override
-                public @NotNull StaticNode<T> asStatic() {
-                    return this;
-                }
-
-                @Override
-                public @NotNull String getText() {
-                    return text.toString();
-                }
-
-                @Override
-                public int getTextLength() {
-                    return text.length();
-                }
-
-                @Override
-                public void appendText(final @NotNull String text) {
-                    this.text.append(text);
-
-                    // operator `|=` cannot be used here as it is not lazy (the right side of expression is always used)
-                    if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
-                            = text.indexOf('\1') != -1 || text.indexOf('\2') != -1;
-                }
-            }
-
-            /**
-             * A
-             * {@link ru.progrm_jarvis.ultimatemessenger.format.model.AbstractGeneratingTextModelFactoryBuilder.DynamicNode
-             * dynamic node} specific for {@link AsmTextModelFactory ASM-based text model factory}.
-             *
-             * @param <T> type of object according to which the created text models are formatted
-             */
-            @Value
-            class DynamicNode<T> implements AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>, Node<T> {
-
-                /**
-                 * Dynamic content of this node
-                 */
-                @NotNull TextModel<T> content;
-
-                @Override
-                public boolean isDynamic() {
-                    return true;
-                }
-
-                @Override
-                public DynamicNode<T> asDynamic() {
-                    return this;
-                }
-            }
-        }
     }
 
-    /**
-     * Configuration of this {@link AsmTextModelFactory text model factory}
-     */
-    public interface Configuration {
-
-        /**
-         * Tests whether the configured {@link TextModelBuilder text model builder} should attempt to use {@code
-         * java.lang.invoke.StringConcatFactory} for {@link String string}-concatenation.
-         *
-         * @return {@code true} if {@code StringConcatFactory} should be used (if available) for string concatenation
-         * and {@code false} otherwise
-         */
-        @Contract(pure = true)
-        boolean enableStringConcatFactory();
-
-        /**
-         * Gets the algorithm which should be used used for producing string concatenation logic via {@code
-         * java.lang.invoke.StringConcatFactory} when it is {@link #enableStringConcatFactory() enabled}.
-         *
-         * @return algorithm which should be used for producing string concatenation logic
-         */
-        @Contract(pure = true)
-        StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
-
-        enum StringConcatFactoryAlgorithm {
-            //TREE,
-            VECTOR
-        }
-    }
-
-    /**
-     * Creates a new builder of the configuration.
-     *
-     * @return builder of a {@link Configuration}
-     */
-    public static @NotNull SimpleConfiguration.SimpleConfigurationBuilder configuration() {
-        return SimpleConfiguration.builder();
-    }
-
+    //<editor-fold desc="Configuration implementation" defaultstate="collapsed">
     /**
      * Configuration of this {@link AsmTextModelFactory text model factory}/
      */
@@ -1207,8 +1127,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
     @Builder
     @Accessors(fluent = true)
     @FieldDefaults(level = AccessLevel.PROTECTED)
-    @NonFinal
-    protected static class SimpleConfiguration implements Configuration {
+    private static class SimpleConfiguration implements Configuration {
 
         /**
          * Default configuration instance
@@ -1216,7 +1135,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @implNote this may be replaced with {@link Lazy lazy wrapper} if configurations become stateful or involve
          * multiple inner objects
          */
-        protected static SimpleConfiguration DEFAULT = builder().build();
+        protected static final @NotNull Configuration DEFAULT = builder().build();
 
         /**
          * Gets a default configuration.
@@ -1224,7 +1143,7 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * @return default configuration
          */
         @Contract(pure = true)
-        protected static SimpleConfiguration getDefault() {
+        protected static @NotNull Configuration getDefault() {
             return DEFAULT;
         }
 
@@ -1237,7 +1156,173 @@ public class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration>
          * Algorithm which should be used used for producing string concatenation logic via {@code
          * java.lang.invoke.StringConcatFactory}
          */
-        @Builder.Default StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
-                = StringConcatFactoryAlgorithm.VECTOR;
+        @Builder.Default AsmTextModelFactory.StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm
+                = AsmTextModelFactory.StringConcatFactoryAlgorithm.VECTOR;
+
+        /**
+         * Simple implementation of {@link ConfigurationBuilder}.
+         */
+        private static final class SimpleConfigurationBuilder implements ConfigurationBuilder {}
     }
+    //</editor-fold>
+
+
+
+    /**
+     * {@link AbstractGeneratingTextModelFactoryBuilder.Node Node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    private interface AsmNode<T>
+            extends AbstractGeneratingTextModelFactoryBuilder.Node<T, StaticAsmNode<T>, DynamicAsmNode<T>> {}
+
+    /**
+     * {@link AbstractGeneratingTextModelFactoryBuilder.StaticNode Static node}
+     * specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    private interface StaticAsmNode<T> extends AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>, AsmNode<T> {
+
+        /**
+         * Checks if this node's text cannot be passed as a raw part
+         * of {@code java.lang.invoke.StringConcatFactory}'s concatenation recipe,
+         * e.g. due to it containing special characters ({@code '\1'} and {@code '\2'})
+         *
+         * @return {@code true} if this node's text should be treated as dynamic when used by string concat factory
+         */
+        boolean isTreatAsDynamicValueInStringConcatFactory();
+    }
+
+    /**
+     * {@link AbstractGeneratingTextModelFactoryBuilder.DynamicNode Dynamic node}
+     * specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    private interface DynamicAsmNode<T> extends AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>, AsmNode<T> {}
+
+    //<editor-fold desc="Node implementations" defaultstate="collapsed">
+    /**
+     * Simple implementation of {@link StaticAsmNode}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    @Value
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+    private static class SimpleStaticAsmNode<T> implements StaticAsmNode<T> {
+
+        /**
+         * Text of this node
+         */
+        @SuppressWarnings("StringBufferField") @NotNull StringBuilder text;
+
+        /**
+         * Marker indicating whether this node's text cannot be passed as a raw part of {@code
+         * java.lang.invoke.StringConcatFactory}'s concatenation recipe due to it containing special characters
+         * ({@code '\1'} and {@code '\2'})
+         */
+        @SuppressWarnings("BooleanVariableAlwaysNegated") // simpler assignment
+        @NonFinal boolean treatAsDynamicValueInStringConcatFactory;
+
+        /**
+         * Checks if the given string cannot be used as static by {@code java.lang.invoke.StringConcatFactory}.
+         * This happens when the string contains symbols which have special meaning in the latter's templates
+         * i.e. {@code \1} and {@code \2}.
+         *
+         * @param string string to get check
+         * @return {@code true} if the given string cannot be treated as static when used by string concat factory
+         */
+        private static boolean cannotBeStaticInStringConcatFactory(final @NotNull String string) {
+            return string.indexOf('\1') != -1 || string.indexOf('\2') != -1;
+        }
+
+        @Override
+        public boolean isDynamic() {
+            return false;
+        }
+
+        @Override
+        public @NotNull StaticAsmNode<T> asStatic() {
+            return this;
+        }
+
+        @Override
+        public @NotNull DynamicAsmNode<T> asDynamic() {
+            throw new UnsupportedOperationException("This is not a dynamic node");
+        }
+
+        @Override
+        public @NotNull String getText() {
+            return text.toString();
+        }
+
+        @Override
+        public int getTextLength() {
+            return text.length();
+        }
+
+        @Override
+        public void appendText(final @NotNull String text) {
+            this.text.append(text);
+
+            // operator `|=` cannot be used here as it is not lazy
+            if (!treatAsDynamicValueInStringConcatFactory) treatAsDynamicValueInStringConcatFactory
+                    = cannotBeStaticInStringConcatFactory(text);
+        }
+
+        /**
+         * Creates a new {@link StaticAsmNode} from the gicen text.
+         *
+         * @param text initial text of the created node
+         * @param <T> type of object according to which the created text models are formatted
+         * @return created node
+         */
+        public static <T> @NotNull StaticAsmNode<T> from(final @NotNull String text) {
+            return new SimpleStaticAsmNode<>(new StringBuilder(text), cannotBeStaticInStringConcatFactory(text));
+        }
+    }
+
+    /**
+     * Simple implementation of {@link DynamicAsmNode}.
+     *
+     * @param <T> type of object according to which the created text models are formatted
+     */
+    @Value
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    private static class SimpleDynamicAsmNode<T> implements DynamicAsmNode<T> {
+
+        /**
+         * Dynamic content of this node
+         */
+        @NotNull TextModel<T> content;
+
+        @Override
+        public boolean isDynamic() {
+            return true;
+        }
+
+        @Override
+        public @NotNull DynamicAsmNode<T> asDynamic() {
+            return this;
+        }
+
+        @Override
+        public @NotNull StaticAsmNode<T> asStatic() {
+            throw new UnsupportedOperationException("This is not a static node");
+        }
+
+        /**
+         * Creates a new {@link DynamicAsmNode} from the given {@link TextModel text model}.
+         *
+         * @param content content of the created node
+         * @param <T> type of object according to which the created text models are formatted
+         * @return created node
+         */
+        public static <T> @NotNull DynamicAsmNode<T> from(final @NotNull TextModel<T> content) {
+            return new SimpleDynamicAsmNode<>(content);
+        }
+    }
+    //</editor-fold>
 }

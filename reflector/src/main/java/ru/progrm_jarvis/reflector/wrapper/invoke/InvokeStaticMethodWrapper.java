@@ -6,8 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
-import ru.progrm_jarvis.javacommons.pair.Pair;
-import ru.progrm_jarvis.javacommons.pair.SimplePair;
+import ru.progrm_jarvis.javacommons.object.Pair;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
 import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
@@ -133,7 +132,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
             final @NonNull Method method,
             final @NonNull T target
     ) {
-        return (StaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(SimplePair.of(method, target), () -> {
+        return (StaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(Pair.of(method, target), () -> {
             checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
 
             val noReturn = method.getReturnType() == void.class;

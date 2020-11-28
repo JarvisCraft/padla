@@ -9,9 +9,9 @@ import java.util.concurrent.locks.Lock;
 public abstract class AbstractConcurrentSizedCollectionWrapper<W>
         extends ConcurrentWrapper<W> implements SizedCollection {
 
-    protected AbstractConcurrentSizedCollectionWrapper(@NotNull final W wrapped,
-                                                       @NotNull final Lock readLock,
-                                                       @NotNull final Lock writeLock) {
+    protected AbstractConcurrentSizedCollectionWrapper(final @NotNull W wrapped,
+                                                       final @NotNull Lock readLock,
+                                                       final @NotNull Lock writeLock) {
         super(wrapped, readLock, writeLock);
     }
 
