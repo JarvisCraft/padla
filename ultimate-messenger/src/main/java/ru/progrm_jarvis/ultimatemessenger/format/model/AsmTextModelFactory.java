@@ -22,7 +22,6 @@ import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
-import javax.annotation.Nonnegative;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -551,7 +550,9 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * @return descriptor of the name with the specified signature
          */
         @SneakyThrows(ExecutionException.class)
-        private static @NotNull String stringsToStringDescriptor(final @Nonnegative int stringArgumentsCount) {
+        private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
+            assert stringArgumentsCount >= 0 : "stringArgumentsCount should be non-negative";
+
             return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, () -> {
                 val result = new StringBuilder(
                         STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */

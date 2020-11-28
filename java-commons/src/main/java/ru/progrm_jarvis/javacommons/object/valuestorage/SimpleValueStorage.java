@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +15,6 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @param <V> type of values stored
  */
-@ThreadSafe
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class SimpleValueStorage<V> extends AbstractValueStorage<@NotNull String, V> {
 

@@ -2,10 +2,9 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /**
  * Common abstract base for {@link TextModelFactory.TextModelBuilder} capable of caching.
@@ -26,7 +25,7 @@ public abstract class AbstractCachingTextModelFactoryBuilder<T> implements TextM
      * @apiNote all {@code append(}<i>...</i>{@code )} methods should invoke this method
      * whenever the text model builder gets updated
      */
-    @OverridingMethodsMustInvokeSuper
+    @MustBeInvokedByOverriders
     protected void markAsChanged() {
         cachedTextModel = null;
     }

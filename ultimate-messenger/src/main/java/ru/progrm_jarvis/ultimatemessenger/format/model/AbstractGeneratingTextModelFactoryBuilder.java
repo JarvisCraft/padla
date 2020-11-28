@@ -3,9 +3,9 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +63,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      *
      * @param staticNode node whose modification should be ended
      */
-    @OverridingMethodsMustInvokeSuper
+    @MustBeInvokedByOverriders
     protected void endModification(final @NotNull SN staticNode) {
         // increase the length of static text part
         staticLength += staticNode.getTextLength();
@@ -74,7 +74,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      *
      * @param dynamicNode node whose modification should be ended
      */
-    @OverridingMethodsMustInvokeSuper
+    @MustBeInvokedByOverriders
     protected void endModification(final @NotNull DN dynamicNode) {
         // increment the amount of dynamic elements
         dynamicNodeCount++;
