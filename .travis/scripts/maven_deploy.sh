@@ -13,7 +13,7 @@ function deploy() {
   fi
 
   maven_profiles=build-extras,sign-artifacts,import-env-code-signing-credentials,"$1"-deployment
-  if [[ $2 == release && $1 == github-package-registry ]]; then
+  if [[ $2 == release && $1 == sonatype-ossrh ]]; then
     maven_profiles="${maven_profiles},automatic-central-release"
   fi
   echo "Using maven profiles: [${maven_profiles}]"
