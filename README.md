@@ -13,15 +13,15 @@ In addition to common tools, it does also provide more specific ones aimed at ma
 ## Dependencies
 
 As its dependencies PADLA uses:
-  - Compiletime:
+- Compiletime:
     - [Lombok](https://github.com/rzwitserloot/lombok) for generating boilerplate stuff
     - [Jetbrains Annotations](https://github.com/JetBrains/java-annotations) for documenting code logic
-  - Runtime:
+- Runtime:
     - [Guava](https://github.com/google/guava) for some general-purpose needs
-  - Testing:
+- Testing:
     - [Junit5](https://github.com/junit-team/junit5/) with related sub-tools for testing
     - [Hamcrest](https://github.com/hamcrest/JavaHamcrest) for more creating more readable tests
     - [Mockito](https://github.com/mockito/mockito) for mocking in tests
-  - Additional (these are not inherited by default and are required only if using specific classes):
+- Additional (these are not inherited by default and are required only if using specific classes):
     - [ASM](https://gitlab.ow2.org/asm/asm) for runtime class generation (for members annotated with `@UsesBytecodeModification(CommonBytecodeLibrary.ASM)`)
     - [Javassist](https://github.com/jboss-javassist/javassist) for runtime class generation (for members annotated with `@UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)`)
