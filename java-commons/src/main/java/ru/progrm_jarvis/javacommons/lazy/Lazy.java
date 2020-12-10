@@ -132,6 +132,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleLazy<T> implements Lazy<T> {
 
         /**
@@ -244,6 +245,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
@@ -255,12 +257,6 @@ public interface Lazy<T> extends Supplier<T> {
          * The value stored wrapped in {@link WeakReference}
          */
         @NonNull WeakReference<T> value;
-
-        private SimpleWeakLazy(@NonNull final Supplier<@NotNull T> valueSupplier,
-                               @NonNull final WeakReference<T> value) {
-            this.valueSupplier = valueSupplier;
-            this.value = value;
-        }
 
         @Override
         public T get() {
@@ -295,6 +291,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class LockingWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
@@ -369,6 +366,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @param <T> type of wrapped value
      */
     @Value
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     @SuppressWarnings("ThreadLocalNotStaticFinal") // this is intentional
     class ThreadLocalLazy<T> implements Lazy<T> {
