@@ -97,7 +97,7 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     static <T> Lazy<@NotNull T> createWeak(final @NonNull Supplier<@NotNull T> valueSupplier) {
-        return new SimpleWeakLazy<>(valueSupplier, ReferenceUtil.weakReferenceStub());
+        return new SimpleWeakLazy<>(valueSupplier, ReferenceUtil.weakReferenceToNull());
     }
 
     /**
@@ -111,7 +111,11 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     static <T> Lazy<T> createWeakThreadSafe(final @NonNull Supplier<T> valueSupplier) {
-        return new LockingWeakLazy<>(valueSupplier);
+        final ReadWriteLock lock;
+        return new LockingWeakLazy<>(
+                (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock(),
+                valueSupplier, ReferenceUtil.weakReferenceToNull()
+        );
     }
 
     /**
@@ -289,45 +293,36 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    @Data
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    final class LockingWeakLazy<@NotNull T> implements Lazy<T> {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    final class LockingWeakLazy<T> implements Lazy<@NotNull T> {
 
         /**
          * Mutex used for synchronizations
          */
-        final @NonNull Lock readLock, writeLock;
+        @NotNull Lock readLock, writeLock;
 
         /**
          * Supplier used for creation of the value
          */
-        final @NonNull Supplier<T> valueSupplier;
+        @NotNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
          */
-        @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
-
-        protected LockingWeakLazy(final @NonNull Supplier<T> valueSupplier) {
-            this.valueSupplier = valueSupplier;
-
-            {
-                val lock = new ReentrantReadWriteLock();
-                readLock = lock.readLock();
-                writeLock = lock.writeLock();
-            }
-        }
+        @NonFinal volatile @NotNull WeakReference<T> weakValue;
 
         @Override
         public T get() {
             readLock.lock();
             try {
-                var value = this.value.get();
-                if (value == null) {
+                T value;
+                if ((value = weakValue.get()) == null) {
                     writeLock.lock();
                     try {
-                        this.value = new WeakReference<>(value = valueSupplier.get());
+                        // read to variable `value` so that in case of it not being null it gets returned
+                        if ((value = weakValue.get()) == null) weakValue
+                                = new WeakReference<>(value = valueSupplier.get());
                     } finally {
                         writeLock.unlock();
                     }
@@ -343,7 +338,7 @@ public interface Lazy<T> extends Supplier<T> {
         public boolean isInitialized() {
             readLock.lock();
             try {
-                return value.get() != null;
+                return weakValue.get() != null;
             } finally {
                 readLock.unlock();
             }
@@ -353,7 +348,7 @@ public interface Lazy<T> extends Supplier<T> {
         public @Nullable T getInitializedOrNull() {
             readLock.lock();
             try {
-                return value.get();
+                return weakValue.get();
             } finally {
                 readLock.unlock();
             }
