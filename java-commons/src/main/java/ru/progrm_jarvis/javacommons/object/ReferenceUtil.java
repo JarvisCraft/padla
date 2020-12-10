@@ -1,7 +1,8 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 
@@ -12,9 +13,9 @@ import java.lang.ref.WeakReference;
 public class ReferenceUtil {
 
     /**
-     * Stub of a {@link WeakReference} actually referencing {@code null}
+     * Singleton of {@link WeakReference} to {@code null}
      */
-    private final @NonNull WeakReference<?> WEAK_REFERENCE_STUB = new WeakReference<>(null);
+    private final @NotNull WeakReference<@Nullable ?> WEAK_REFERENCE_TO_NULL = new WeakReference<>(null);
 
     /**
      * Gets a {@link WeakReference} stub singleton.
@@ -23,7 +24,7 @@ public class ReferenceUtil {
      * @return {@link WeakReference} stub singleton
      */
     @SuppressWarnings("unchecked")
-    public static <T> WeakReference<T> weakReferenceStub() {
-        return (WeakReference<T>) WEAK_REFERENCE_STUB;
+    public static <@Nullable T> @NotNull WeakReference<T> weakReferenceToNull() {
+        return (WeakReference<T>) WEAK_REFERENCE_TO_NULL;
     }
 }
