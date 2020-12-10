@@ -2,13 +2,16 @@ package ru.progrm_jarvis.javacommons.lazy;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.object.ReferenceUtil;
+import ru.progrm_jarvis.javacommons.object.Result;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
@@ -38,8 +41,9 @@ public interface Lazy<T> extends Supplier<T> {
      * Gets the wrapped value if it is already initialized or {@code null} otherwise.
      *
      * @return wrapped value if it is already initialized or {@code null} otherwise
+     * @apiNote both {@code null} value and uninitialized state will be represented by {@code null}
      *
-     * @see #getOptionally() behaves similarly but uses {@link Optional} instead of raw value
+     * @see #getAsOptional() analog wraping into {@link Optional}
      */
     @Nullable T getInitializedOrNull();
 
@@ -48,13 +52,23 @@ public interface Lazy<T> extends Supplier<T> {
      * or an {@link Optional#empty() empty optional} otherwise.
      *
      * @return wrapped value wrapped in {@link Optional} if it is already initialized
-     * or an {@link Optional#empty() empty optional} otherwise.
+     * or an {@link Optional#empty() empty optional} otherwise
+     * @apiNote both {@code null} value and uninitialized state will be represented by {@link Optional#empty()}
      *
      * @see #getInitializedOrNull() behaves similarly but uses raw value instead of {@link Optional}
      */
-    default @NotNull Optional<T> getOptionally() {
+    default @NotNull Optional<T> getAsOptional() {
         return Optional.ofNullable(getInitializedOrNull());
     }
+
+    /**
+     * Gets the wrapped value wrapped in {@link Result} if it is already initialized
+     * or a {@link Result#nullError()} otherwise.
+     *
+     * @return wrapped value wrapped in {@link Result} if it is already initialized
+     * or {@link Result#nullError()} otherwise
+     */
+    @NotNull Result<T, Void> getAsResult();
 
     ///////////////////////////////////////////////////////////////////////////
     // Static factories
@@ -97,7 +111,7 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     static <T> Lazy<@NotNull T> createWeak(final @NonNull Supplier<@NotNull T> valueSupplier) {
-        return new SimpleWeakLazy<>(valueSupplier, ReferenceUtil.weakReferenceStub());
+        return new SimpleWeakLazy<>(valueSupplier, ReferenceUtil.weakReferenceToNull());
     }
 
     /**
@@ -111,7 +125,11 @@ public interface Lazy<T> extends Supplier<T> {
      * and so the new one might be recomputed using the value supplier
      */
     static <T> Lazy<T> createWeakThreadSafe(final @NonNull Supplier<T> valueSupplier) {
-        return new LockingWeakLazy<>(valueSupplier);
+        final ReadWriteLock lock;
+        return new LockingWeakLazy<>(
+                (lock = new ReentrantReadWriteLock()).readLock(), lock.writeLock(),
+                valueSupplier, ReferenceUtil.weakReferenceToNull()
+        );
     }
 
     /**
@@ -122,7 +140,7 @@ public interface Lazy<T> extends Supplier<T> {
      * @return created lazy
      */
     static <T> Lazy<T> createThreadLocal(final @NonNull Supplier<T> valueSupplier) {
-        return new ThreadLocalLazy<>(valueSupplier);
+        return new ThreadLocalLazy<>(valueSupplier, ThreadLocal.withInitial(() -> ThreadLocalLazy.UNSET_VALUE));
     }
 
     /**
@@ -132,6 +150,7 @@ public interface Lazy<T> extends Supplier<T> {
      */
     @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleLazy<T> implements Lazy<T> {
 
         /**
@@ -168,6 +187,11 @@ public interface Lazy<T> extends Supplier<T> {
         public @Nullable T getInitializedOrNull() {
             return valueSupplier == null ? value : null;
         }
+
+        @Override
+        public @NotNull Result<T, Void> getAsResult() {
+            return valueSupplier == null ? Result.success(value) : Result.nullError();
+        }
     }
 
     /**
@@ -175,15 +199,13 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @param <T> type of wrapped value
      */
-    @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class DoubleCheckedLazy<T> implements Lazy<T> {
 
         /**
          * Mutex used for synchronizations
          */
-        final @NonNull Object mutex;
+        final @NotNull Object mutex;
 
         /**
          * Supplier used for creation of the value
@@ -195,6 +217,12 @@ public interface Lazy<T> extends Supplier<T> {
          */
         volatile T value;
 
+        /**
+         * Creat a new double-checked lazy based on the given mutex.
+         *
+         * @param mutex mutex to be used for synchronization
+         * @param valueSupplier supplier used for creation of the value
+         */
         private DoubleCheckedLazy(final @NotNull Object mutex, final @NotNull Supplier<T> valueSupplier) {
             this.mutex = mutex;
             this.valueSupplier = valueSupplier;
@@ -203,12 +231,11 @@ public interface Lazy<T> extends Supplier<T> {
         @Override
         public T get() {
             if (valueSupplier != null) synchronized (mutex) {
-                val valueSupplier = this.valueSupplier;
-                if (valueSupplier != null) {
+                final Supplier<T> valueSupplier;
+                if ((valueSupplier = this.valueSupplier) != null) {
                     val value = this.value = valueSupplier.get();
                     this.valueSupplier = null;
 
-                    // make sure no race is possible in theory
                     return value;
                 }
             }
@@ -232,6 +259,14 @@ public interface Lazy<T> extends Supplier<T> {
             }
             return value;
         }
+
+        @Override
+        public @NotNull Result<T, Void> getAsResult() {
+            if (valueSupplier != null) synchronized (mutex) {
+                if (valueSupplier != null) return Result.nullError();
+            }
+            return Result.success(value);
+        }
     }
 
     /**
@@ -242,46 +277,46 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleWeakLazy<@NotNull T> implements Lazy<T> {
 
         /**
          * Supplier used for creation of the value
          */
-        final @NonNull Supplier<@NotNull T> valueSupplier;
+        final @NotNull Supplier<@NotNull T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
          */
-        @NonNull WeakReference<T> value;
-
-        private SimpleWeakLazy(@NonNull final Supplier<@NotNull T> valueSupplier,
-                               @NonNull final WeakReference<T> value) {
-            this.valueSupplier = valueSupplier;
-            this.value = value;
-        }
+        @NotNull WeakReference<T> weakValue;
 
         @Override
         public T get() {
-            if (value.get() == null) {
+            if (weakValue.get() == null) {
                 val value = valueSupplier.get();
-                this.value = new WeakReference<>(value);
+                weakValue = new WeakReference<>(value);
 
                 return value;
             }
 
-            return value.get();
+            return weakValue.get();
         }
 
         @Override
         public boolean isInitialized() {
-            return value.get() != null;
+            return weakValue.get() != null;
         }
 
         @Override
         public @Nullable T getInitializedOrNull() {
-            return value.get();
+            return weakValue.get();
+        }
+
+        @Override
+        public @NotNull Result<T, Void> getAsResult() {
+            final T value;
+            return (value = weakValue.get()) == null ? Result.nullError() : Result.success(value);
         }
     }
 
@@ -293,44 +328,36 @@ public interface Lazy<T> extends Supplier<T> {
      * @apiNote weak lazy stores the value wrapped in weak reference and so it may be GCed
      * and so the new one might be recomputed using the value supplier
      */
-    @Data
-    @FieldDefaults(level = AccessLevel.PRIVATE)
-    final class LockingWeakLazy<@NotNull T> implements Lazy<T> {
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    final class LockingWeakLazy<T> implements Lazy<@NotNull T> {
 
         /**
          * Mutex used for synchronizations
          */
-        final @NonNull Lock readLock, writeLock;
+        @NotNull Lock readLock, writeLock;
 
         /**
          * Supplier used for creation of the value
          */
-        final @NonNull Supplier<T> valueSupplier;
+        @NotNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link WeakReference}
          */
-        @NonNull volatile WeakReference<T> value = ReferenceUtil.weakReferenceStub();
-
-        protected LockingWeakLazy(final @NonNull Supplier<T> valueSupplier) {
-            this.valueSupplier = valueSupplier;
-
-            {
-                val lock = new ReentrantReadWriteLock();
-                readLock = lock.readLock();
-                writeLock = lock.writeLock();
-            }
-        }
+        @NonFinal volatile @NotNull WeakReference<T> weakValue;
 
         @Override
         public T get() {
             readLock.lock();
             try {
-                var value = this.value.get();
-                if (value == null) {
+                T value;
+                if ((value = weakValue.get()) == null) {
                     writeLock.lock();
                     try {
-                        this.value = new WeakReference<>(value = valueSupplier.get());
+                        // read to variable `value` so that in case of it not being null it gets returned
+                        if ((value = weakValue.get()) == null) weakValue
+                                = new WeakReference<>(value = valueSupplier.get());
                     } finally {
                         writeLock.unlock();
                     }
@@ -346,7 +373,7 @@ public interface Lazy<T> extends Supplier<T> {
         public boolean isInitialized() {
             readLock.lock();
             try {
-                return value.get() != null;
+                return weakValue.get() != null;
             } finally {
                 readLock.unlock();
             }
@@ -356,7 +383,18 @@ public interface Lazy<T> extends Supplier<T> {
         public @Nullable T getInitializedOrNull() {
             readLock.lock();
             try {
-                return value.get();
+                return weakValue.get();
+            } finally {
+                readLock.unlock();
+            }
+        }
+
+        @Override
+        public @NotNull Result<@NotNull T, Void> getAsResult() {
+            readLock.lock();
+            try {
+                final T value;
+                return (value = weakValue.get()) == null ? Result.nullError() : Result.success(value);
             } finally {
                 readLock.unlock();
             }
@@ -368,33 +406,33 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @param <T> type of wrapped value
      */
-    @Value
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    @SuppressWarnings("ThreadLocalNotStaticFinal") // this is intentional
     class ThreadLocalLazy<T> implements Lazy<T> {
 
         /**
-         * Stub value used as the default value of {@code #value}
+         * Stub value used as the default value of {@link #threadLocalValue}
          */
-        private static final Object UNSET_VALUE = new Object[0];
+        private static final @NotNull Object UNSET_VALUE = new Object[0];
 
         /**
          * Supplier used for creation of the value
          */
-        @NonNull Supplier<T> valueSupplier;
+        @NotNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link ThreadLocal}
          *
-         * @implNote In order to minimize the amount of variables thread-local is typed weaker
-         * and if is unset returns {@link #UNSET_VALUE}
+         * @implNote In order to minimize the amount of variables thread-local is typed weakly
+         * and contains {@link #UNSET_VALUE} if it is unset
          */
-        @NonNull ThreadLocal<Object> value = ThreadLocal.withInitial(() -> UNSET_VALUE);
+        @SuppressWarnings("ThreadLocalNotStaticFinal") // this is the idea behind this class
+        @NotNull ThreadLocal<Object> threadLocalValue;
 
         @Override
         public T get() {
-            var value = this.value.get();
-            if (value == UNSET_VALUE) this.value.set(value = valueSupplier.get());
+            Object value;
+            if ((value = threadLocalValue.get()) == UNSET_VALUE) threadLocalValue.set(value = valueSupplier.get());
 
             //noinspection unchecked: value is weakly typed
             return (T) value;
@@ -402,15 +440,21 @@ public interface Lazy<T> extends Supplier<T> {
 
         @Override
         public boolean isInitialized() {
-            return value.get() != UNSET_VALUE;
+            return threadLocalValue.get() != UNSET_VALUE;
         }
 
         @Override
         public @Nullable T getInitializedOrNull() {
-            val value = this.value.get();
-
+            final Object value;
             //noinspection unchecked: value is weakly typed
-            return value == UNSET_VALUE ? null : (T) value;
+            return (value = threadLocalValue.get()) == UNSET_VALUE ? null : (T) value;
+        }
+
+        @Override
+        public @NotNull Result<T, Void> getAsResult() {
+            final Object value;
+            //noinspection unchecked: value is weakly typed
+            return (value = threadLocalValue.get()) == UNSET_VALUE ? Result.nullError() : Result.success((T) value);
         }
     }
 }
