@@ -1,10 +1,8 @@
-package ru.progrm_jarvis.javacommons.lazy;
+package ru.progrm_jarvis.javacommons.delegate;
 
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.progrm_jarvis.javacommons.delegate.AsmDelegateFactory;
-import ru.progrm_jarvis.javacommons.delegate.DelegateFactory;
 
 import java.util.function.Supplier;
 
