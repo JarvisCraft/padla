@@ -374,25 +374,25 @@ public interface Lazy<T> extends Supplier<T> {
         /**
          * Stub value used as the default value of {@code #value}
          */
-        private static final Object UNSET_VALUE = new Object[0];
+        private static final @NotNull Object UNSET_VALUE = new Object[0];
 
         /**
          * Supplier used for creation of the value
          */
-        @NonNull Supplier<T> valueSupplier;
+        @NotNull Supplier<T> valueSupplier;
 
         /**
          * The value stored wrapped in {@link ThreadLocal}
          *
-         * @implNote In order to minimize the amount of variables thread-local is typed weaker
-         * and if is unset returns {@link #UNSET_VALUE}
+         * @implNote In order to minimize the amount of variables thread-local is typed weakly
+         * and contains {@link #UNSET_VALUE} if it is unset
          */
-        @NonNull ThreadLocal<Object> value = ThreadLocal.withInitial(() -> UNSET_VALUE);
+        @NotNull ThreadLocal<Object> value = ThreadLocal.withInitial(() -> UNSET_VALUE);
 
         @Override
         public T get() {
-            var value = this.value.get();
-            if (value == UNSET_VALUE) this.value.set(value = valueSupplier.get());
+            Object value;
+            if ((value = this.value.get()) == UNSET_VALUE) this.value.set(value = valueSupplier.get());
 
             //noinspection unchecked: value is weakly typed
             return (T) value;
@@ -405,10 +405,9 @@ public interface Lazy<T> extends Supplier<T> {
 
         @Override
         public @Nullable T getInitializedOrNull() {
-            val value = this.value.get();
-
+            final Object value;
             //noinspection unchecked: value is weakly typed
-            return value == UNSET_VALUE ? null : (T) value;
+            return (value = this.value.get()) == UNSET_VALUE ? null : (T) value;
         }
     }
 }
