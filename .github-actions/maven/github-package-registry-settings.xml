@@ -13,11 +13,9 @@
         <profile>
             <id>import-env-code-signing-credentials</id>
             <properties>
-                <gpg.executable>gpg2</gpg.executable>
-                <gpg.keyname>${env.CODE_SIGNING_GPG_KEY_NAME}</gpg.keyname>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>${env.CODE_SIGNING_GPG_KEY_ID}</gpg.keyname>
                 <gpg.passphrase>${env.CODE_SIGNING_GPG_KEY_PASSPHRASE}</gpg.passphrase>
-                <gpg.publicKeyring>${env.TRAVIS_BUILD_DIR}/pubring.gpg</gpg.publicKeyring>
-                <gpg.secretKeyring>${env.TRAVIS_BUILD_DIR}/pubring.gpg</gpg.secretKeyring>
             </properties>
         </profile>
     </profiles>

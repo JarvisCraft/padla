@@ -2,6 +2,19 @@
 
 # This should be called from repository root
 
+if [[ "$(./.github-actions/scripts/get_version.sh)" == *-SNAPSHOT ]]; then
+  if [[ $1 == release ]]; then
+    >&2 echo "Cannot deploy in release mode when version is snapshot"
+    exit 1;
+  fi
+else
+  if [[ $1 != release ]]; then
+    >&2 echo "Cannot deploy in non-release mode when version is not snapshot"
+    exit 1;
+  fi;
+fi
+
+
 # Valid deployment modes:
 # - sonatype-ossrh
 # - github-package-registry
