@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -160,5 +161,17 @@ public class NullSafetyExtensions {
      */
     public <T> @NotNull Stream<@Nullable T> _streamOfNullable(final @Nullable T value) {
         return Stream.of(value);
+    }
+
+    /**
+     * Converts the value into an {@link Optional optional}
+     * returning {@link Optional#empty()} if the value is {@code null}.
+     *
+     * @param value value to be converted into an optional
+     * @param <T> type of the value
+     * @return value wrapped into an {@link Optional}
+     */
+    public <T> @NotNull Optional<T> _toOptional(final @Nullable T value) {
+        return Optional.ofNullable(value);
     }
 }

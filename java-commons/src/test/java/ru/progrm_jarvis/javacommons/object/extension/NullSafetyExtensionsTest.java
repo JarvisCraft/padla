@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtensionMethod(NullSafetyExtensions.class)
@@ -124,6 +126,12 @@ class NullSafetyExtensionsTest {
     void _streamOfNullable() {
         assertArrayEquals(new String[]{"value"}, "value"._streamOfNullable().toArray(String[]::new));
         assertArrayEquals(new String[]{null}, ((String) null)._streamOfNullable().toArray(String[]::new));
+    }
+
+    @Test
+    void _toOptional() {
+        assertEquals(Optional.of("some value"), "some value"._toOptional());
+        assertEquals(Optional.empty(), ((String) null)._toOptional());
     }
 
     // this class cannot be local
