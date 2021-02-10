@@ -151,7 +151,7 @@
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.0</version>
+                <version>9.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
