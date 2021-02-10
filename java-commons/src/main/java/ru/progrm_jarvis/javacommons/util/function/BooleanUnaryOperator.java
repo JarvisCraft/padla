@@ -81,10 +81,20 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
     /**
      * Returns an unary operator that always returns its input argument.
      *
-     * @return a unary operator that always returns its input argument
+     * @return an unary operator that always returns its input argument
      */
     @Contract(value = "-> _", pure = true)
     static @NotNull BooleanUnaryOperator identity() {
         return operand -> operand;
+    }
+
+    /**
+     * Returns an unary operator that always returns inverted input argument.
+     *
+     * @return an unary operator that always returns inverted input argument
+     */
+    @Contract(value = "-> _", pure = true)
+    static @NotNull BooleanUnaryOperator inversion() {
+        return operand -> !operand;
     }
 }
