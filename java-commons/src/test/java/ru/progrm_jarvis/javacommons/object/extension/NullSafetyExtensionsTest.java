@@ -97,7 +97,7 @@ class NullSafetyExtensionsTest {
 
     @Test
     void _orElseThrow() {
-        assertEquals("foo", "foo"._orElseThrow(Assertions::fail));
+        assertEquals("foo", "foo"._orElseThrow(Assertions::<RuntimeException>fail));
         assertThrows(SuccessException.class, () -> ((String) null)._orElseThrow(SuccessException::new));
     }
 
