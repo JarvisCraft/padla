@@ -17,7 +17,7 @@ jobs:
           java-version: 1.8
 
       - name: Cache Maven local repository
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@v2.1.4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -34,4 +34,6 @@ jobs:
           CODE_SIGNING_GPG_KEY_PASSPHRASE: ${{ secrets.CODE_SIGNING_GPG_KEY_PASSPHRASE }}
           SONATYPE_OSSRH_DEPLOYER: ${{ secrets.SONATYPE_OSSRH_DEPLOYER }}
           SONATYPE_OSSRH_TOKEN: ${{ secrets.SONATYPE_OSSRH_TOKEN }}
+          GITHUB_PACKAGE_REGISTRY_DEPLOYER: JarvisCraft
+          GITHUB_PACKAGE_REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./.github-actions/scripts/maven_deploy.sh
