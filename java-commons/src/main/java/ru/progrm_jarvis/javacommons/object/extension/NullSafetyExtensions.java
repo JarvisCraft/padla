@@ -133,12 +133,33 @@ public class NullSafetyExtensions {
      * @throws X if {@code value} is null
      * @throws NullPointerException if {@code throwableSupplier} or it supplies {@code null}
      */
+    @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
+    @Contract("null, _ -> fail; _, null -> fail; _, _ -> param1")
     public <T, X extends Throwable> @NotNull T _orElseThrow(final @Nullable T value,
                                                             final @NonNull Supplier<@NonNull X>
                                                                     throwableSupplier) throws X {
         if (value == null) throw throwableSupplier.get();
 
         return value;
+    }
+
+    /**
+     * Runs the corresponding action depending on whether the value is {@code null}.
+     *
+     * @param value value to be checked
+     * @param action action to be run on non-{@code null} value
+     * @param nullAction action to be run if the value is {@code null}
+     * @param <T> type of the value
+     *
+     * @throws NullPointerException if {@code action} or {@code nullAction} is {@code null}
+     */
+    @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
+    @Contract("_, null, _ -> fail; _, _, null -> fail")
+    public <T> void _ifPresentOrElse(final @Nullable T value,
+                                     final @NonNull Consumer<@NotNull ? super T> action,
+                                     final @NonNull Runnable nullAction) {
+        if (value == null) nullAction.run();
+        else action.accept(value);
     }
 
     /**
@@ -166,25 +187,6 @@ public class NullSafetyExtensions {
     }
 
     /**
-     * Runs the corresponding action depending on whether the value is {@code null}.
-     *
-     * @param value value to be checked
-     * @param action action to be run on non-{@code null} value
-     * @param nullAction action to be run if value is {@code null}
-     * @param <T> type of the value
-     *
-     * @throws NullPointerException if {@code action} or {@code nullAction} is {@code null}
-     */
-    @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
-    @Contract("_, null, _ -> fail; _, _, null -> fail")
-    public <T> void _ifPresentOrElse(final @Nullable T value,
-                                     final @NonNull Consumer<? super T> action,
-                                     final @NonNull Runnable nullAction) {
-        if (value == null) nullAction.run();
-        else action.accept(value);
-    }
-
-    /**
      * Converts the value into an {@link Optional optional}
      * returning {@link Optional#empty()} if the value is {@code null}.
      *
@@ -192,6 +194,7 @@ public class NullSafetyExtensions {
      * @param <T> type of the value
      * @return value wrapped into an {@link Optional}
      */
+    @Contract("null -> _; _ -> new")
     public <T> @NotNull Optional<T> _toOptional(final @Nullable T value) {
         return Optional.ofNullable(value);
     }
