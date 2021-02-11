@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -100,7 +101,7 @@ public class NullSafetyExtensions {
     @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
     @Contract("_, null -> fail; !null, _ -> _; null, _ -> null")
     public <T> @Nullable T _filter(final @Nullable T value,
-                                          final @NonNull Predicate<T> predicate) {
+                                   final @NonNull Predicate<T> predicate) {
         return value == null ? null : predicate.test(value) ? value : null;
     }
 
@@ -128,6 +129,7 @@ public class NullSafetyExtensions {
      * @param <T> type of the value
      * @param <X> thrown typethrowable
      * @return {@code value} if it is not {@code null}
+     *
      * @throws X if {@code value} is null
      * @throws NullPointerException if {@code throwableSupplier} or it supplies {@code null}
      */
@@ -161,6 +163,25 @@ public class NullSafetyExtensions {
      */
     public <T> @NotNull Stream<@Nullable T> _streamOfNullable(final @Nullable T value) {
         return Stream.of(value);
+    }
+
+    /**
+     * Runs the corresponding action depending on whether the value is {@code null}.
+     *
+     * @param value value to be checked
+     * @param action action to be run on non-{@code null} value
+     * @param nullAction action to be run if value is {@code null}
+     * @param <T> type of the value
+     *
+     * @throws NullPointerException if {@code action} or {@code nullAction} is {@code null}
+     */
+    @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
+    @Contract("_, null, _ -> fail; _, _, null -> fail")
+    public <T> void _ifPresentOrElse(final @Nullable T value,
+                                     final @NonNull Consumer<? super T> action,
+                                     final @NonNull Runnable nullAction) {
+        if (value == null) nullAction.run();
+        else action.accept(value);
     }
 
     /**
