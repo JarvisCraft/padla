@@ -127,7 +127,7 @@ public class NullSafetyExtensions {
      * @param value checked value
      * @param throwableSupplier supplier of a throwable used when the value is {@code null}
      * @param <T> type of the value
-     * @param <X> thrown typethrowable
+     * @param <X> thrown type throwable
      * @return {@code value} if it is not {@code null}
      *
      * @throws X if {@code value} is null
