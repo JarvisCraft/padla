@@ -174,8 +174,8 @@ public class LegacyOptionalExtensions {
     @SuppressWarnings("unchecked") // return cast
     @SneakyThrows // call to `MethodHandle#invokeExact(...)`
     public <T> T orElseThrow(final @NotNull Optional<T> optional) {
-        return STREAM_METHOD_HANDLE == null
+        return OR_ELSE_THROW_METHOD_HANDLE == null
                 ? optional.orElseThrow(() -> new NoSuchElementException("No value present"))
-                : (T) STREAM_METHOD_HANDLE.invokeExact(optional);
+                : (T) OR_ELSE_THROW_METHOD_HANDLE.invokeExact(optional);
     }
 }
