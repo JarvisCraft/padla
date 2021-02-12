@@ -128,7 +128,7 @@ public class LegacyOptionalExtensions {
      * or an optional provided by the given supplier otherwise.
      *
      * @param optional optional on which the operation happens
-     * @param supplier supplier of the value in case of optional being {@link Optional#isEmpty() empty}
+     * @param supplier supplier of the value in case of optional being {@link Optional#empty()}
      * @param <T> type of the value
      * @return given optional if it is {@link Optional#isPresent() present}
      * or an optional provided by the given supplier otherwise
