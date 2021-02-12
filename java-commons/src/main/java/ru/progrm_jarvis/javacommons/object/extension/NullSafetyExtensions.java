@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -100,7 +101,7 @@ public class NullSafetyExtensions {
     @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
     @Contract("_, null -> fail; !null, _ -> _; null, _ -> null")
     public <T> @Nullable T _filter(final @Nullable T value,
-                                          final @NonNull Predicate<T> predicate) {
+                                   final @NonNull Predicate<T> predicate) {
         return value == null ? null : predicate.test(value) ? value : null;
     }
 
@@ -126,17 +127,39 @@ public class NullSafetyExtensions {
      * @param value checked value
      * @param throwableSupplier supplier of a throwable used when the value is {@code null}
      * @param <T> type of the value
-     * @param <X> thrown typethrowable
+     * @param <X> thrown type throwable
      * @return {@code value} if it is not {@code null}
+     *
      * @throws X if {@code value} is null
      * @throws NullPointerException if {@code throwableSupplier} or it supplies {@code null}
      */
+    @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
+    @Contract("null, _ -> fail; _, null -> fail; _, _ -> param1")
     public <T, X extends Throwable> @NotNull T _orElseThrow(final @Nullable T value,
                                                             final @NonNull Supplier<@NonNull X>
                                                                     throwableSupplier) throws X {
         if (value == null) throw throwableSupplier.get();
 
         return value;
+    }
+
+    /**
+     * Runs the corresponding action depending on whether the value is {@code null}.
+     *
+     * @param value value to be checked
+     * @param action action to be run on non-{@code null} value
+     * @param nullAction action to be run if the value is {@code null}
+     * @param <T> type of the value
+     *
+     * @throws NullPointerException if {@code action} or {@code nullAction} is {@code null}
+     */
+    @SuppressWarnings("Contract") // Lombok's annotation is treated incorrectly
+    @Contract("_, null, _ -> fail; _, _, null -> fail")
+    public <T> void _ifPresentOrElse(final @Nullable T value,
+                                     final @NonNull Consumer<@NotNull ? super T> action,
+                                     final @NonNull Runnable nullAction) {
+        if (value == null) nullAction.run();
+        else action.accept(value);
     }
 
     /**
@@ -171,6 +194,7 @@ public class NullSafetyExtensions {
      * @param <T> type of the value
      * @return value wrapped into an {@link Optional}
      */
+    @Contract("null -> _; _ -> new")
     public <T> @NotNull Optional<T> _toOptional(final @Nullable T value) {
         return Optional.ofNullable(value);
     }

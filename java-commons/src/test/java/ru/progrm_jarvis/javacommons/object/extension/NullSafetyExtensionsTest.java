@@ -3,13 +3,17 @@ package ru.progrm_jarvis.javacommons.object.extension;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.ExtensionMethod;
+import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @ExtensionMethod(NullSafetyExtensions.class)
 class NullSafetyExtensionsTest {
@@ -126,6 +130,27 @@ class NullSafetyExtensionsTest {
     void _streamOfNullable() {
         assertArrayEquals(new String[]{"value"}, "value"._streamOfNullable().toArray(String[]::new));
         assertArrayEquals(new String[]{null}, ((String) null)._streamOfNullable().toArray(String[]::new));
+    }
+
+    @Test
+    void _ifPresentOrElse_onNotNull() {
+        @SuppressWarnings("unchecked") final Consumer<String> action = mock(Consumer.class);
+        "value"._ifPresentOrElse(action, Assertions::fail);
+        verify(action).accept("value");
+    }
+
+    @Test
+    void _ifPresentOrElse_onNull() {
+        val nullAction = mock(Runnable.class);
+        ((String) null)._ifPresentOrElse(value -> fail(), nullAction);
+        verify(nullAction).run();
+    }
+
+    @Test
+    void _ifPresentOrElse_throwsNPEOnNullLambdaValue() {
+        assertThrows(NullPointerException.class, () -> ((String) null)._ifPresentOrElse(null, () -> {}));
+        assertThrows(NullPointerException.class, () -> ((String) null)._ifPresentOrElse(value -> {}, null));
+        assertThrows(NullPointerException.class, () -> ((String) null)._ifPresentOrElse(null, null));
     }
 
     @Test
