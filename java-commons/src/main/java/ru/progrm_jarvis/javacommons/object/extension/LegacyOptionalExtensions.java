@@ -27,6 +27,13 @@ public class LegacyOptionalExtensions {
 
     /**
      * Method handle of
+     * {@link Optional}{@code .isEmpty()} method
+     * being {@code null} if this method is unavailable.
+     */
+    private final @Nullable MethodHandle IS_EMPTY_METHOD_HANDLE;
+
+    /**
+     * Method handle of
      * {@link Optional}{@code .ifPresentOrElse(}{@link Consumer}{@code , }{@link Runnable}{@code )} method
      * being {@code null} if this method is unavailable.
      */
@@ -55,6 +62,17 @@ public class LegacyOptionalExtensions {
 
     static {
         val lookup = MethodHandles.lookup();
+        {
+            MethodHandle handle;
+            try {
+                handle = lookup.findVirtual(
+                        Optional.class, "isEmpty", methodType(boolean.class)
+                );
+            } catch (final NoSuchMethodException | IllegalAccessException e) {
+                handle = null;
+            }
+            IS_EMPTY_METHOD_HANDLE = handle;
+        }
         {
             MethodHandle handle;
             try {
@@ -102,6 +120,20 @@ public class LegacyOptionalExtensions {
     }
 
     /**
+     * Checks if the given optional is {@link Optional#empty() empty}.
+     *
+     * @param optional optional on which the operation happens
+     * @param <T> type of the value
+     * @return {@code true} if the optional is {@link Optional#empty()} and {@code false} otherwise
+     * @apiNote this method is available on {@link Optional} itself since Java 11
+     */
+    @SneakyThrows // call to `MethodHandle#invokeExact(...)`
+    public <T> boolean isEmpty(final @NotNull Optional<T> optional) {
+        return IS_EMPTY_METHOD_HANDLE == null
+                ? !optional.isPresent() : (boolean) IS_EMPTY_METHOD_HANDLE.invokeExact(optional);
+    }
+
+    /**
      * Runs the corresponding action depending on whether the optional is {@link Optional#isPresent() present}.
      *
      * @param optional optional on which the operation happens
@@ -128,7 +160,7 @@ public class LegacyOptionalExtensions {
      * or an optional provided by the given supplier otherwise.
      *
      * @param optional optional on which the operation happens
-     * @param supplier supplier of the value in case of optional being {@link Optional#isEmpty() empty}
+     * @param supplier supplier of the value in case of optional being {@link Optional#empty()}
      * @param <T> type of the value
      * @return given optional if it is {@link Optional#isPresent() present}
      * or an optional provided by the given supplier otherwise
@@ -174,8 +206,8 @@ public class LegacyOptionalExtensions {
     @SuppressWarnings("unchecked") // return cast
     @SneakyThrows // call to `MethodHandle#invokeExact(...)`
     public <T> T orElseThrow(final @NotNull Optional<T> optional) {
-        return STREAM_METHOD_HANDLE == null
+        return OR_ELSE_THROW_METHOD_HANDLE == null
                 ? optional.orElseThrow(() -> new NoSuchElementException("No value present"))
-                : (T) STREAM_METHOD_HANDLE.invokeExact(optional);
+                : (T) OR_ELSE_THROW_METHOD_HANDLE.invokeExact(optional);
     }
 }
