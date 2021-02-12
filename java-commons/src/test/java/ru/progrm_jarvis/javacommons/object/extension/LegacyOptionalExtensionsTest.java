@@ -20,6 +20,12 @@ class LegacyOptionalExtensionsTest {
     private static final @NotNull String @NotNull [] EMPTY_STRING_ARRAY = {};
 
     @Test
+    void isEmpty() {
+        assertTrue(Optional.empty().isEmpty());
+        assertFalse(Optional.of("Hello world!").isEmpty());
+    }
+
+    @Test
     void ifPresentOrElse_onPresent() {
         @SuppressWarnings("unchecked") final Consumer<String> action = mock(Consumer.class);
         Optional.of("oh, hello").ifPresentOrElse(action, Assertions::fail);
