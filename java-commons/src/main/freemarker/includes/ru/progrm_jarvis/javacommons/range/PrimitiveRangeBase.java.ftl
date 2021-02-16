@@ -1,3 +1,4 @@
+<#-- @ftlvariable name="rootPackage" type="java.lang.String" -->
 <#-- @ftlvariable name="primitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="capitalizedPrimitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="wrapperType" type="java.lang.String" -->
@@ -11,9 +12,9 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Own;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Ref;
+import ${rootPackage}.util.function.${capitalizedPrimitiveType}Predicate;
 
 import java.util.*;
-import java.util.function.${capitalizedPrimitiveType}Predicate;
 
 /**
  * {@link Range} specialization for {@code ${primitiveType}}.

@@ -2,6 +2,6 @@
 <#import "/@includes/preamble.ftl" as preamble>
 
 <@preamble.generatePrimitiveSpecializations
-subpackage="range" templateName="PrimitiveRangeBase"
-classNamePrefix="" classNameSuffix="Range"
+subpackage="util.function" templateName="PrimitivePredicateBase"
+classNamePrefix="" classNameSuffix="Predicate"
 />

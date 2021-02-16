@@ -1,6 +1,5 @@
 <#assign
-__primitiveTypes=['boolean', 'byte', 'short', 'char', 'int', 'long', 'float', 'double']
-primitiveTypes=['int', 'long', 'double']
+primitiveTypes=['byte', 'short', 'char', 'int', 'long', 'float', 'double']
 rootPackage="ru.progrm_jarvis.javacommons"
 rootPackagePath="${rootPackage?replace('.', '/')}"
 >
