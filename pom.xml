@@ -77,6 +77,28 @@
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin>
+                <!-- Code-generation -->
+                <plugin>
+                    <groupId>org.apache.drill.tools</groupId>
+                    <artifactId>drill-fmpp-maven-plugin</artifactId>
+                    <version>1.18.0</version>
+                    <executions>
+                        <execution>
+                            <id>generate-fmpp</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <configuration>
+                                <config>src/main/freemarker/config.fmpp</config>
+                                <templates>src/main/freemarker/templates</templates>
+                                <output>${project.build.directory}/generated-sources</output>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Testing -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
