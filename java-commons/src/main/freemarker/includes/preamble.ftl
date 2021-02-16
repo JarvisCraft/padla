@@ -16,7 +16,7 @@ rootPackagePath="${rootPackage?replace('.', '/')}"
 <#--Specify the name of the target file -->
     <@pp.changeOutputFile name="/${packagePath}/${className}.java" />
 <#-- Pick the correct primitive specialization-->
-    <#include "${capitalizedPrimitiveType}PrimitiveSpecializationDefinitions.ftl" />
+    <#include "${primitiveType}PrimitiveSpecializationDefinitions.ftl" />
 <#-- Generate the class -->
     <#include "/@includes/${packagePath}/${templateName}.java.ftl">
 </#macro>
