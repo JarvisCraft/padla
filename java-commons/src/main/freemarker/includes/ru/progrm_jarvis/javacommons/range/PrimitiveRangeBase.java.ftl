@@ -1,9 +1,10 @@
-<#-- @ftlvariable name="rootPackage" type="java.lang.String" -->
+<#import '/@includes/preamble.ftl' as preamble />
+<#-- @ftlvariable name="packageName" type="java.lang.String" -->
 <#-- @ftlvariable name="primitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="capitalizedPrimitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="wrapperType" type="java.lang.String" -->
 <#-- @ftlvariable name="className" type="java.lang.String" -->
-package ru.progrm_jarvis.javacommons.range;
+package ${packageName};
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -12,7 +13,7 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Own;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Ref;
-import ${rootPackage}.util.function.${capitalizedPrimitiveType}Predicate;
+import ${preamble.rootPackage}.util.function.${capitalizedPrimitiveType}Predicate;
 
 import java.util.*;
 
@@ -21,35 +22,6 @@ import java.util.*;
  */
 @FunctionalInterface
 public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
-
-    /**
-     * Checks if the given value is in range.
-     *
-     * @param value value checked for inclusion in this range
-     * @return {@code true} if the range includes the given value and {@code false} otherwise
-     */
-    default boolean includes(final ${primitiveType} value) {
-        return test(value);
-    }
-
-    /* ************************************************* Modifiers ************************************************* */
-
-    @Override
-    default @NotNull ${className} negate() {
-        return value -> !includes(value);
-    }
-
-    /* ************************************************ Combinators ************************************************ */
-
-    @Override
-    default @NotNull ${className} and(final @NonNull ${capitalizedPrimitiveType}Predicate other) {
-        return value -> includes(value) && other.test(value);
-    }
-
-    @Override
-    default @NotNull ${className} or(final @NonNull ${capitalizedPrimitiveType}Predicate other) {
-        return value -> includes(value) || other.test(value);
-    }
 
     /* ************************************************* Factories ************************************************* */
 
@@ -313,7 +285,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      */
     static @NotNull ${className} anyOf(final @Ref @NotNull ${className} @NonNull ... ranges) {
         return value -> {
-            for (val range : ranges) if (range.includes(value)) return true;
+            for (val range : ranges) if (range.testAs${capitalizedPrimitiveType}(value)) return true;
 
             return false;
         };
@@ -329,7 +301,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      */
     static @NotNull ${className} anyOf(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
         return value -> {
-            for (val range : ranges) if (range.includes(value)) return true;
+            for (val range : ranges) if (range.testAs${capitalizedPrimitiveType}(value)) return true;
 
             return false;
         };
@@ -381,7 +353,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      */
     static @NotNull ${className} allOf(final @Ref @NotNull ${className} @NonNull ... ranges) {
         return value -> {
-            for (val range : ranges) if (!range.includes(value)) return false;
+            for (val range : ranges) if (!range.testAs${capitalizedPrimitiveType}(value)) return false;
 
             return true;
         };
@@ -397,7 +369,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      */
     static @NotNull ${className} allOf(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
         return value -> {
-            for (val range : ranges) if (!range.includes(value)) return false;
+            for (val range : ranges) if (!range.testAs${capitalizedPrimitiveType}(value)) return false;
 
             return true;
         };
@@ -449,7 +421,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      */
     static @NotNull ${className} noneOf(final @Ref @NotNull ${className} @NonNull ... ranges) {
         return value -> {
-            for (val range : ranges) if (range.includes(value)) return false;
+            for (val range : ranges) if (range.testAs${capitalizedPrimitiveType}(value)) return false;
 
             return true;
         };
@@ -465,7 +437,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      */
     static @NotNull ${className} noneOf(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
         return value -> {
-            for (val range : ranges) if (range.includes(value)) return false;
+            for (val range : ranges) if (range.testAs${capitalizedPrimitiveType}(value)) return false;
 
             return true;
         };

@@ -1,7 +1,7 @@
 <@pp.dropOutputFile />
-<#import "/@includes/preamble.ftl" as preamble>
+<#import "/@includes/primitiveSpecializationGenerator.ftl" as generator>
 
-<@preamble.generatePrimitiveSpecializations
+<@generator.generateNumericSpecializations
 subpackage="range" templateName="PrimitiveRangeBase"
 classNamePrefix="" classNameSuffix="Range"
 />
