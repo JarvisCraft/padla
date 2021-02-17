@@ -5,9 +5,11 @@
 <#-- @ftlvariable name="packageName" type="java.lang.String" -->
 <#-- @ftlvariable name="primitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="capitalizedPrimitiveType" type="java.lang.String" -->
-<#-- @ftlvariable name="wrapperType" type="java.lang.String" -->
 <#-- @ftlvariable name="className" type="java.lang.String" -->
-<#assign commonPrimitive=preamble.isCommonPrimitiveType(primitiveType) />
+<#assign
+isCommonPrimitive=preamble.isCommonPrimitiveType(primitiveType)
+wrapperType=preamble.wrapperTypeOf(primitiveType)
+/>
 package ${packageName};
 
 import lombok.NonNull;
@@ -23,7 +25,7 @@ import java.util.function.Predicate;
  * @see Predicate non-primitive generic equivalent
  */
 @FunctionalInterface
-public interface ${className} extends Predicate< @NotNull ${wrapperType}><#if commonPrimitive>,
+public interface ${className} extends Predicate< @NotNull ${wrapperType}><#if isCommonPrimitive>,
         java.util.function.${capitalizedPrimitiveType}Predicate</#if> {
 
     /**
@@ -33,7 +35,7 @@ public interface ${className} extends Predicate< @NotNull ${wrapperType}><#if co
      * @return {@code true} if the input argument matches the predicate or {@code false} otherwise
      */
     boolean testAs${capitalizedPrimitiveType}(${primitiveType} value);
-<#if commonPrimitive>
+<#if isCommonPrimitive>
 
     @Override
     default boolean test(final ${primitiveType} value) {
@@ -54,7 +56,7 @@ public interface ${className} extends Predicate< @NotNull ${wrapperType}><#if co
     default @NotNull ${className} and(final @NonNull Predicate< @NotNull ? super ${wrapperType}> other) {
         return value -> testAs${capitalizedPrimitiveType}(value) && other.test(value);
     }
-<#if commonPrimitive>
+<#if isCommonPrimitive>
 
     @Override
     default @NotNull ${className} and(final @NonNull java.util.function.${capitalizedPrimitiveType}Predicate other) {
@@ -70,7 +72,7 @@ public interface ${className} extends Predicate< @NotNull ${wrapperType}><#if co
     default @NotNull ${className} or(final @NonNull Predicate< @NotNull ? super ${wrapperType}> other) {
         return value -> testAs${capitalizedPrimitiveType}(value) || other.test(value);
     }
-<#if commonPrimitive>
+<#if isCommonPrimitive>
 
     @Override
     default @NotNull ${className} or(final @NonNull java.util.function.${capitalizedPrimitiveType}Predicate other) {

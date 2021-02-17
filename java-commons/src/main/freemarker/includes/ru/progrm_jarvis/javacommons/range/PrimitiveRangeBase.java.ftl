@@ -2,8 +2,8 @@
 <#-- @ftlvariable name="packageName" type="java.lang.String" -->
 <#-- @ftlvariable name="primitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="capitalizedPrimitiveType" type="java.lang.String" -->
-<#-- @ftlvariable name="wrapperType" type="java.lang.String" -->
 <#-- @ftlvariable name="className" type="java.lang.String" -->
+<#assign wrapperType=preamble.wrapperTypeOf(primitiveType) />
 package ${packageName};
 
 import com.google.common.collect.Lists;

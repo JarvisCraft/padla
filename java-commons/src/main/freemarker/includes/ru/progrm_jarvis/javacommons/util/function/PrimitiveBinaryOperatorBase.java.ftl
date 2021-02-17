@@ -2,9 +2,11 @@
 <#-- @ftlvariable name="packageName" type="java.lang.String" -->
 <#-- @ftlvariable name="primitiveType" type="java.lang.String" -->
 <#-- @ftlvariable name="capitalizedPrimitiveType" type="java.lang.String" -->
-<#-- @ftlvariable name="wrapperType" type="java.lang.String" -->
 <#-- @ftlvariable name="className" type="java.lang.String" -->
-<#assign commonPrimitive=preamble.isCommonPrimitiveType(primitiveType) />
+<#assign
+isCommonPrimitive=preamble.isCommonPrimitiveType(primitiveType)
+wrapperType=preamble.wrapperTypeOf(primitiveType)
+/>
 package ${packageName};
 
 import org.jetbrains.annotations.NotNull;
@@ -19,9 +21,9 @@ import java.util.function.UnaryOperator;
  * @see UnaryOperator non-primitive generic equivalent
  */
 @FunctionalInterface
-public interface ${className} extends BinaryOperator< @NotNull ${wrapperType}><#if commonPrimitive>,
+public interface ${className} extends BinaryOperator< @NotNull ${wrapperType}><#if isCommonPrimitive>,
         java.util.function.${capitalizedPrimitiveType}BinaryOperator</#if> {
-<#if !commonPrimitive>
+<#if !isCommonPrimitive>
 
     /**
     * Applies this operator to the given operands.
