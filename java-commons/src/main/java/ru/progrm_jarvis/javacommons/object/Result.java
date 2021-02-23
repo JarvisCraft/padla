@@ -302,6 +302,33 @@ public interface Result<T, E> extends Supplier<T> {
     <R> @NotNull Result<R, E> map(@NonNull Function<T, R> mappingFunction);
 
     /**
+     * Consumes the result if it is {@link #isSuccess() successful} returning the same result.
+     *
+     * @param consumer consumer to accept the successful result
+     * @return the same result
+     */
+    @NotNull Result<T, E> peek(@NonNull Consumer<T> consumer);
+
+    /**
+     * Maps the result if it is an {@link #isError() error result} returning a new result with the result of mapping
+     * otherwise keeping the {@link #isError() error result}.
+     *
+     * @param mappingFunction function to map the error result
+     * @param <R> type of the resulting error value
+     * @return mapped error result if it was an {@link #isError() an error result}
+     * or a successful result if it was a {@link #isError() successful result}
+     */
+    <R> @NotNull Result<T, R> mapError(@NonNull Function<E, R> mappingFunction);
+
+    /**
+     * Consumes the result if it is an {@link #isError() error result} returning the same result.
+     *
+     * @param consumer consumer to accept the successful result
+     * @return the same result
+     */
+    @NotNull Result<T, E> peekError(@NonNull Consumer<E> consumer);
+
+    /**
      * Returns the given result if this is a {@link #isSuccess() successful result}
      * otherwise keeping the {@link #isError() error result}.
      *
@@ -502,6 +529,23 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
+        public @NotNull Result<T, E> peek(final @NonNull Consumer<T> consumer) {
+            consumer.accept(value);
+
+            return this;
+        }
+
+        @Override
+        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<E, R> mappingFunction) {
+            return changeErrorType();
+        }
+
+        @Override
+        public @NotNull Result<T, E> peekError(final @NonNull Consumer<E> consumer) {
+            return this;
+        }
+
+        @Override
         public <R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
             return nextResult;
         }
@@ -653,6 +697,23 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
             return changeResultType();
+        }
+
+        @Override
+        public @NotNull Result<T, E> peek(final @NonNull Consumer<T> consumer) {
+            return this;
+        }
+
+        @Override
+        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<E, R> mappingFunction) {
+            return error(mappingFunction.apply(error));
+        }
+
+        @Override
+        public @NotNull Result<T, E> peekError(final @NonNull Consumer<E> consumer) {
+            consumer.accept(error);
+
+            return this;
         }
 
         @Override
