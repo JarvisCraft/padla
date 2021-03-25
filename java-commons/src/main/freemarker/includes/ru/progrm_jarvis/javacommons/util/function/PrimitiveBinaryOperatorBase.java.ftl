@@ -9,6 +9,7 @@ wrapperType=preamble.wrapperTypeOf(primitiveType)
 />
 package ${packageName};
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.BinaryOperator;
