@@ -21,7 +21,7 @@ import java.util.function.UnaryOperator;
  * @see UnaryOperator non-primitive generic equivalent
  */
 @FunctionalInterface
-public interface ${className} extends BinaryOperator< @NotNull ${wrapperType}><#if isCommonPrimitive>,
+public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>'}<#if isCommonPrimitive>,
         java.util.function.${capitalizedPrimitiveType}BinaryOperator</#if> {
 <#if !isCommonPrimitive>
 

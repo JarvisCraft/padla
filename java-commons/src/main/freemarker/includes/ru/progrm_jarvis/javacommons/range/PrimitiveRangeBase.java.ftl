@@ -75,7 +75,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this takes ownership over {@code values}
      */
-    static @NotNull ${className} only(final @Ref @NonNull Collection< @NotNull ${wrapperType}> values) {
+    static @NotNull ${className} only(final @Ref @NonNull Collection${'<@NotNull ${wrapperType}>'} values) {
         return values::contains;
     }
 
@@ -99,7 +99,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code values} not preserving order
      */
-    static @NotNull ${className} onlyCopy(final @Ref @NonNull Collection< @NotNull ${wrapperType}> values) {
+    static @NotNull ${className} onlyCopy(final @Ref @NonNull Collection${'<@NotNull ${wrapperType}>'} values) {
         return only(new HashSet<>(values));
     }
 
@@ -111,7 +111,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code values} preserving order
      */
-    static @NotNull ${className} onlyCopyOrdered(final @Ref @NonNull Collection< @NotNull ${wrapperType}> values) {
+    static @NotNull ${className} onlyCopyOrdered(final @Ref @NonNull Collection${'<@NotNull ${wrapperType}>'} values) {
         return only(new ArrayList<>(values));
     }
 
@@ -147,7 +147,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this takes ownership over {@code values}
      */
-    static @NotNull ${className} except(final @Ref @NonNull Collection< @NotNull ${wrapperType}> values) {
+    static @NotNull ${className} except(final @Ref @NonNull Collection${'<@NotNull ${wrapperType}>'} values) {
         return value -> !values.contains(value);
     }
 
@@ -171,7 +171,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code values} not preserving order
      */
-    static @NotNull ${className} exceptCopy(final @Ref @NonNull Collection< @NotNull ${wrapperType}> values) {
+    static @NotNull ${className} exceptCopy(final @Ref @NonNull Collection${'<@NotNull ${wrapperType}>'} values) {
         return except(new HashSet<>(values));
     }
 
@@ -183,7 +183,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code values} preserving order
      */
-    static @NotNull ${className} exceptCopyOrdered(final @Ref @NonNull Collection< @NotNull ${wrapperType}> values) {
+    static @NotNull ${className} exceptCopyOrdered(final @Ref @NonNull Collection${'<@NotNull ${wrapperType}>'} values) {
         return except(new ArrayList<>(values));
     }
 
@@ -299,7 +299,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this takes ownership over {@code ranges}
      */
-    static @NotNull ${className} anyOf(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} anyOf(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return value -> {
             for (val range : ranges) if (range.testAs${capitalizedPrimitiveType}(value)) return true;
 
@@ -327,7 +327,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code ranges} not preserving order
      */
-    static @NotNull ${className} anyOfCopy(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} anyOfCopy(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return anyOf(Sets.newHashSet(ranges));
     }
 
@@ -339,7 +339,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code ranges} preserving order
      */
-    static @NotNull ${className} anyOfCopyOrdered(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} anyOfCopyOrdered(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return anyOf(Lists.newArrayList(ranges));
     }
 
@@ -367,7 +367,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this takes ownership over {@code ranges}
      */
-    static @NotNull ${className} allOf(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} allOf(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return value -> {
             for (val range : ranges) if (!range.testAs${capitalizedPrimitiveType}(value)) return false;
 
@@ -395,7 +395,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code ranges} not preserving order
      */
-    static @NotNull ${className} allOfCopy(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} allOfCopy(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return allOf(Sets.newHashSet(ranges));
     }
 
@@ -407,7 +407,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code ranges} preserving order
      */
-    static @NotNull ${className} allOfCopyOrdered(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} allOfCopyOrdered(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return allOf(Lists.newArrayList(ranges));
     }
 
@@ -435,7 +435,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this takes ownership over {@code ranges}
      */
-    static @NotNull ${className} noneOf(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} noneOf(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return value -> {
             for (val range : ranges) if (range.testAs${capitalizedPrimitiveType}(value)) return false;
 
@@ -463,7 +463,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code ranges} not preserving order
      */
-    static @NotNull ${className} noneOfCopy(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} noneOfCopy(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return noneOf(Sets.newHashSet(ranges));
     }
 
@@ -475,7 +475,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      *
      * @apiNote this copies {@code ranges} preserving order
      */
-    static @NotNull ${className} noneOfCopyOrdered(final @Ref @NonNull Iterable< @NotNull ${className}> ranges) {
+    static @NotNull ${className} noneOfCopyOrdered(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
         return noneOf(Lists.newArrayList(ranges));
     }
 }
