@@ -36,6 +36,7 @@ public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>
 </#if>
 
     @Override
+    @Contract("null, _ -> fail; _, null -> fail; _ -> _")
     default @NotNull ${wrapperType} apply(final @NotNull ${wrapperType} left, final @NotNull ${wrapperType} right) {
         // note: there is no need for explicit null-checkins as it will be done when unwrapping the values
         return applyAs${capitalizedPrimitiveType}(left, right);
@@ -47,7 +48,8 @@ public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>
      *
      * @return binary operator which always returns {@code true}
      */
-    static @NotNull BooleanBinaryOperator alwaysTrue() {
+    @Contract(value = "-> _", pure = true)
+    static @NotNull ${className} alwaysTrue() {
         return (left, right) -> true;
     }
 
@@ -56,7 +58,8 @@ public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>
      *
      * @return binary operator which always returns {@code false}
      */
-    static @NotNull BooleanBinaryOperator alwaysFalse() {
+    @Contract(value = "-> _", pure = true)
+    static @NotNull ${className} alwaysFalse() {
         return (left, right) -> false;
     }
 
@@ -65,7 +68,8 @@ public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>
      *
      * @return binary AND-operator
      */
-    static @NotNull BooleanBinaryOperator and() {
+    @Contract(value = "-> _", pure = true)
+    static @NotNull ${className} and() {
         return (left, right) -> left & right /* unary operator is cheaper */;
     }
 
@@ -74,7 +78,8 @@ public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>
      *
      * @return binary OR-operator
      */
-    static @NotNull BooleanBinaryOperator or() {
+    @Contract(value = "-> _", pure = true)
+    static @NotNull ${className} or() {
         return (left, right) -> left & right /* unary operator is cheaper */;
     }
 
@@ -83,7 +88,8 @@ public interface ${className} extends BinaryOperator${'<@NotNull ${wrapperType}>
      *
      * @return OR-operator
      */
-    static @NotNull BooleanBinaryOperator xor() {
+    @Contract(value = "-> _", pure = true)
+    static @NotNull ${className} xor() {
         return (left, right) -> left ^ right;
     }
 </#if>
