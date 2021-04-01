@@ -899,4 +899,24 @@ public interface Result<T, E> extends Supplier<T> {
 
         //</editor-fold>
     }
+
+    /**
+     * Extensions for Result providing type-specific specializations which are impossible via generic virtual methods.
+     */
+    @UtilityClass
+    class Extensions {
+
+        /**
+         * Rethrows the exception if it is an {@link #error(Object) error result}.
+         *
+         * @param result result to be handled
+         * @param <T> type of the result
+         * @param <X> type of the throwable error
+         * @return successful result's value if it was a {@link #isSuccess() successful result}
+         * @throws X if it was an {@link #isError() error result}
+         */
+        public <T, X extends Throwable> T rethrow(final @NotNull Result<T, @NotNull X> result) throws X {
+            return result.orElseThrow(Function.identity());
+        }
+    }
 }
