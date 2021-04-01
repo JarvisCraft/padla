@@ -4,8 +4,10 @@ import lombok.*;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -102,6 +104,25 @@ public interface Result<T, E> extends Supplier<T> {
     static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<T> optional,
                                              final @NonNull Supplier<E> errorSupplier) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(() -> error(errorSupplier.get()));
+    }
+
+    /**
+     * Creates a result by calling the specified callable.
+     *
+     * @param callable provider of the result
+     * @param <T> type of the result provided by the given callable
+     * @return {@link #success(Object) successful result} if the callable ran unexceptionally
+     * and {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     */
+    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<T> callable) {
+        final T value;
+        try {
+            value = callable.call();
+        } catch (final Exception x) {
+            return error(x);
+        }
+
+        return success(value);
     }
 
     /* ********************************************** Checking methods ********************************************** */
