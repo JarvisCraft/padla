@@ -4,8 +4,10 @@ import lombok.*;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -102,6 +104,25 @@ public interface Result<T, E> extends Supplier<T> {
     static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<T> optional,
                                              final @NonNull Supplier<E> errorSupplier) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(() -> error(errorSupplier.get()));
+    }
+
+    /**
+     * Creates a result by calling the specified callable.
+     *
+     * @param callable provider of the result
+     * @param <T> type of the result provided by the given callable
+     * @return {@link #success(Object) successful result} if the callable ran unexceptionally
+     * and {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     */
+    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<T> callable) {
+        final T value;
+        try {
+            value = callable.call();
+        } catch (final Exception x) {
+            return error(x);
+        }
+
+        return success(value);
     }
 
     /* ********************************************** Checking methods ********************************************** */
@@ -898,5 +919,25 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         //</editor-fold>
+    }
+
+    /**
+     * Extensions for Result providing type-specific specializations which are impossible via generic virtual methods.
+     */
+    @UtilityClass
+    class Extensions {
+
+        /**
+         * Rethrows the exception if it is an {@link #error(Object) error result}.
+         *
+         * @param result result to be handled
+         * @param <T> type of the result
+         * @param <X> type of the throwable error
+         * @return successful result's value if it was a {@link #isSuccess() successful result}
+         * @throws X if it was an {@link #isError() error result}
+         */
+        public <T, X extends Throwable> T rethrow(final @NotNull Result<T, @NotNull X> result) throws X {
+            return result.orElseThrow(Function.identity());
+        }
     }
 }
