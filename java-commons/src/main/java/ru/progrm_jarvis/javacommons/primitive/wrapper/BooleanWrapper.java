@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -38,7 +39,7 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
      * @return created boolean wrapper
      */
     static BooleanWrapper createAtomic(final boolean value) {
-        return new AtomicBooleanWrapper(value);
+        return new AtomicBooleanWrapper(new AtomicBoolean(value));
     }
 
     /**
@@ -47,7 +48,7 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
      * @return created boolean wrapper
      */
     static BooleanWrapper createAtomic() {
-        return new AtomicBooleanWrapper();
+        return new AtomicBooleanWrapper(new AtomicBoolean());
     }
 
     @Override
@@ -86,10 +87,10 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
      * {@link BooleanWrapper} implementation based on {@code boolean}.
      */
     @ToString
-    @NoArgsConstructor
     @EqualsAndHashCode
-    @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class BooleanBooleanWrapper implements BooleanWrapper {
 
         boolean value;
@@ -118,26 +119,11 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
      */
     @ToString
     @EqualsAndHashCode
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicBooleanWrapper implements BooleanWrapper {
 
         @Delegate(types = BooleanWrapper.class, excludes = PrimitiveWrapper.class)
-        @NonNull AtomicBoolean value;
-
-        /**
-         * Creates new atomic boolean boolean wrapper.
-         *
-         * @param value initial value
-         */
-        private AtomicBooleanWrapper(final boolean value) {
-            this.value = new AtomicBoolean(value);
-        }
-
-        /**
-         * Creates new atomic boolean boolean wrapper with initial value set to {@code 0}.
-         */
-        private AtomicBooleanWrapper() {
-            value = new AtomicBoolean();
-        }
+        @NotNull AtomicBoolean value;
     }
 }

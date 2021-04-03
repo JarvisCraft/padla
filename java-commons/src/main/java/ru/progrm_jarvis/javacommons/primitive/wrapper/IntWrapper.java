@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +41,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return created int wrapper
      */
     static IntWrapper createAtomic(final int value) {
-        return new AtomicIntWrapper(value);
+        return new AtomicIntWrapper(new AtomicInteger(value));
     }
 
     /**
@@ -49,7 +50,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * @return created int wrapper
      */
     static IntWrapper createAtomic() {
-        return new AtomicIntWrapper();
+        return new AtomicIntWrapper(new AtomicInteger());
     }
 
     @Override
@@ -132,7 +133,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      * Updates the current value using the specified function after what the new value is returned.
      *
      * @param updateFunction function to be used for updating the value
-     * @return value after update
+     * @return value before update
      */
     int getAndUpdate(@NonNull IntUnaryOperator updateFunction);
 
@@ -149,7 +150,7 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      *
      * @param updateValue update value (will be passed as the second function parameter)
      * @param accumulatorFunction function to be used for updating the value
-     * @return value after update
+     * @return value before update
      */
     int getAndAccumulate(int updateValue, @NonNull IntBinaryOperator accumulatorFunction);
 
@@ -167,9 +168,9 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      */
     @ToString
     @EqualsAndHashCode
-    @NoArgsConstructor
-    @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class PrimitiveIntWrapper implements IntWrapper {
 
         int value;
@@ -287,26 +288,11 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
      */
     @ToString
     @EqualsAndHashCode
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicIntWrapper implements IntWrapper {
 
         @Delegate(types = IntWrapper.class, excludes = PrimitiveWrapper.class)
-        @NonNull AtomicInteger value;
-
-        /**
-         * Creates new atomic integer int wrapper.
-         *
-         * @param value initial value
-         */
-        private AtomicIntWrapper(final int value) {
-            this.value = new AtomicInteger(value);
-        }
-
-        /**
-         * Creates new atomic integer int wrapper with initial value set to {@code 0}.
-         */
-        private AtomicIntWrapper() {
-            value = new AtomicInteger();
-        }
+        @NotNull AtomicInteger value;
     }
 }
