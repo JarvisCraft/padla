@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -123,6 +124,6 @@ public interface BooleanWrapper extends PrimitiveWrapper<Boolean> {
     final class AtomicBooleanWrapper implements BooleanWrapper {
 
         @Delegate(types = BooleanWrapper.class, excludes = PrimitiveWrapper.class)
-        @NonNull AtomicBoolean value;
+        @NotNull AtomicBoolean value;
     }
 }

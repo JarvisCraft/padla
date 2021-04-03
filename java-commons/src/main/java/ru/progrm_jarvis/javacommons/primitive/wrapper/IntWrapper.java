@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -292,6 +293,6 @@ public interface IntWrapper extends PrimitiveWrapper<Integer>, Numeric {
     final class AtomicIntWrapper implements IntWrapper {
 
         @Delegate(types = IntWrapper.class, excludes = PrimitiveWrapper.class)
-        @NonNull AtomicInteger value;
+        @NotNull AtomicInteger value;
     }
 }

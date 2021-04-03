@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -292,6 +293,6 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
     final class AtomicLongWrapper implements LongWrapper {
 
         @Delegate(types = LongWrapper.class, excludes = PrimitiveWrapper.class)
-        @NonNull AtomicLong value;
+        @NotNull AtomicLong value;
     }
 }
