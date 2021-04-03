@@ -1,8 +1,8 @@
 package ru.progrm_jarvis.javacommons.primitive.wrapper;
 
 import lombok.*;
-import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
@@ -92,11 +92,11 @@ public interface ReferenceWrapper<T> {
     /**
      * Updates the current value using specified function and update value after what the new value is returned.
      *
-     * @param otherValue update value (will be passed as the second function parameter)
+     * @param updateValue update value (will be passed as the second function parameter)
      * @param accumulatorFunction function to be used for updating the value
      * @return value before update
      */
-    T getAndAccumulate(T otherValue, @NonNull BinaryOperator<T> accumulatorFunction);
+    T getAndAccumulate(T updateValue, @NonNull BinaryOperator<T> accumulatorFunction);
 
     /**
      * Gets the value after what it gets updated using the specified function and update value.
@@ -173,7 +173,42 @@ public interface ReferenceWrapper<T> {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicReferenceWrapper<T> implements ReferenceWrapper<T> {
 
-        @Delegate(types = ReferenceWrapper.class)
-        @NonNull AtomicReference<T> value;
+        // @Delegate(types = ReferenceWrapper.class): this guy might be feeling bad
+        @NotNull AtomicReference<T> value;
+
+        @Override
+        public T get() {
+            return value.get();
+        }
+
+        @Override
+        public void set(final T newValue) {
+            value.set(newValue);
+        }
+
+        @Override
+        public T getAndSet(final T newValue) {
+            return value.getAndSet(newValue);
+        }
+
+        @Override
+        public T getAndUpdate(final @NonNull UnaryOperator<T> updateFunction) {
+            return value.getAndUpdate(updateFunction);
+        }
+
+        @Override
+        public T updateAndGet(final @NonNull UnaryOperator<T> updateFunction) {
+            return value.updateAndGet(updateFunction);
+        }
+
+        @Override
+        public T getAndAccumulate(final T updateValue, final @NonNull BinaryOperator<T> accumulatorFunction) {
+            return value.getAndAccumulate(updateValue, accumulatorFunction);
+        }
+
+        @Override
+        public T accumulateAndGet(final T updateValue, final @NonNull BinaryOperator<T> accumulatorFunction) {
+            return value.accumulateAndGet(updateValue, accumulatorFunction);
+        }
     }
 }
