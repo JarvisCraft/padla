@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 public class ConcurrentCollectionWrapper<E, W extends Collection<E>>
         extends AbstractConcurrentSizedCollectionWrapper<W> implements Collection<E> {
 
-
     protected ConcurrentCollectionWrapper(final @NotNull W wrapped,
                                           final @NotNull Lock readLock,
                                           final @NotNull Lock writeLock) {
@@ -68,7 +67,7 @@ public class ConcurrentCollectionWrapper<E, W extends Collection<E>>
     }
 
     @Override
-    public @NotNull Object[] toArray() {
+    public @NotNull Object @NotNull [] toArray() {
         readLock.lock();
         try {
             return wrapped.toArray();
@@ -78,11 +77,11 @@ public class ConcurrentCollectionWrapper<E, W extends Collection<E>>
     }
 
     @Override
-    public <R> @NotNull R[] toArray(final @NonNull R[] a) {
+    public <R> @NotNull R[] toArray(final R @NonNull [] targetArray) {
         readLock.lock();
         try {
             //noinspection SuspiciousToArrayCall
-            return wrapped.toArray(a);
+            return wrapped.toArray(targetArray);
         } finally {
             readLock.unlock();
         }

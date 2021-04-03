@@ -13,6 +13,15 @@
     <name>Java Commons</name>
     <description>Various generic utilities for Java</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.drill.tools</groupId>
+                <artifactId>drill-fmpp-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>

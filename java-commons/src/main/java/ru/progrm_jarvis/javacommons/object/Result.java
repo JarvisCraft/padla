@@ -4,8 +4,10 @@ import lombok.*;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
 
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -102,6 +104,25 @@ public interface Result<T, E> extends Supplier<T> {
     static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<T> optional,
                                              final @NonNull Supplier<E> errorSupplier) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(() -> error(errorSupplier.get()));
+    }
+
+    /**
+     * Creates a result by calling the specified callable.
+     *
+     * @param callable provider of the result
+     * @param <T> type of the result provided by the given callable
+     * @return {@link #success(Object) successful result} if the callable ran unexceptionally
+     * and {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     */
+    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<T> callable) {
+        final T value;
+        try {
+            value = callable.call();
+        } catch (final Exception x) {
+            return error(x);
+        }
+
+        return success(value);
     }
 
     /* ********************************************** Checking methods ********************************************** */
@@ -300,6 +321,33 @@ public interface Result<T, E> extends Supplier<T> {
      * or an error result if it was an {@link #isError() error result}
      */
     <R> @NotNull Result<R, E> map(@NonNull Function<T, R> mappingFunction);
+
+    /**
+     * Consumes the result if it is {@link #isSuccess() successful} returning the same result.
+     *
+     * @param consumer consumer to accept the successful result
+     * @return the same result
+     */
+    @NotNull Result<T, E> peek(@NonNull Consumer<T> consumer);
+
+    /**
+     * Maps the result if it is an {@link #isError() error result} returning a new result with the result of mapping
+     * otherwise keeping the {@link #isError() error result}.
+     *
+     * @param mappingFunction function to map the error result
+     * @param <R> type of the resulting error value
+     * @return mapped error result if it was an {@link #isError() an error result}
+     * or a successful result if it was a {@link #isError() successful result}
+     */
+    <R> @NotNull Result<T, R> mapError(@NonNull Function<E, R> mappingFunction);
+
+    /**
+     * Consumes the result if it is an {@link #isError() error result} returning the same result.
+     *
+     * @param consumer consumer to accept the successful result
+     * @return the same result
+     */
+    @NotNull Result<T, E> peekError(@NonNull Consumer<E> consumer);
 
     /**
      * Returns the given result if this is a {@link #isSuccess() successful result}
@@ -502,6 +550,23 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
+        public @NotNull Result<T, E> peek(final @NonNull Consumer<T> consumer) {
+            consumer.accept(value);
+
+            return this;
+        }
+
+        @Override
+        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<E, R> mappingFunction) {
+            return changeErrorType();
+        }
+
+        @Override
+        public @NotNull Result<T, E> peekError(final @NonNull Consumer<E> consumer) {
+            return this;
+        }
+
+        @Override
         public <R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
             return nextResult;
         }
@@ -653,6 +718,23 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
             return changeResultType();
+        }
+
+        @Override
+        public @NotNull Result<T, E> peek(final @NonNull Consumer<T> consumer) {
+            return this;
+        }
+
+        @Override
+        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<E, R> mappingFunction) {
+            return error(mappingFunction.apply(error));
+        }
+
+        @Override
+        public @NotNull Result<T, E> peekError(final @NonNull Consumer<E> consumer) {
+            consumer.accept(error);
+
+            return this;
         }
 
         @Override
@@ -837,5 +919,25 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         //</editor-fold>
+    }
+
+    /**
+     * Extensions for Result providing type-specific specializations which are impossible via generic virtual methods.
+     */
+    @UtilityClass
+    class Extensions {
+
+        /**
+         * Rethrows the exception if it is an {@link #error(Object) error result}.
+         *
+         * @param result result to be handled
+         * @param <T> type of the result
+         * @param <X> type of the throwable error
+         * @return successful result's value if it was a {@link #isSuccess() successful result}
+         * @throws X if it was an {@link #isError() error result}
+         */
+        public <T, X extends Throwable> T rethrow(final @NotNull Result<T, @NotNull X> result) throws X {
+            return result.orElseThrow(Function.identity());
+        }
     }
 }
