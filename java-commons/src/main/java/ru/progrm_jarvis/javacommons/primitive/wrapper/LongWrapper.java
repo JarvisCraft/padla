@@ -132,7 +132,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * Updates the current value using the specified function after what the new value is returned.
      *
      * @param updateFunction function to be used for updating the value
-     * @return value after update
+     * @return value before update
      */
     long getAndUpdate(@NonNull LongUnaryOperator updateFunction);
 
@@ -149,7 +149,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      *
      * @param updateValue update value (will be passed as the second function parameter)
      * @param accumulatorFunction function to be used for updating the value
-     * @return value after update
+     * @return value before update
      */
     long getAndAccumulate(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
 
