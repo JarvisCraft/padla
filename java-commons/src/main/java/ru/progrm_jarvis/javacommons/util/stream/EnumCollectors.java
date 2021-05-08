@@ -3,6 +3,9 @@ package ru.progrm_jarvis.javacommons.util.stream;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.progrm_jarvis.javacommons.util.TypeHints;
+import ru.progrm_jarvis.javacommons.util.TypeHints.TypeHint;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -14,7 +17,13 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
- * More {@link Collector collectors} for use with enums.
+ * <p>{@link Collector Collectors} for use with enums.</p>
+ *
+ * <p>There also are some overloads with automatic type inference.
+ * These methods delegate their logic to the corresponding methods with explicit type parameter
+ * by inferring enum types via {@link TypeHint type hints}.
+ * This approach leads to insignificant overhead due to empty-array allocation cost
+ * thus it is recommended to provide types explicitly in critical sections.</p>
  */
 @UtilityClass
 public class EnumCollectors {
@@ -22,11 +31,11 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
+     * @param <E> type of the enum
      * @param type type object of the enum
      * @param keyMapper mapping function used to convert the elements into enum-keys
      * @param valueMapper mapping function used to convert the elements into values
      * @param merger function used to handle duplicate values
-     * @param <E> type of the enum
      * @return a collector collecting al its elements into an enum-map
      */
     public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
@@ -41,10 +50,30 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
+     * @param keyMapper mapping function used to convert the elements into enum-keys
+     * @param valueMapper mapping function used to convert the elements into values
+     * @param merger function used to handle duplicate values
+     * @param typeHint array used for enum-type discovery
+     * @param <E> type of the enum
+     * @return a collector collecting al its elements into an enum-map
+     */
+    @SafeVarargs
+    public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
+            final @NonNull Function<T, E> keyMapper,
+            final @NonNull Function<T, V> valueMapper,
+            final @NonNull BinaryOperator<V> merger,
+            @TypeHint final @Nullable E @NonNull ... typeHint
+    ) {
+        return toEnumMap(TypeHints.resolve(typeHint), keyMapper, valueMapper, merger);
+    }
+
+    /**
+     * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
+     *
+     * @param <E> type of the enum
      * @param type type object of the enum
      * @param keyMapper mapping function used to convert the elements into enum-keys
      * @param valueMapper mapping function used to convert the elements into values
-     * @param <E> type of the enum
      * @return a collector collecting al its elements into an enum-map
      */
     public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
@@ -58,9 +87,9 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
+     * @param <E> type of the enum
      * @param type type object of the enum
      * @param valueMapper mapping function used to convert the elements into values
-     * @param <E> type of the enum
      * @return a collector collecting al its elements into an enum-map
      */
     public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
@@ -73,10 +102,10 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
+     * @param <E> type of the enum
      * @param type type object of the enum
      * @param valueMapper mapping function used to convert the elements into values
      * @param merger function used to handle duplicate values
-     * @param <E> type of the enum
      * @return a collector collecting al its elements into an enum-map
      */
     public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
@@ -88,14 +117,48 @@ public class EnumCollectors {
     }
 
     /**
+     * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
+     *
+     * @param valueMapper mapping function used to convert the elements into values
+     * @param merger function used to handle duplicate values
+     * @param typeHint array used for enum-type discovery
+     * @param <E> type of the enum
+     * @return a collector collecting al its elements into an enum-map
+     */
+    @SafeVarargs
+    public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
+            final @NonNull Function<E, V> valueMapper,
+            final @NonNull BinaryOperator<V> merger,
+            @TypeHint final @Nullable E @NonNull ... typeHint
+    ) {
+        return toEnumMap(TypeHints.resolve(typeHint), valueMapper, merger);
+    }
+
+    /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Set}.
      *
      * @param type type object of the enum
      * @param <E> type of the enum
      * @return a collector collecting al its elements into an enum-set
      */
-    public <E extends Enum<E>> Collector<E, ?, Set<E>> toEnumSet(final @NonNull Class<E> type) {
+    public <E extends Enum<E>> Collector<E, ?, Set<E>> toEnumSet(
+            final @NonNull Class<E> type
+    ) {
         return Collectors.toCollection(() -> EnumSet.noneOf(type));
+    }
+
+    /**
+     * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Set}.
+     *
+     * @param typeHint array used for enum-type discovery
+     * @param <E> type of the enum
+     * @return a collector collecting al its elements into an enum-set
+     */
+    @SafeVarargs
+    public <E extends Enum<E>> Collector<E, ?, Set<E>> toEnumSet(
+            @TypeHint final @Nullable E @NonNull ... typeHint
+    ) {
+        return toEnumSet(TypeHints.resolve(typeHint));
     }
 
     /**

@@ -70,7 +70,22 @@ class EnumCollectorsTest {
                         final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
         assertThat(
                 enumNames.collect(EnumCollectors.toEnumMap(
-                        MyEnum.class, MyEnum::valueOf,
+                        MyEnum.class, MyEnum::valueOf, name -> "<" + name + ">", (left, right) -> {
+                            throw new IllegalArgumentException(
+                                    "Duplicate values provided in test case " + left + " and " + right);
+                        }
+                )).entrySet(),
+                containsInAnyOrder(result.entrySet().toArray())
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("enumNameMaps")
+    void toEnumMap_full_viaHint(final @NonNull Stream<@NotNull String> enumNames,
+                        final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
+        assertThat(
+                enumNames.collect(EnumCollectors.toEnumMap(
+                        MyEnum::valueOf,
                         name -> "<" + name + ">",
                         (left, right) -> {
                             throw new IllegalArgumentException(
@@ -100,7 +115,21 @@ class EnumCollectorsTest {
                                final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
         assertThat(
                 enumNames.collect(EnumCollectors.toEnumMap(
-                        MyEnum.class,
+                        MyEnum.class, name -> "<" + name + ">", (left, right) -> {
+                            throw new IllegalArgumentException(
+                                    "Duplicate values provided in test case " + left + " and " + right);
+                        }
+                )).entrySet(),
+                containsInAnyOrder(result.entrySet().toArray())
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("enumMaps")
+    void toEnumMap_noKeyMapper_viaHint(final @NonNull Stream<@NotNull MyEnum> enumNames,
+                                       final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
+        assertThat(
+                enumNames.collect(EnumCollectors.toEnumMap(
                         name -> "<" + name + ">",
                         (left, right) -> {
                             throw new IllegalArgumentException(
@@ -117,8 +146,7 @@ class EnumCollectorsTest {
                                        final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
         assertThat(
                 enumNames.collect(EnumCollectors.toEnumMap(
-                        MyEnum.class,
-                        name -> "<" + name + ">"
+                        MyEnum.class, name -> "<" + name + ">"
                 )).entrySet(),
                 containsInAnyOrder(result.entrySet().toArray())
         );
@@ -130,6 +158,16 @@ class EnumCollectorsTest {
                    final @NonNull Set<@NotNull MyEnum> result) {
         assertEquals(
                 enumNames.map(MyEnum::valueOf).collect(EnumCollectors.toEnumSet(MyEnum.class)),
+                result
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("enumNameSets")
+    void toEnumSet_viaHint(final @NonNull Stream<@NotNull String> enumNames,
+                           final @NonNull Set<@NotNull MyEnum> result) {
+        assertEquals(
+                enumNames.map(MyEnum::valueOf).collect(EnumCollectors.toEnumSet()),
                 result
         );
     }
