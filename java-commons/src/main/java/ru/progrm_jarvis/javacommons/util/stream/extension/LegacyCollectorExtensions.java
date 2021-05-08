@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util.stream;
+package ru.progrm_jarvis.javacommons.util.stream.extension;
 
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;

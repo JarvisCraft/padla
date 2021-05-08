@@ -1,4 +1,4 @@
-package ru.progrm_jarvis.javacommons.util.stream;
+package ru.progrm_jarvis.javacommons.util.stream.extension;
 
 import lombok.experimental.ExtensionMethod;
 import lombok.val;
@@ -7,7 +7,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
