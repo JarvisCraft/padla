@@ -20,7 +20,7 @@ public interface ClassDefiner {
      * @return defined class
      */
     Class<?> defineClass(@NonNull MethodHandles.Lookup owner,
-                         @Nullable String name, @NonNull byte[] bytecode);
+                         @Nullable String name, byte @NonNull [] bytecode);
 
     /**
      * Defines multiple classes which may be garbage-collected.
@@ -42,7 +42,7 @@ public interface ClassDefiner {
      * @return defined class in the order their data was passed
      */
     Class<?>[] defineClasses(@NonNull MethodHandles.Lookup owner,
-                             @NonNull byte[]... bytecodes);
+                             byte @NotNull [] @NonNull ... bytecodes);
 
     /**
      * Defines multiple classes which may be garbage-collected.

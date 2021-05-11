@@ -81,7 +81,7 @@ public class GcClassDefiners {
             {
                 final MethodHandle theUnsafeGetter;
                 {
-                    val lookup  = FullAccessLookupFactories.getDefault()
+                    val lookup = FullAccessLookupFactories.getDefault()
                             .orElseThrow(() -> new IllegalStateException("LookupFactory is unavailable"))
                             .create(unsafeClass);
                     try {
@@ -144,18 +144,19 @@ public class GcClassDefiners {
 
         @Override
         public Class<?> defineClass(final @NonNull Lookup owner,
-                                    final @Nullable String name, final @NonNull byte[] bytecode) {
+                                    final @Nullable String name, final byte @NonNull [] bytecode) {
             return ANONYMOUS_CLASS_DEFINER.defineAnonymousClass(owner.lookupClass(), bytecode, null);
         }
 
         @Override
-        public Class<?>[] defineClasses(final @NonNull Lookup owner, final @NonNull byte[]... bytecodes) {
+        public Class<?>[] defineClasses(final @NonNull Lookup owner, final byte @NotNull [] @NonNull ... bytecodes) {
             val length = bytecodes.length;
             val classes = new Class<?>[length];
 
             val lookupClass = owner.lookupClass();
-            for (var i = 0; i < length; i++) classes[i] = ANONYMOUS_CLASS_DEFINER
-                    .defineAnonymousClass(lookupClass, bytecodes[i], null);
+            for (var i = 0; i < length; i++)
+                classes[i] = ANONYMOUS_CLASS_DEFINER
+                        .defineAnonymousClass(lookupClass, bytecodes[i], null);
 
             return classes;
         }
@@ -166,9 +167,10 @@ public class GcClassDefiners {
             val classes = new ArrayList<Class<?>>(bytecodes.size());
 
             val lookupClass = owner.lookupClass();
-            for (val bytecode : bytecodes) classes.add(ANONYMOUS_CLASS_DEFINER.defineAnonymousClass(
-                    lookupClass, bytecode, null
-            ));
+            for (val bytecode : bytecodes)
+                classes.add(ANONYMOUS_CLASS_DEFINER.defineAnonymousClass(
+                        lookupClass, bytecode, null
+                ));
 
             return classes;
         }
@@ -181,21 +183,24 @@ public class GcClassDefiners {
             val classes = new Class<?>[length];
 
             val lookupClass = owner.lookupClass();
-            for (var i = 0; i < length; i++) classes[i] = ANONYMOUS_CLASS_DEFINER
-                    .defineAnonymousClass(lookupClass, bytecodes[i].getSecond(), null);
+            for (var i = 0; i < length; i++)
+                classes[i] = ANONYMOUS_CLASS_DEFINER
+                        .defineAnonymousClass(lookupClass, bytecodes[i].getSecond(), null);
 
             return classes;
         }
 
         @Override
         public Map<String, Class<?>> defineClasses(final @NonNull Lookup owner,
-                                                   final @NonNull Map<String, byte[]> namedBytecode) {
+                                                   final @NonNull Map<String, byte @NotNull []> namedBytecode) {
             val classes = new HashMap<String, Class<?>>(namedBytecode.size());
 
             val lookupClass = owner.lookupClass();
-            for (val entry : namedBytecode.entrySet()) classes.put(
-                    entry.getKey(), ANONYMOUS_CLASS_DEFINER.defineAnonymousClass(lookupClass, entry.getValue(), null)
-            );
+            for (val entry : namedBytecode.entrySet())
+                classes.put(
+                        entry.getKey(),
+                        ANONYMOUS_CLASS_DEFINER.defineAnonymousClass(lookupClass, entry.getValue(), null)
+                );
 
             return classes;
         }
@@ -226,12 +231,12 @@ public class GcClassDefiners {
 
         @Override
         public Class<?> defineClass(final @NonNull Lookup owner,
-                                    final @Nullable String name, final @NonNull byte[] bytecode) {
+                                    final @Nullable String name, final byte @NonNull [] bytecode) {
             return new TmpClassLoader(owner.lookupClass().getClassLoader()).define(name, bytecode);
         }
 
         @Override
-        public Class<?>[] defineClasses(final @NonNull Lookup owner, final @NonNull byte[]... bytecodes) {
+        public Class<?>[] defineClasses(final @NonNull Lookup owner, final byte @NotNull [] @NonNull ... bytecodes) {
             val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val length = bytecodes.length;
@@ -270,7 +275,7 @@ public class GcClassDefiners {
 
         @Override
         public Map<String, Class<?>> defineClasses(final @NonNull Lookup owner,
-                                                   final @NonNull Map<String, byte[]> namedBytecode) {
+                                                   final @NonNull Map<String, byte @NotNull []> namedBytecode) {
             val classLoader = new TmpClassLoader(owner.lookupClass().getClassLoader());
 
             val classes = new HashMap<String, Class<?>>(namedBytecode.size());
@@ -308,8 +313,8 @@ public class GcClassDefiners {
              * @return defined class
              */
             private Class<?> define(final @Nullable String name,
-                                    @Internal("no need for check as the class is only locally available")
-                                    final @NotNull byte[] bytecode) {
+                                    @Internal(
+                                            "no need for check as the class is only locally available") final @NotNull byte[] bytecode) {
                 return defineClass(name, bytecode, 0, bytecode.length);
             }
         }
