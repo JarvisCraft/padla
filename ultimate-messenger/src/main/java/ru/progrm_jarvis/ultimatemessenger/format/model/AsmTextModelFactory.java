@@ -592,7 +592,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
 
             try {
                 val constructor = GcClassDefiners.getDefault()
-                        .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                         .defineClass(LOOKUP, className, clazz.toByteArray()).getDeclaredConstructor();
                 constructor.setAccessible(true);
                 //noinspection unchecked
