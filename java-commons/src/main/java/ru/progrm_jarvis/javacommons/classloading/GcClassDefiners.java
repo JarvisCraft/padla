@@ -2,7 +2,6 @@ package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.experimental.ExtensionMethod;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
@@ -28,7 +27,6 @@ import static java.lang.invoke.MethodType.methodType;
  * Utility for accessing {@link ClassDefiner class definers} capable od defining garbage-collected classes.
  */
 @UtilityClass
-@ExtensionMethod(LegacyClassExtensions.class)
 public class GcClassDefiners {
 
     private static final @NotNull ClassDefiner CLASS_DEFINER;
@@ -81,7 +79,8 @@ public class GcClassDefiners {
             final MethodHandle methodHandle;
             {
                 val methodType = methodType(
-                        Lookup.class, byte[].class, boolean.class, lookupClassOptionClass.arrayType()
+                        Lookup.class, byte[].class, boolean.class,
+                        LegacyClassExtensions.arrayType(lookupClassOptionClass)
                 );
                 try {
                     methodHandle = lookup.findVirtual(Lookup.class, "defineHiddenClass", methodType);
