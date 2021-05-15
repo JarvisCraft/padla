@@ -32,7 +32,6 @@ class GcClassDefinersTest {
         final WeakReference<Class<?>> classRef;
         {
             var newClass = GcClassDefiners.getDefault()
-                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                     .defineClass(MethodHandles.lookup(), className, clazz.toBytecode());
             classRef = new WeakReference<>(newClass);
             final WeakReference<?> instanceReference;

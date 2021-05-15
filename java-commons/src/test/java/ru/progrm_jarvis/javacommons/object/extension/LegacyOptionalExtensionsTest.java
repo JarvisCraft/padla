@@ -54,7 +54,7 @@ class LegacyOptionalExtensionsTest {
         assertEquals(Optional.of("foo"), Optional.of("foo").or(() -> null));
         assertEquals(Optional.of("baz"), Optional.empty().or(() -> Optional.of("baz")));
         assertEquals(Optional.empty(), Optional.empty().or(Optional::empty));
-        assertEquals(null, Optional.empty().or(() -> null));
+        assertThrows(NullPointerException.class, () -> Optional.empty().or(() -> null));
     }
 
     @Test

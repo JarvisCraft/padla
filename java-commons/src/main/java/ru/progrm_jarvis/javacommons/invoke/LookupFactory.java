@@ -14,13 +14,6 @@ import java.util.function.Function;
 @DontOverrideEqualsAndHashCode
 public interface LookupFactory extends Function<Class<?>, Lookup> {
 
-    /**
-     * A multi-bit mask representing all available accesses,
-     *  which may contribute to the result of {@link Lookup#lookupModes}.
-     */
-    // Javadoc is based in the same ones of Lookup class
-    int ALL_LOOKUP_MODES = Lookup.PUBLIC | Lookup.PRIVATE | Lookup.PROTECTED | Lookup.PACKAGE;
-
     @NotNull Lookup create(final @NonNull Class<?> clazz);
 
     @Override

@@ -215,7 +215,6 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
             try {
                 val constructor = GcClassDefiners.getDefault()
-                        .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                         .defineClass(LOOKUP, clazz.getName(), clazz.toBytecode()).getDeclaredConstructor();
                 constructor.setAccessible(true);
                 // noinspection unchecked

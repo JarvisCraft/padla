@@ -257,7 +257,6 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
 
         //noinspection unchecked
         return (Class<? extends T>) GcClassDefiners.getDefault()
-                .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                 .defineClass(LOOKUP, className, clazz.toByteArray());
     }
 

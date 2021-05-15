@@ -165,17 +165,23 @@ public class LegacyOptionalExtensions {
      * @return given optional if it is {@link Optional#isPresent() present}
      * or an optional provided by the given supplier otherwise
      *
-     * @throws NullPointerException if {@code supplier} is {@code null}
+     * @throws NullPointerException if {@code supplier} is {@code null} or the value provided by it is {@code null}
      * @apiNote this method is available on {@link Optional} itself since Java 9
      */
     @Contract("_, null -> fail")
     @SneakyThrows // call to `MethodHandle#invokeExact(...)`
     @SuppressWarnings({"unchecked" /* return casts */, "Contract" /* // Lombok's annotation is treated incorrectly */})
-    public <T> Optional<T> or(final @NotNull Optional<T> optional,
-                              final @NonNull Supplier<? extends Optional<? extends T>> supplier) {
-        return OR_METHOD_HANDLE == null
-                ? optional.isPresent() ? optional : (Optional<T>) supplier.get()
-                : (Optional<T>) OR_METHOD_HANDLE.invokeExact(optional, supplier);
+    public <T> @NotNull Optional<T> or(@NotNull Optional<T> optional, // variable may be reused for the other value
+                                       final @NonNull Supplier<@NonNull ? extends Optional<? extends T>> supplier) {
+        if (OR_METHOD_HANDLE == null) {
+            //noinspection OptionalAssignedToNull: this check is required by contract
+            if (!optional.isPresent() && (optional = (Optional<T>) supplier.get())
+                    == null) throw new NullPointerException("supplier provided a null Optional");
+
+            return optional;
+        }
+
+        return (Optional<T>) OR_METHOD_HANDLE.invokeExact(optional, supplier);
     }
 
     /**
