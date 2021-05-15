@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.primitive.wrapper;
 import lombok.*;
 import lombok.experimental.Delegate;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.primitive.Numeric;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -40,7 +41,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return created long wrapper
      */
     static LongWrapper createAtomic(final long value) {
-        return new AtomicLongWrapper(value);
+        return new AtomicLongWrapper(new AtomicLong(value));
     }
 
     /**
@@ -49,7 +50,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * @return created long wrapper
      */
     static LongWrapper createAtomic() {
-        return new AtomicLongWrapper();
+        return new AtomicLongWrapper(new AtomicLong());
     }
 
     @Override
@@ -132,7 +133,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      * Updates the current value using the specified function after what the new value is returned.
      *
      * @param updateFunction function to be used for updating the value
-     * @return value after update
+     * @return value before update
      */
     long getAndUpdate(@NonNull LongUnaryOperator updateFunction);
 
@@ -149,7 +150,7 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      *
      * @param updateValue update value (will be passed as the second function parameter)
      * @param accumulatorFunction function to be used for updating the value
-     * @return value after update
+     * @return value before update
      */
     long getAndAccumulate(long updateValue, @NonNull LongBinaryOperator accumulatorFunction);
 
@@ -167,9 +168,9 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      */
     @ToString
     @EqualsAndHashCode
-    @NoArgsConstructor
-    @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     final class PrimitiveLongWrapper implements LongWrapper {
 
         long value;
@@ -287,26 +288,11 @@ public interface LongWrapper extends PrimitiveWrapper<Long>, Numeric {
      */
     @ToString
     @EqualsAndHashCode
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     final class AtomicLongWrapper implements LongWrapper {
 
         @Delegate(types = LongWrapper.class, excludes = PrimitiveWrapper.class)
-        @NonNull AtomicLong value;
-
-        /**
-         * Creates new atomic long long wrapper.
-         *
-         * @param value initial value
-         */
-        private AtomicLongWrapper(final long value) {
-            this.value = new AtomicLong(value);
-        }
-
-        /**
-         * Creates new atomic long long wrapper with initial value set to {@code 0}.
-         */
-        private AtomicLongWrapper() {
-            value = new AtomicLong();
-        }
+        @NotNull AtomicLong value;
     }
 }

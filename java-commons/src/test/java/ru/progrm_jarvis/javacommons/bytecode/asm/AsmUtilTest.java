@@ -43,7 +43,6 @@ class AsmUtilTest {
             clazz.visitEnd();
 
             val constructor = ((Class<? extends TestSubject>) GcClassDefiners.getDefault()
-                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                     .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
 
             assertThat(constructor.getParameterCount(), is(0));
@@ -63,7 +62,6 @@ class AsmUtilTest {
             clazz.visitEnd();
 
             val constructor = ((Class<? extends StatusSubject>) GcClassDefiners.getDefault()
-                    .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                     .defineClass(MethodHandles.lookup(), name, clazz.toByteArray())).getDeclaredConstructor();
 
             assertThat(constructor.getParameterCount(), is(0));
@@ -94,7 +92,6 @@ class AsmUtilTest {
         clazz.visitEnd();
 
         val constructor = GcClassDefiners.getDefault()
-                .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                 .defineClass(MethodHandles.lookup(), name, clazz.toByteArray()).getDeclaredConstructor();
 
         assertThat(constructor.getParameterCount(), is(0));

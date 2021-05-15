@@ -28,7 +28,7 @@ public class ConcurrentCollections {
     }
 
     public <E> Set<E> concurrentSetFromMap(final @NonNull Map<E, Boolean> map) {
-        return ConcurrentSetWrapper.create(map.keySet());
+        return ConcurrentSetFromMapWrapper.create(map);
     }
 
     public <E> Queue<E> concurrentQueue(final @NonNull Queue<E> set) {

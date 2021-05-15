@@ -8,8 +8,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import ru.progrm_jarvis.javacommons.primitive.NumberUtil;
 
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,21 +19,17 @@ class NumberUtilTest {
     private static final long RANDOM_NUMBERS = 4096;
 
     static @NotNull Stream<@NotNull Arguments> intsWithRadixes() {
-        @SuppressWarnings("SharedThreadLocalRandom") val random = ThreadLocalRandom.current();
-        return IntStream.generate(() -> random.nextInt() + random.nextInt() /* twice to allow negative numbers */)
-                .limit(RANDOM_NUMBERS)
+        return ThreadLocalRandom.current().ints().limit(RANDOM_NUMBERS)
                 .mapToObj(number -> {
-                    val radix = random.nextInt(Character.MIN_RADIX, Character.MAX_RADIX + 1);
+                    val radix = ThreadLocalRandom.current().nextInt(Character.MIN_RADIX, Character.MAX_RADIX + 1);
                     return Arguments.of(number, Integer.toString(number, radix), radix);
                 });
     }
 
     static @NotNull Stream<@NotNull Arguments> longsWithRadixes() {
-        @SuppressWarnings("SharedThreadLocalRandom") val random = ThreadLocalRandom.current();
-        return LongStream.generate(() -> random.nextInt() + random.nextInt() /* twice to allow negative numbers */)
-                .limit(RANDOM_NUMBERS)
+        return ThreadLocalRandom.current().longs().limit(RANDOM_NUMBERS)
                 .mapToObj(number -> {
-                    val radix = random.nextInt(Character.MIN_RADIX, Character.MAX_RADIX + 1);
+                    val radix = ThreadLocalRandom.current().nextInt(Character.MIN_RADIX, Character.MAX_RADIX + 1);
                     return Arguments.of(number, Long.toString(number, radix), radix);
                 });
     }

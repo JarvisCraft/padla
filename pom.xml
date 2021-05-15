@@ -5,7 +5,7 @@
 
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-rc.2</version>
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
@@ -19,9 +19,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Testing -->
-        <version.junit>5.7.0</version.junit>
-        <version.junit.platform>1.7.0</version.junit.platform>
-        <version.mockito>3.7.0</version.mockito>
+        <version.junit>5.7.1</version.junit>
+        <version.junit.platform>1.7.1</version.junit.platform>
+        <version.mockito>3.10.0</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -77,6 +77,28 @@
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin>
+                <!-- Code-generation -->
+                <plugin>
+                    <groupId>org.apache.drill.tools</groupId>
+                    <artifactId>drill-fmpp-maven-plugin</artifactId>
+                    <version>1.18.0</version>
+                    <executions>
+                        <execution>
+                            <id>generate-fmpp</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <configuration>
+                                <config>src/main/freemarker/config.fmpp</config>
+                                <templates>src/main/freemarker/templates</templates>
+                                <output>${project.build.directory}/generated-sources</output>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Testing -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -87,7 +109,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>3.0.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -144,21 +166,21 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>30.1-jre</version>
+                <version>30.1.1-jre</version>
             </dependency>
 
             <!-- Bytecode generation -->
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.0</version>
+                <version>9.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.27.0-GA</version>
+                <version>3.28.0-GA</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
@@ -167,7 +189,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.16</version>
+                <version>1.18.20</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>

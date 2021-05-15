@@ -324,7 +324,6 @@ public class CollectionFactory {
                 }
 
                 return (Set<Enum<?>>) GcClassDefiners.getDefault()
-                        .orElseThrow(() -> new IllegalStateException("GC-ClassDefiner is unavailable"))
                         .defineClasses(
                                 LOOKUP,
                                 Pair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
