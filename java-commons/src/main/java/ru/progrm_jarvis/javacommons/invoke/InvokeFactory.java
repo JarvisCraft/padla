@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.invoke.MethodType.methodType;
 
 /**
@@ -79,14 +78,18 @@ public interface InvokeFactory<F, T> {
      * @throws IllegalArgumentException if the given class contains not 1 abstract (aka functional) method
      */
     default InvokeFactory<F, T> implementing(@NonNull Class<? super F> functionalInterface) {
-        checkArgument(functionalInterface.isInterface(), "%s should be an interface", functionalInterface);
+        if (!functionalInterface.isInterface()) throw new IllegalArgumentException(
+                "Expected interface but got " + functionalInterface
+        );
 
         final Method method;
         {
             val methods = Arrays.stream(functionalInterface.getMethods())
                     .filter(testedMethod -> Modifier.isAbstract(testedMethod.getModifiers()))
                     .collect(Collectors.toList());
-            checkArgument(methods.size() == 1, "There should only be one abstract method in %s", functionalInterface);
+            if (methods.size() != 1) throw new IllegalArgumentException(
+                    "There should only be one abstract method in " + functionalInterface
+            );
 
             method = methods.get(0);
         }

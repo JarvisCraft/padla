@@ -1,12 +1,12 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.object.Pair;
@@ -15,11 +15,8 @@ import ru.progrm_jarvis.reflector.wrapper.StaticFieldWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * {@link StaticFieldWrapper} based on {@link java.lang.invoke Invoke API}.
@@ -33,36 +30,16 @@ public class InvokeStaticFieldWrapper<@NotNull T, V>
         extends AbstractFieldWrapper<T, V> implements StaticFieldWrapper<T, V> {
 
     /**
-     * Name of the property responsible for concurrency level of {@link #STATIC_WRAPPER_CACHE}
-     */
-    public static final @NotNull String STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeStaticFieldWrapper.class.getCanonicalName() + ".static-wrapper-cache-concurrency-level",
-    /**
-     * Name of the property responsible for concurrency level of {@link #BOUND_WRAPPER_CACHE}
-     */
-    BOUND_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeStaticFieldWrapper.class.getCanonicalName() + ".bound-wrapper-cache-concurrency-level";
-    /**
      * Weak cache of allocated instance of this static field wrappers of static fields
      */
     protected static final @NotNull Cache<@NotNull Field, @NotNull StaticFieldWrapper<?, ?>> STATIC_WRAPPER_CACHE
-            = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(
-                    Math.max(1, Integer.getInteger(STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
-            )
-            .build();
+            = Caffeine.newBuilder().weakValues().build();
     /**
      * Weak cache of allocated instance of this static field wrappers of non-static bound fields
      */
     protected static final @NotNull Cache<
             @NotNull Pair<@NotNull Field, @NotNull ?>, @NotNull StaticFieldWrapper<?, ?>
-            > BOUND_WRAPPER_CACHE = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(
-                    Math.max(1, Integer.getInteger(BOUND_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
-            )
-            .build();
+            > BOUND_WRAPPER_CACHE = Caffeine.newBuilder().weakValues().build();
     /**
      * Supplier performing the field get operation
      */
@@ -97,18 +74,19 @@ public class InvokeStaticFieldWrapper<@NotNull T, V>
      * @return cached field wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NonNull T, V> @NotNull StaticFieldWrapper<T, V> from(
             final @NonNull Field field
     ) {
-        return (StaticFieldWrapper<T, V>) STATIC_WRAPPER_CACHE.get(field, () -> {
-            checkArgument(Modifier.isStatic(field.getModifiers()), "field should be static");
+        if (!Modifier.isStatic(field.getModifiers())) throw new IllegalArgumentException(
+                "Field should be static"
+        );
 
-            return new InvokeStaticFieldWrapper<>(
-                    field.getDeclaringClass(), field,
-                    InvokeUtil.toStaticGetterSupplier(field), InvokeUtil.toStaticSetterConsumer(field)
-            );
-        });
+        return (StaticFieldWrapper<T, V>) STATIC_WRAPPER_CACHE.get(field,
+                checkedField -> new InvokeStaticFieldWrapper<>(
+                        checkedField.getDeclaringClass(), checkedField,
+                        InvokeUtil.toStaticGetterSupplier(checkedField), InvokeUtil.toStaticSetterConsumer(checkedField)
+                )
+        );
     }
 
     /**
@@ -121,17 +99,20 @@ public class InvokeStaticFieldWrapper<@NotNull T, V>
      * @return cached static field wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NonNull T, V> @NotNull StaticFieldWrapper<T, V> from(
             final @NonNull Field field, final @NonNull T target
     ) {
-        return (StaticFieldWrapper<T, V>) BOUND_WRAPPER_CACHE.get(Pair.of(field, target), () -> {
-            checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
+        if (Modifier.isStatic(field.getModifiers())) throw new IllegalArgumentException(
+                "Field should be non-static"
+        );
+
+        return (StaticFieldWrapper<T, V>) BOUND_WRAPPER_CACHE.get(Pair.of(field, target), pair -> {
+            val checkedField = pair.getFirst();
 
             return new InvokeStaticFieldWrapper<>(
-                    field.getDeclaringClass(), field,
-                    InvokeUtil.toBoundGetterSupplier(field, target),
-                    InvokeUtil.toBoundSetterConsumer(field, target)
+                    checkedField.getDeclaringClass(), checkedField,
+                    InvokeUtil.toBoundGetterSupplier(checkedField, target),
+                    InvokeUtil.toBoundSetterConsumer(checkedField, target)
             );
         });
     }

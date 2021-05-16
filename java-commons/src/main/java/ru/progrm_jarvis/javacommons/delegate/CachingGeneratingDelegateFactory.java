@@ -1,12 +1,11 @@
 package ru.progrm_jarvis.javacommons.delegate;
 
-import com.google.common.cache.Cache;
+import com.github.benmanes.caffeine.cache.Cache;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 /**
@@ -31,15 +30,15 @@ public abstract class CachingGeneratingDelegateFactory implements DelegateFactor
     protected abstract <T> @NotNull DelegateWrapperFactory<T> createFactory(@NotNull Class<T> targetType);
 
     @Override
-    @SneakyThrows(ExecutionException.class)
     public <T> @NotNull T createWrapper(final @NonNull Class<T> targetType, final @NonNull Supplier<T> supplier) {
-        //noinspection unchecked
-        return ((DelegateWrapperFactory<T>) factories.get(targetType, () -> {
-            // validation happens only on creation of the wrapper
-            DelegateFactory.verifyTargetType(targetType);
+        return CachingGeneratingDelegateFactory.<T>uncheckedDelegateWrapperFactoryCast(
+                factories.get(targetType, actualTargetType -> {
+                    // validation happens only on creation of the wrapper
+                    DelegateFactory.verifyTargetType(actualTargetType);
 
-            return createFactory(targetType);
-        })).create(supplier);
+                    return createFactory(actualTargetType);
+                })
+        ).create(supplier);
     }
 
     /**
@@ -58,5 +57,23 @@ public abstract class CachingGeneratingDelegateFactory implements DelegateFactor
          * @return delegate wrapper created for the given supplier
          */
         @NotNull T create(@NotNull Supplier<T> supplier);
+    }
+
+    /**
+     * Casts the given delegate wrapper factory into the specific one.
+     *
+     * @param type raw-typed delegate wrapper factory
+     * @param <T> exact wanted type of delegate wrapper factory
+     * @return the provided delegate wrapper factory with its type case to the specific one
+     *
+     * @apiNote this is effectively no-op
+     */
+    // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+    @Contract("_ -> param1")
+    @SuppressWarnings("unchecked")
+    private static <T> DelegateWrapperFactory<T> uncheckedDelegateWrapperFactoryCast(
+            final DelegateWrapperFactory<?> type
+    ) {
+        return (DelegateWrapperFactory<T>) type;
     }
 }

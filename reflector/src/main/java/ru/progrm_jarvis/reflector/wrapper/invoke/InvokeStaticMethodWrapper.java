@@ -1,9 +1,12 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import lombok.*;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.object.Pair;
@@ -15,10 +18,7 @@ import ru.progrm_jarvis.reflector.wrapper.StaticMethodWrapper;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.concurrent.ExecutionException;
 import java.util.function.*;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * {@link StaticMethodWrapper} based on {@link java.lang.invoke Invoke API}.
@@ -32,36 +32,17 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         extends AbstractMethodWrapper<T, R> implements StaticMethodWrapper<T, R> {
 
     /**
-     * Name of the property responsible for concurrency level of {@link #STATIC_WRAPPER_CACHE}
-     */
-    public static final @NotNull String STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeStaticMethodWrapper.class.getCanonicalName() + ".static-wrapper-cache-concurrency-level",
-    /**
-     * Name of the property responsible for concurrency level of {@link #BOUND_WRAPPER_CACHE}
-     */
-    BOUND_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeStaticMethodWrapper.class.getCanonicalName() + ".bound-wrapper-cache-concurrency-level";
-    /**
      * Weak cache of allocated instance of this static method wrappers of static methods
      */
     protected static final @NotNull Cache<@NotNull Method, @NotNull StaticMethodWrapper<?, ?>> STATIC_WRAPPER_CACHE
-            = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(
-                    Math.max(1, Integer.getInteger(STATIC_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
-            )
-            .build();
+            = Caffeine.newBuilder().weakValues().build();
     /**
      * Weak cache of allocated instance of this static method wrappers of non-static bound methods
      */
     protected static final @NotNull Cache<
             @NotNull Pair<@NotNull Method, @NotNull ?>, @NotNull StaticMethodWrapper<?, ?>
-            > BOUND_WRAPPER_CACHE = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(
-                    Math.max(1, Integer.getInteger(BOUND_WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
-            )
-            .build();
+            > BOUND_WRAPPER_CACHE
+            = Caffeine.newBuilder().weakValues().build();
     /**
      * Function performing the method invocation
      */
@@ -90,29 +71,41 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
      * @return cached static method wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NonNull T, R> @NotNull StaticMethodWrapper<T, R> from(final @NonNull Method method) {
-        return (StaticMethodWrapper<T, R>) STATIC_WRAPPER_CACHE.get(method, () -> {
-            checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
+        if (!Modifier.isStatic(method.getModifiers())) throw new IllegalArgumentException("Method should be static");
 
-            val noReturn = method.getReturnType() == void.class;
-            switch (method.getParameterCount()) {
+        return (StaticMethodWrapper<T, R>) STATIC_WRAPPER_CACHE.get(method, checkedMethod -> {
+            val noReturn = checkedMethod.getReturnType() == void.class;
+            switch (checkedMethod.getParameterCount()) {
                 case 0: return noReturn ? from(
-                        method, generateFrom(Runnable.class, method)
+                        checkedMethod, generateFrom(Runnable.class, checkedMethod)
                 ) : from(
-                        method, (Supplier<T>) generateFrom(Supplier.class, method)
+                        checkedMethod, (Supplier<T>) generateFrom(Supplier.class, checkedMethod)
                 );
                 case 1: return noReturn ? from(
-                        method, (Consumer<Object>) generateFrom(Consumer.class, method)
+                        checkedMethod, (Consumer<Object>) generateFrom(Consumer.class, checkedMethod)
                 ) : from(
-                        method, (Function<Object, R>) generateFrom(Function.class, method)
+                        checkedMethod, (Function<Object, R>) generateFrom(Function.class, checkedMethod)
                 );
                 case 2: return noReturn ? from(
-                        method, (BiConsumer<Object, Object>) generateFrom(BiConsumer.class, method)
+                        checkedMethod, (BiConsumer<Object, Object>) generateFrom(BiConsumer.class, checkedMethod)
                 ) : from(
-                        method, (BiFunction<Object, Object, R>) generateFrom(BiFunction.class, method)
+                        checkedMethod, (BiFunction<Object, Object, R>) generateFrom(BiFunction.class, checkedMethod)
                 );
-                default: return from(method, InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method));
+                default: {
+                    final MethodHandle methodHandle;
+                    {
+                        val lookup = InvokeUtil.lookup(method.getDeclaringClass());
+                        try {
+                            methodHandle = lookup.unreflect(checkedMethod);
+                        } catch (final IllegalAccessException e) {
+                            throw new RuntimeException(
+                                    "Cannot create MethodHandle for constructor " + checkedMethod, e
+                            );
+                        }
+                    }
+                    return from(checkedMethod, methodHandle);
+                }
             }
         });
     }
@@ -127,28 +120,39 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
      * @return cached static method wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NonNull T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NonNull Method method,
             final @NonNull T target
     ) {
-        return (StaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(Pair.of(method, target), () -> {
-            checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
+        if (Modifier.isStatic(method.getModifiers())) throw new IllegalArgumentException("Method should be non-static");
 
-            val noReturn = method.getReturnType() == void.class;
-            switch (method.getParameterCount()) {
+        return (StaticMethodWrapper<T, R>) BOUND_WRAPPER_CACHE.get(Pair.of(method, target), pair -> {
+            val checkedMethod = pair.getFirst();
+            val noReturn = checkedMethod.getReturnType() == void.class;
+            switch (checkedMethod.getParameterCount()) {
                 case 0: return noReturn
-                        ? from(method, generateFrom(Runnable.class, method, target))
-                        : from(method, (Supplier<R>) generateFrom(Supplier.class, method, target));
+                        ? from(checkedMethod, generateFrom(Runnable.class, checkedMethod, target))
+                        : from(checkedMethod, generateFrom(Supplier.class, checkedMethod, target));
                 case 1: return noReturn
-                        ? from(method, (Consumer<Object>) generateFrom(Consumer.class, method, target))
-                        : from(method, (Function<Object, R>) generateFrom(Function.class, method, target));
+                        ? from(checkedMethod, generateFrom(Consumer.class, checkedMethod, target))
+                        : from(checkedMethod, generateFrom(Function.class, checkedMethod, target));
                 case 2: return noReturn
-                        ? from(method, (BiConsumer<Object, Object>) generateFrom(BiConsumer.class, method, target))
-                        : from(method, (BiFunction<Object, Object, R>) generateFrom(BiFunction.class, method, target));
-                default: return from(
-                        method, InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method).bindTo(target)
-                );
+                        ? from(checkedMethod, generateFrom(BiConsumer.class, checkedMethod, target))
+                        : from(checkedMethod, generateFrom(BiFunction.class, checkedMethod, target));
+                default: {
+                    final MethodHandle methodHandle;
+                    {
+                        val lookup = InvokeUtil.lookup(method.getDeclaringClass());
+                        try {
+                            methodHandle = lookup.unreflect(checkedMethod);
+                        } catch (final IllegalAccessException e) {
+                            throw new RuntimeException(
+                                    "Cannot create MethodHandle for constructor " + pair, e
+                            );
+                        }
+                    }
+                    return from(checkedMethod, methodHandle.bindTo(target));
+                }
             }
         });
     }

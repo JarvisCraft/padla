@@ -7,8 +7,6 @@ import lombok.val;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
  * Utility for {@link UUID}-related functionality.
  */
@@ -44,8 +42,10 @@ public class UuidUtil {
      *
      * @see #uuidToBytes(UUID) for backward conversion
      */
-    public UUID uuidFromBytes(final @NonNull byte[] bytes) {
-        checkArgument(bytes.length == UUID_BYTES, "bytes length should be " + UUID_BYTES);
+    public UUID uuidFromBytes(final byte @NonNull [] bytes) {
+        if (bytes.length != UUID_BYTES) throw new IllegalArgumentException(
+                "Length of bytes length should be " + UUID_BYTES
+        );
 
         val buffer = ByteBuffer.wrap(bytes);
         return new UUID(buffer.getLong(), buffer.getLong());

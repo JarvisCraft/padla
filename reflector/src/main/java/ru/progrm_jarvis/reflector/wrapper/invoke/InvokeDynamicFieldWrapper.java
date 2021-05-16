@@ -1,11 +1,10 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
@@ -14,11 +13,8 @@ import ru.progrm_jarvis.reflector.wrapper.DynamicFieldWrapper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * {@link DynamicFieldWrapper} based on {@link java.lang.invoke Invoke API}.
@@ -32,18 +28,10 @@ public class InvokeDynamicFieldWrapper<@NotNull T, V>
         extends AbstractFieldWrapper<T, V> implements DynamicFieldWrapper<T, V> {
 
     /**
-     * Name of the property responsible for concurrency level of {@link #CACHE}
-     */
-    public static final @NotNull String CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeDynamicFieldWrapper.class.getCanonicalName() + ".cache-concurrency-level";
-    /**
      * Weak cache of allocated instance of this dynamic field wrapper
      */
     protected static final @NotNull Cache<@NotNull Field, @NotNull DynamicFieldWrapper<?, ?>> CACHE
-            = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(Math.max(1, Integer.getInteger(CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
-            .build();
+            = Caffeine.newBuilder().weakValues().build();
 
     /**
      * Function performing the field get operation
@@ -80,18 +68,15 @@ public class InvokeDynamicFieldWrapper<@NotNull T, V>
      * @return cached dynamic field wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NotNull T, V> @NotNull DynamicFieldWrapper<T, V> from(
             final @NonNull Field field
     ) {
-        return (DynamicFieldWrapper<T, V>) CACHE.get(field, () -> {
-            checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
+        if (Modifier.isStatic(field.getModifiers())) throw new IllegalArgumentException("Field should be non-static");
 
-            return new InvokeDynamicFieldWrapper<>(
-                    (Class<? extends T>) field.getDeclaringClass(), field,
-                    InvokeUtil.toGetterFunction(field), InvokeUtil.toSetterBiConsumer(field)
-            );
-        });
+        return (DynamicFieldWrapper<T, V>) CACHE.get(field, checkedField -> new InvokeDynamicFieldWrapper<>(
+                (Class<? extends T>) checkedField.getDeclaringClass(), checkedField,
+                InvokeUtil.toGetterFunction(checkedField), InvokeUtil.toSetterBiConsumer(checkedField)
+        ));
     }
 
     @Override

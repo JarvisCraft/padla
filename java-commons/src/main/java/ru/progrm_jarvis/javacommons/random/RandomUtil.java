@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.random;
 
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -39,13 +38,13 @@ public class RandomUtil {
         {
             val size = chancedValues.size();
 
-            Preconditions.checkArgument(size > 0, "There should be at least one chanced value");
+            if (size <= 0) throw new IllegalArgumentException("There should be at least one chanced value");
             if (size == 1) return chancedValues.keySet().iterator().next();
         }
 
         long chancesSum = 0; // sum of all chances
         for (val chance : chancedValues.values()) {
-            Preconditions.checkArgument(chance > 0, "Chances should all be positive");
+            if (chance <= 0) throw new IllegalArgumentException("All chances should be positive");
             chancesSum += chance;
         }
         // the chance should be up to chancesSum (exclusive)
@@ -66,8 +65,10 @@ public class RandomUtil {
      * @throws IllegalArgumentException if {@code values is empty}
      */
     public <T> T getRandom(final @NonNull List<T> values) {
-        val size = values.size();
-        Preconditions.checkArgument(size > 0, "There should be at least one chanced value");
+        final int size;
+        if ((size = values.size()) < 1) throw new IllegalArgumentException(
+                "There should be at least one chanced value"
+        );
         if (size == 1) return values.get(0);
 
         return values.get(ThreadLocalRandom.current().nextInt(size));
@@ -85,8 +86,10 @@ public class RandomUtil {
     public <T> T getRandom(final @NonNull Collection<T> values) {
         int index;
         {
-            val size = values.size();
-            Preconditions.checkArgument(size > 0, "There should be at least one chanced value");
+            final int size;
+            if ((size = values.size()) < 1) throw new IllegalArgumentException(
+                    "There should be at least one chanced value"
+            );
             if (size == 1) return values.iterator().next();
 
             index = ThreadLocalRandom.current().nextInt(size);
