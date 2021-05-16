@@ -1,7 +1,7 @@
 package ru.progrm_jarvis.javacommons.invoke;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -15,13 +15,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.invoke.LambdaMetafactory.metafactory;
 import static java.lang.invoke.MethodType.methodType;
 
@@ -33,12 +31,6 @@ import static java.lang.invoke.MethodType.methodType;
  */
 @UtilityClass
 public class InvokeUtil {
-
-    /**
-     * Name of a system property responsible for {@link #LOOKUPS} concurrency level.
-     */
-    public final @NonNull String LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeUtil.class.getCanonicalName() + ".lookup-cache-concurrency-level";
 
     /**
      * Lookup factory used by this utility
@@ -81,9 +73,8 @@ public class InvokeUtil {
     SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
 
     private final @NonNull Cache<Class<?>, Lookup> LOOKUPS
-            = CacheBuilder.newBuilder()
+            = Caffeine.newBuilder()
             .softValues() // because there is no need to GC lookups which may be expansive to create
-            .concurrencyLevel(Math.max(1, Integer.getInteger(LOOKUP_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
             .build();
 
     /**
@@ -106,9 +97,21 @@ public class InvokeUtil {
      * @param clazz class for which to create a lookup
      * @return created cached lookup fir the given class
      */
-    @SneakyThrows(ExecutionException.class)
     public @NotNull Lookup lookup(final @NonNull Class<?> clazz) {
-        return LOOKUPS.get(clazz, () -> LOOKUP_FACTORY.create(clazz));
+        return LOOKUPS.get(clazz, LOOKUP_FACTORY::create);
+    }
+
+    /**
+     * Creates new {@link InvokeFactory invoke factory} using {@link #DELEGATING_LOOKUP_FACTORY}.
+     *
+     * @param <F> type of functional interface implemented
+     * @param <T> type of target value
+     * @return created invoke factory
+     */
+    public <F, T> InvokeFactory<F, T> invokeFactory() {
+        return SimpleInvokeFactory
+                .<F, T>newInstance()
+                .using(DELEGATING_LOOKUP_FACTORY);
     }
 
     /**
@@ -118,7 +121,7 @@ public class InvokeUtil {
      * @return {@link MethodHandle} created from the given method
      */
     @SneakyThrows(IllegalAccessException.class)
-    public MethodHandle toMethodHandle(final @NonNull Method method) {
+    public @NotNull MethodHandle toMethodHandle(final @NonNull Method method) {
         return lookup(method.getDeclaringClass()).unreflect(method);
     }
 
@@ -129,7 +132,7 @@ public class InvokeUtil {
      * @return {@link MethodHandle} created from the given constructor
      */
     @SneakyThrows(IllegalAccessException.class)
-    public MethodHandle toMethodHandle(final @NonNull Constructor<?> constructor) {
+    public @NotNull MethodHandle toMethodHandle(final @NonNull Constructor<?> constructor) {
         return lookup(constructor.getDeclaringClass()).unreflectConstructor(constructor);
     }
 
@@ -140,7 +143,7 @@ public class InvokeUtil {
      * @return getter-{@link MethodHandle} created from the given field
      */
     @SneakyThrows(IllegalAccessException.class)
-    public MethodHandle toGetterMethodHandle(final @NonNull Field field) {
+    public @NotNull MethodHandle toGetterMethodHandle(final @NonNull Field field) {
         return lookup(field.getDeclaringClass()).unreflectGetter(field);
     }
 
@@ -151,7 +154,7 @@ public class InvokeUtil {
      * @return setter-{@link MethodHandle} created from the given field
      */
     @SneakyThrows(IllegalAccessException.class)
-    public MethodHandle toSetterMethodHandle(final @NonNull Field field) {
+    public @NotNull MethodHandle toSetterMethodHandle(final @NonNull Field field) {
         return lookup(field.getDeclaringClass()).unreflectSetter(field);
     }
 
@@ -163,12 +166,9 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is not static
      */
-    public Runnable toStaticRunnable(final @NonNull Method method) {
-        {
-            val parameterCount = method.getParameterCount();
-            checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
-        }
-        checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
+    public @NotNull Runnable toStaticRunnable(final @NonNull Method method) {
+        Check.hasNoParameters(method);
+        Check.isStatic(method);
 
         val lookup = lookup(method.getDeclaringClass());
         try {
@@ -193,12 +193,9 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is static
      */
-    public Runnable toBoundRunnable(final @NonNull Method method, final @NonNull Object target) {
-        {
-            val parameterCount = method.getParameterCount();
-            checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
-        }
-        checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
+    public @NotNull Runnable toBoundRunnable(final @NonNull Method method, final @NonNull Object target) {
+        Check.hasNoParameters(method);
+        Check.isNotStatic(method);
 
         val lookup = lookup(method.getDeclaringClass());
         try {
@@ -224,12 +221,9 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is not static
      */
-    public <R> Supplier<R> toStaticSupplier(final @NonNull Method method) {
-        {
-            val parameterCount = method.getParameterCount();
-            checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
-        }
-        checkArgument(Modifier.isStatic(method.getModifiers()), "method should be static");
+    public <R> @NotNull Supplier<R> toStaticSupplier(final @NonNull Method method) {
+        Check.hasNoParameters(method);
+        Check.isStatic(method);
 
         val lookup = lookup(method.getDeclaringClass());
         try {
@@ -256,12 +250,9 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given method requires parameters
      * @throws IllegalArgumentException if the given method is static
      */
-    public <R> Supplier<R> toBoundSupplier(final @NonNull Method method, final @NonNull Object target) {
-        {
-            val parameterCount = method.getParameterCount();
-            checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
-        }
-        checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
+    public <R> @NotNull Supplier<R> toBoundSupplier(final @NonNull Method method, final @NonNull Object target) {
+        Check.hasNoParameters(method);
+        Check.isNotStatic(method);
 
         val lookup = lookup(method.getDeclaringClass());
         try {
@@ -287,11 +278,8 @@ public class InvokeUtil {
      * @return supplier invoking the given constructor
      * @throws IllegalArgumentException if the given constructor requires parameters
      */
-    public <T> Supplier<T> toSupplier(final @NonNull Constructor<T> constructor) {
-        {
-            val parameterCount = constructor.getParameterCount();
-            checkArgument(parameterCount == 0, "method should have no parameters, got " + parameterCount);
-        }
+    public <T> @NotNull Supplier<T> toSupplier(final @NonNull Constructor<T> constructor) {
+        Check.hasNoParameters(constructor);
 
         val lookup = lookup(constructor.getDeclaringClass());
         try {
@@ -316,8 +304,8 @@ public class InvokeUtil {
      * @return supplier getting the value of the field
      * @throws IllegalArgumentException if the given field is not static
      */
-    public <V> Supplier<V> toStaticGetterSupplier(final @NonNull Field field) {
-        checkArgument(Modifier.isStatic(field.getModifiers()), "field should be static");
+    public <V> @NotNull Supplier<V> toStaticGetterSupplier(final @NonNull Field field) {
+        Check.isStatic(field);
 
         final MethodHandle methodHandle;
         try {
@@ -345,8 +333,8 @@ public class InvokeUtil {
      * @return supplier getting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
-    public <V> Supplier<V> toBoundGetterSupplier(final @NonNull Field field, final @NonNull Object target) {
-        checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
+    public <V> @NotNull Supplier<V> toBoundGetterSupplier(final @NonNull Field field, final @NonNull Object target) {
+        Check.isNotStatic(field);
 
         final MethodHandle methodHandle;
         try {
@@ -374,8 +362,8 @@ public class InvokeUtil {
      * @return function getting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
-    public <T, V> Function<T, V> toGetterFunction(final @NonNull Field field) {
-        checkArgument(!Modifier.isStatic(field.getModifiers()), "field should be non-static");
+    public <T, V> @NotNull Function<T, V> toGetterFunction(final @NonNull Field field) {
+        Check.isNotStatic(field);
 
         final MethodHandle methodHandle;
         try {
@@ -402,15 +390,8 @@ public class InvokeUtil {
      * @return consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is not static
      */
-    public <V> Consumer<V> toStaticSetterConsumer(final @NonNull Field field) {
-        final MethodHandle methodHandle;
-        {
-            val modifiers = field.getModifiers();
-
-            checkArgument(Modifier.isStatic(modifiers), "field should be static");
-
-            methodHandle = getMethodHandle(field, modifiers);
-        }
+    public <V> @NotNull Consumer<V> toStaticSetterConsumer(final @NonNull Field field) {
+        val methodHandle = toSetterMethodHandle(field, Check.isStatic(field));
 
         return value -> {
             try {
@@ -430,28 +411,22 @@ public class InvokeUtil {
      * @return consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
-    public <V> Consumer<V> toBoundSetterConsumer(final @NonNull Field field, final @NonNull Object target) {
+    public <V> @NotNull Consumer<V> toBoundSetterConsumer(final @NonNull Field field, final @NonNull Object target) {
         final MethodHandle methodHandle;
-        {
-            val modifiers = field.getModifiers();
-
-            checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
-
-            if (Modifier.isFinal(modifiers)) {
-                val accessible = field.isAccessible();
-                field.setAccessible(true);
-                try {
-                    methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
-                } catch (final IllegalAccessException e) {
-                    throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
-                } finally {
-                    field.setAccessible(accessible);
-                }
-            } else try {
+        if (Modifier.isFinal(Check.isNotStatic(field))) {
+            val accessible = field.isAccessible();
+            field.setAccessible(true);
+            try {
                 methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
             } catch (final IllegalAccessException e) {
                 throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
+            } finally {
+                field.setAccessible(accessible);
             }
+        } else try {
+            methodHandle = lookup(field.getDeclaringClass()).unreflectSetter(field).bindTo(target);
+        } catch (final IllegalAccessException e) {
+            throw new RuntimeException("Unable to create a MethodHandle for setter of field " + field, e);
         }
 
         return value -> {
@@ -472,15 +447,8 @@ public class InvokeUtil {
      * @return bi-consumer setting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
-    public <T, V> BiConsumer<T, V> toSetterBiConsumer(final @NonNull Field field) {
-        final MethodHandle methodHandle;
-        {
-            val modifiers = field.getModifiers();
-
-            checkArgument(!Modifier.isStatic(modifiers), "field should be non-static");
-
-            methodHandle = getMethodHandle(field, modifiers);
-        }
+    public <T, V> @NotNull BiConsumer<T, V> toSetterBiConsumer(final @NonNull Field field) {
+        val methodHandle = toSetterMethodHandle(field, Check.isNotStatic(field));
 
         return (target, value) -> {
             try {
@@ -491,7 +459,7 @@ public class InvokeUtil {
         };
     }
 
-    private static MethodHandle getMethodHandle(final @NonNull Field field, final int modifiers) {
+    private static @NotNull MethodHandle toSetterMethodHandle(final @NonNull Field field, final int modifiers) {
         final MethodHandle methodHandle;
         if (Modifier.isFinal(modifiers)) {
             val accessible = field.isAccessible();
@@ -511,16 +479,58 @@ public class InvokeUtil {
         return methodHandle;
     }
 
-    /**
-     * Creates new {@link InvokeFactory invoke factory} using {@link #DELEGATING_LOOKUP_FACTORY}.
-     *
-     * @param <F> type of functional interface implemented
-     * @param <T> type of target value
-     * @return created invoke factory
-     */
-    public <F, T> InvokeFactory<F, T> invokeFactory() {
-        return SimpleInvokeFactory
-                .<F, T>newInstance()
-                .using(DELEGATING_LOOKUP_FACTORY);
+    @UtilityClass
+    @SuppressWarnings("TypeMayBeWeakened") // the error message are specific to classes
+    private static final class Check {
+
+        private static void hasNoParameters(final @NotNull Method method) {
+            final int parameterCount;
+            if ((parameterCount = method.getParameterCount()) != 0) throw new IllegalArgumentException(
+                    "Method should have no parameters but it has " + parameterCount
+            );
+        }
+
+        private static void hasNoParameters(final @NotNull Constructor<?> constructor) {
+            final int parameterCount;
+            if ((parameterCount = constructor.getParameterCount()) != 0) throw new IllegalArgumentException(
+                    "Constructor should have no parameters but it has " + parameterCount
+            );
+        }
+
+        private int isStatic(final @NotNull Method method) {
+            final int modifiers;
+            if (!Modifier.isStatic(modifiers = method.getModifiers())) throw new IllegalArgumentException(
+                    "Method should be static"
+            );
+
+            return modifiers;
+        }
+
+        private int isNotStatic(final @NotNull Method method) {
+            final int modifiers;
+            if (Modifier.isStatic(modifiers = method.getModifiers())) throw new IllegalArgumentException(
+                    "Method should be static"
+            );
+
+            return modifiers;
+        }
+
+        private int isStatic(final @NotNull Field field) {
+            final int modifiers;
+            if (!Modifier.isStatic(modifiers = field.getModifiers())) throw new IllegalArgumentException(
+                    "Field should be static"
+            );
+
+            return modifiers;
+        }
+
+        private int isNotStatic(final @NotNull Field field) {
+            final int modifiers;
+            if (Modifier.isStatic(modifiers = field.getModifiers())) throw new IllegalArgumentException(
+                    "Field should be static"
+            );
+
+            return modifiers;
+        }
     }
 }

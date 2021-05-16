@@ -9,8 +9,6 @@ import ru.progrm_jarvis.javacommons.classloading.ClassUtil;
 
 import java.lang.invoke.MethodType;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
  * Utilities related to {@link java.lang.invoke.MethodType method types}.
  */
@@ -42,26 +40,28 @@ public class MethodTypeUtil {
      * @see ClassUtil#integrateType(Class, Class) for specification of integration process
      * @see #integrateTypes(MethodType, MethodType) shorthand for full integration of types with same parameter counts
      */
-    public @NotNull MethodType integrateTypes(@NonNull /* mutable */ MethodType original,
+    public @NotNull MethodType integrateTypes(/* mutable */ @NonNull MethodType original,
                                               /* mutable */ int originalStartIndex,
                                               final @NonNull MethodType target,
                                               /* mutable */ int targetStartIndex,
                                               final int parameterCount) {
-        checkArgument(parameterCount >= 0, "Parameter count cannot be negative");
+        if (parameterCount < 0) throw new IllegalArgumentException("Parameter count should be non-negative");
 
         {
-            val originalParameterCount = original.parameterCount();
-            checkArgument(
-                    originalStartIndex >= 0 && originalStartIndex <= originalParameterCount
-                            && originalStartIndex + parameterCount <= originalParameterCount,
-                    "Original index should not exceed amount of original parameters or be negative"
+            final int originalParameterCount;
+            if (originalStartIndex < 0
+                    || originalStartIndex > (originalParameterCount = original.parameterCount())
+                    || originalStartIndex + parameterCount > originalParameterCount
+            ) throw new IllegalArgumentException(
+                        "Original index should not exceed amount of original parameters or be negative"
             );
         }
         {
-            val targetParameterCount = target.parameterCount();
-            checkArgument(
-                    targetStartIndex >= 0 && targetStartIndex <= targetParameterCount
-                            && targetStartIndex + parameterCount <= targetParameterCount,
+            final int targetParameterCount;
+            if (targetStartIndex < 0
+                    || targetStartIndex > (targetParameterCount = target.parameterCount())
+                    || targetStartIndex + parameterCount > targetParameterCount
+            ) throw new IllegalArgumentException(
                     "Target index should not exceed amount of target parameters or be negative"
             );
         }
@@ -87,8 +87,7 @@ public class MethodTypeUtil {
     public @NotNull MethodType integrateTypes(final @NonNull MethodType original,
                                               final @NonNull MethodType target) {
         val originalParameterCount = original.parameterCount();
-        checkArgument(
-                originalParameterCount == target.parameterCount(),
+        if (originalParameterCount != target.parameterCount()) throw new IllegalArgumentException(
                 "Original and target should have the same amount of parameters"
         );
 

@@ -1,18 +1,17 @@
 package ru.progrm_jarvis.javacommons.service;
 
-import com.google.common.collect.Multimap;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Abstract implementation of {@link ManagedPendingService}.
@@ -42,7 +41,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
     /**
      * Map of callbacks to be called once the server gets started by their owners
      */
-    @NonNull Multimap<O, Consumer<R>> readyCallbacks;
+    @NonNull Map<O, Set<Consumer<R>>> readyCallbacks;
 
     /**
      * Creates a new managed pending service.
@@ -55,9 +54,13 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
      */
     protected AbstractManagedPendingService(final @NonNull Lock lifecycleLock,
                                             final @NonNull Map<O, OwnedService<S, R>> owners,
-                                            final @NonNull Multimap<O, Consumer<R>> readyCallbacks) {
-        checkArgument(owners.isEmpty(), "owners is not empty");
-        checkArgument(readyCallbacks.isEmpty(), "readyCallbacks is not empty");
+                                            final @NonNull Map<O, Set<Consumer<R>>> readyCallbacks) {
+        if (!owners.isEmpty()) throw new IllegalArgumentException(
+                "Map of owners should be empty"
+        );
+        if (!readyCallbacks.isEmpty()) throw new IllegalArgumentException(
+                "Multi-map of ready callbacks should be empty"
+        );
 
         state = new AtomicReference<>(State.PENDING);
 
@@ -67,7 +70,6 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
     }
 
     @Override
-    @SuppressWarnings("resource") // while an auto-closeable instance is created, it should be closed in other place
     public @NotNull OwnedService<S, R> request(final @NonNull O owner) {
         final Lock lock;
         (lock = lifecycleLock).lock();
@@ -116,7 +118,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
      * @param service service to be passed to callbacks
      */
     protected void runReadyCallbacks(final R service) {
-        for (val callback : readyCallbacks.values()) callback.accept(service);
+        for (val callbacks : readyCallbacks.values()) for (val callback : callbacks) callback.accept(service);
     }
 
     /**
@@ -129,7 +131,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         final Lock lock;
         (lock = lifecycleLock).lock();
         try {
-            readyCallbacks.put(owner, readyCallback);
+            readyCallbacks.computeIfAbsent(owner, key -> ConcurrentHashMap.newKeySet()).add(readyCallback);
         } finally {
             lock.unlock();
         }

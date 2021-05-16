@@ -1,12 +1,13 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
@@ -16,7 +17,6 @@ import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -32,18 +32,10 @@ public class InvokeConstructorWrapper<@NotNull T>
         extends AbstractConstructorWrapper<T> {
 
     /**
-     * Name of the property responsible for concurrency level of {@link #WRAPPER_CACHE}
-     */
-    public static final @NotNull String WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeConstructorWrapper.class.getCanonicalName() + ".wrapper-cache-concurrency-level";
-    /**
      * Weak cache of allocated instance of this constructor wrapper
      */
     protected static final @NotNull Cache<@NotNull Constructor<?>, @NotNull ConstructorWrapper<?>> WRAPPER_CACHE
-            = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(Math.max(1, Integer.getInteger(WRAPPER_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
-            .build();
+            = Caffeine.newBuilder().weakValues().build();
 
     /**
      * Function performing the constructor invocation
@@ -72,26 +64,52 @@ public class InvokeConstructorWrapper<@NotNull T>
      * @return cached constructor wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NotNull T> @NotNull ConstructorWrapper<T> from(
             final @NonNull Constructor<? extends T> constructor
     ) {
-        return (ConstructorWrapper<T>) WRAPPER_CACHE.get(constructor, () -> {
-            switch (constructor.getParameterCount()) {
-                case 0: return from(
-                        constructor, (Supplier<T>) generateFrom(Supplier.class, constructor)
-                );
-                case 1: return from(
-                        constructor, (Function<Object, T>) generateFrom(Function.class, constructor)
-                );
-                case 2: return from(
-                        constructor, (BiFunction<Object, Object, T>) generateFrom(BiFunction.class, constructor));
-                default: return from(
-                        constructor, InvokeUtil.lookup(constructor.getDeclaringClass())
-                                .unreflectConstructor(constructor)
-                );
+        return (ConstructorWrapper<T>) WRAPPER_CACHE.get(constructor, checkedConstructor -> {
+            switch (checkedConstructor.getParameterCount()) {
+                case 0: return from(checkedConstructor, generateFrom(
+                        Supplier.class, uncheckedConstructorCast(constructor)
+                ));
+                case 1: return from(checkedConstructor, generateFrom(
+                        Function.class, uncheckedConstructorCast(constructor)
+                ));
+                case 2: return from(checkedConstructor, generateFrom(
+                        BiFunction.class, uncheckedConstructorCast(constructor)
+                ));
+                default: {
+                    final MethodHandle methodHandle;
+                    {
+                        val lookup = InvokeUtil.lookup(checkedConstructor.getDeclaringClass());
+                        try {
+                            methodHandle = lookup.unreflectConstructor(checkedConstructor);
+                        } catch (final IllegalAccessException e) {
+                            throw new RuntimeException(
+                                    "Cannot create MethodHandle for constructor " + checkedConstructor, e
+                            );
+                        }
+                    }
+                    return from(checkedConstructor, methodHandle);
+                }
             }
         });
+    }
+
+    /**
+     * Casts the given constructor into the specific one.
+     *
+     * @param type raw-typed constructor
+     * @param <T> exact wanted type of constructor
+     * @return the provided constructor with its type case to the specific one
+     *
+     * @apiNote this is effectively no-op
+     */
+    // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+    @Contract("_ -> param1")
+    @SuppressWarnings("unchecked")
+    private static <T> Constructor<T> uncheckedConstructorCast(final Constructor<?> type) {
+        return (Constructor<T>) type;
     }
 
     private static <@NotNull T> @NotNull ConstructorWrapper<T> from(

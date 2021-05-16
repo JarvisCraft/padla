@@ -1,14 +1,11 @@
 package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.experimental.UtilityClass;
-import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Comparator;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Utility for class-related stuff.
@@ -125,11 +122,11 @@ public class ClassUtil {
      *
      * @throws IllegalArgumentException if the given class is not primitive
      */
-    public Class<?> toPrimitiveWrapper(@NotNull /* hot spot */ final Class<?> primitiveClass) {
-        val primitiveClassIndex = Arrays.binarySearch(
+    public @NotNull Class<?> toPrimitiveWrapper(@NotNull /* hot spot */ final Class<?> primitiveClass) {
+        final int primitiveClassIndex;
+        if ((primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_CLASSES, primitiveClass, CLASS_HASH_CODE_COMPARATOR
-        );
-        checkArgument(primitiveClassIndex >= 0, "Given class is not primitive");
+        )) < 0) throw new IllegalArgumentException("Given class is not primitive");
 
         return PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
     }
@@ -143,10 +140,10 @@ public class ClassUtil {
      * @throws IllegalArgumentException if the given class is not a primitive-wrapper
      */
     public Class<?> toPrimitive(@NotNull /* hot spot */ final Class<?> primitiveWrapperClass) {
-        val primitiveClassIndex = Arrays.binarySearch(
+        final int primitiveClassIndex;
+        if ((primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_WRAPPER_CLASSES, primitiveWrapperClass, CLASS_HASH_CODE_COMPARATOR
-        );
-        checkArgument(primitiveClassIndex >= 0, "Given class is not a primitive-wrapper");
+        )) < 0) throw new IllegalArgumentException("Given class is not a primitive-wrapper");
 
         return PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex];
     }
@@ -163,22 +160,21 @@ public class ClassUtil {
      *
      * @throws IllegalArgumentException if original type cannot be integrated to the target type
      */
-    public Class<?> integrateType(@NotNull /* hot spot */ final Class<?> original,
-                                  @NotNull /* hot spot */ final Class<?> target) {
+    public Class<?> integrateType(final @NotNull /* hot spot */ Class<?> original,
+                                  final @NotNull /* hot spot */ Class<?> target) {
         // As `Class#isAssignableFrom()` is an intrinsic candidate
         // there is no need for simple `==` check which is probably included in it
         if (target.isAssignableFrom(original)) return original;
 
-        checkArgument(
-                original.isPrimitive(),
-                "Original type %s cannot be integrated with the target type %s and is not primitive", original, target
+        if(!original.isPrimitive()) throw new IllegalArgumentException(
+                "Original type " + original + " cannot be integrated with the target type " + target
+                        + " and is not primitive"
         );
 
-        val wrapper = toPrimitiveWrapper(original);
-
-        checkArgument(
-                target.isAssignableFrom(wrapper),
-                "Wrapper %s of the original type %s cannot be integrated with target type %s", wrapper, original, target
+        final Class<?> wrapper;
+        if (!target.isAssignableFrom(wrapper = toPrimitiveWrapper(original))) throw new IllegalArgumentException(
+                "Wrapper " + wrapper + " of the original type " + original
+                        + " cannot be integrated with target type " + target
         );
 
         return wrapper;

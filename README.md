@@ -19,7 +19,7 @@ As its dependencies PADLA uses:
   - [Lombok](https://github.com/rzwitserloot/lombok) for generating boilerplate stuff
   - [Jetbrains Annotations](https://github.com/JetBrains/java-annotations) for documenting code logic
 - Runtime:
-  - [Guava](https://github.com/google/guava) for some general-purpose needs
+  - [Caffeine](https://github.com/ben-manes/caffeine) for caching
 - Testing:
   - [Junit5](https://github.com/junit-team/junit5/) with related sub-tools for testing
   - [Hamcrest](https://github.com/hamcrest/JavaHamcrest) for more creating more readable tests
