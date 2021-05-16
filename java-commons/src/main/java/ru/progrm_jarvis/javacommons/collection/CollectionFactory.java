@@ -45,12 +45,6 @@ public class CollectionFactory {
             .createPaginated(CollectionFactory.class.getName() + "$$Generated$$ImmutableEnumSet$$");
 
     /**
-     * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
-     */
-    private final @NonNull String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = CollectionFactory.class.getCanonicalName() + ".immutable-enum-set-instance-cache-concurrency-level";
-
-    /**
      * Default javassist class pool
      */
     private final @NonNull Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);

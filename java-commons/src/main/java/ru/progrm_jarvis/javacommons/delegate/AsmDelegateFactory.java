@@ -15,7 +15,6 @@ import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
-import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -28,12 +27,6 @@ import static org.objectweb.asm.Type.*;
 
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
-
-    /**
-     * Name of a system property responsible for {@link #factories} concurrency level
-     */
-    public static final @NotNull String FACTORIES_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeUtil.class.getCanonicalName() + ".factories-cache-concurrency-level";
 
     /**
      * Lookup of this class
