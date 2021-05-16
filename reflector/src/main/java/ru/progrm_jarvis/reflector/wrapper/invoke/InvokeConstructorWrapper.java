@@ -56,6 +56,11 @@ public class InvokeConstructorWrapper<@NotNull T>
         this.invoker = invoker;
     }
 
+    @Override
+    public @NotNull T invoke(final Object @NotNull ... parameters) {
+        return invoker.apply(parameters);
+    }
+
     /**
      * Creates a new cached constructor wrapper for the given constructor.
      *
@@ -94,22 +99,6 @@ public class InvokeConstructorWrapper<@NotNull T>
                 }
             }
         });
-    }
-
-    /**
-     * Casts the given constructor into the specific one.
-     *
-     * @param type raw-typed constructor
-     * @param <T> exact wanted type of constructor
-     * @return the provided constructor with its type case to the specific one
-     *
-     * @apiNote this is effectively no-op
-     */
-    // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
-    @Contract("_ -> param1")
-    @SuppressWarnings("unchecked")
-    private static <T> Constructor<T> uncheckedConstructorCast(final Constructor<?> type) {
-        return (Constructor<T>) type;
     }
 
     private static <@NotNull T> @NotNull ConstructorWrapper<T> from(
@@ -165,9 +154,20 @@ public class InvokeConstructorWrapper<@NotNull T>
         );
     }
 
-    @Override
-    public @NotNull T invoke(final Object @NotNull ... parameters) {
-        return invoker.apply(parameters);
+    /**
+     * Casts the given constructor into the specific one.
+     *
+     * @param type raw-typed constructor
+     * @param <T> exact wanted type of constructor
+     * @return the provided constructor with its type case to the specific one
+     *
+     * @apiNote this is effectively no-op
+     */
+    // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+    @Contract("_ -> param1")
+    @SuppressWarnings("unchecked")
+    private static <T> Constructor<T> uncheckedConstructorCast(final Constructor<?> type) {
+        return (Constructor<T>) type;
     }
 
     private static <@NotNull F, @NotNull T> @NotNull F generateFrom(

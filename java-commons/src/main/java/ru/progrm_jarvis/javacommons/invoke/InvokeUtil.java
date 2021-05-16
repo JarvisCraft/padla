@@ -391,7 +391,7 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given field is not static
      */
     public <V> @NotNull Consumer<V> toStaticSetterConsumer(final @NonNull Field field) {
-        val methodHandle = toSetterMethodHandle(field, Check.isStatic(field));
+        val methodHandle = createSetterMethodHandle(field, Check.isStatic(field));
 
         return value -> {
             try {
@@ -448,7 +448,7 @@ public class InvokeUtil {
      * @throws IllegalArgumentException if the given field is static
      */
     public <T, V> @NotNull BiConsumer<T, V> toSetterBiConsumer(final @NonNull Field field) {
-        val methodHandle = toSetterMethodHandle(field, Check.isNotStatic(field));
+        val methodHandle = createSetterMethodHandle(field, Check.isNotStatic(field));
 
         return (target, value) -> {
             try {
@@ -459,7 +459,7 @@ public class InvokeUtil {
         };
     }
 
-    private static @NotNull MethodHandle toSetterMethodHandle(final @NonNull Field field, final int modifiers) {
+    private static @NotNull MethodHandle createSetterMethodHandle(final @NonNull Field field, final int modifiers) {
         final MethodHandle methodHandle;
         if (Modifier.isFinal(modifiers)) {
             val accessible = field.isAccessible();
@@ -506,19 +506,19 @@ public class InvokeUtil {
             return modifiers;
         }
 
-        private int isNotStatic(final @NotNull Method method) {
+        private int isStatic(final @NotNull Field field) {
             final int modifiers;
-            if (Modifier.isStatic(modifiers = method.getModifiers())) throw new IllegalArgumentException(
-                    "Method should be static"
+            if (!Modifier.isStatic(modifiers = field.getModifiers())) throw new IllegalArgumentException(
+                    "Field should be static"
             );
 
             return modifiers;
         }
 
-        private int isStatic(final @NotNull Field field) {
+        private int isNotStatic(final @NotNull Method method) {
             final int modifiers;
-            if (!Modifier.isStatic(modifiers = field.getModifiers())) throw new IllegalArgumentException(
-                    "Field should be static"
+            if (Modifier.isStatic(modifiers = method.getModifiers())) throw new IllegalArgumentException(
+                    "Method should be static"
             );
 
             return modifiers;
