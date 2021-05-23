@@ -2,7 +2,6 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,11 +15,6 @@ import java.util.OptionalInt;
  */
 @FunctionalInterface
 public interface TextModel<T> {
-
-    /**
-     * {@code 0} wrapped in {@link OptionalInt}
-     */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NotNull OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
 
     /**
      * Gets the text formatted for the given target.
@@ -82,6 +76,17 @@ public interface TextModel<T> {
     final class EmptyTextModel implements TextModel {
 
         /**
+         * Hash-code of an empty value.
+         */
+        private static final int EMPTY_HASHCODE = 0;
+
+        /**
+         * {@code 0} wrapped in {@link OptionalInt}
+         */
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+        private static final @NotNull OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
+
+        /**
          * Singleton instance of this text model
          */
         private static final TextModel<?> INSTANCE = new EmptyTextModel();
@@ -115,8 +120,10 @@ public interface TextModel<T> {
         public boolean equals(final @Nullable Object object) {
             if (object == this) return true;
             if (object instanceof TextModel) {
-                val textModel = (TextModel<?>) object;
-                return !textModel.isDynamic() && textModel.hashCode() == 0 && textModel.getText(null).isEmpty();
+                final TextModel<?> textModel;
+                return !(textModel = (TextModel<?>) object).isDynamic()
+                        && textModel.hashCode() == EMPTY_HASHCODE
+                        && textModel.getText(null).isEmpty();
             }
             return false;
         }
@@ -124,13 +131,13 @@ public interface TextModel<T> {
         @Override
         @Contract(pure = true)
         public int hashCode() {
-            return 0; // usual hashcode for empty values
+            return EMPTY_HASHCODE;
         }
 
         @Override
         @Contract(pure = true)
         public String toString() {
-            return "Empty TextModel";
+            return "TextModel{\"\"}";
         }
     }
 }
