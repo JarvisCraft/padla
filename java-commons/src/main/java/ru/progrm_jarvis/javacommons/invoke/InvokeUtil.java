@@ -35,44 +35,44 @@ public class InvokeUtil {
     /**
      * Lookup factory used by this utility
      */
-    private final LookupFactory LOOKUP_FACTORY = FullAccessLookupFactories.getDefault()
+    private final @NotNull LookupFactory LOOKUP_FACTORY = FullAccessLookupFactories.getDefault()
             .orElseThrow(() -> new IllegalStateException("LookupFactory is unavailable"));
 
     /**
      * Method of {@link Runnable} functional method
      */
-    private final String RUNNABLE_FUNCTIONAL_METHOD_NAME = "run",
+    private final @NotNull String RUNNABLE_FUNCTIONAL_METHOD_NAME = "run";
     /**
      * Method of {@link Supplier} functional method
      */
-    SUPPLIER_FUNCTIONAL_METHOD_NAME = "get";
+    private final @NotNull String SUPPLIER_FUNCTIONAL_METHOD_NAME = "get";
 
     /**
      * Method type of signature: <code>{@code void}()</code>
      */
-    private final MethodType VOID__METHOD_TYPE = methodType(void.class),
+    public final @NotNull MethodType VOID__METHOD_TYPE = methodType(void.class);
     /**
      * Method type of signature: <code>{@link Object}()</code>
      */
-    OBJECT__METHOD_TYPE = methodType(Object.class),
+    public final @NotNull MethodType OBJECT__METHOD_TYPE = methodType(Object.class);
     /**
      * Method type of signature: <code>{@link Runnable}()</code>
      */
-    RUNNABLE__METHOD_TYPE = methodType(Runnable.class),
+    public final @NotNull MethodType RUNNABLE__METHOD_TYPE = methodType(Runnable.class);
     /**
      * Method type of signature: <code>{@link Supplier}()</code>
      */
-    SUPPLIER__METHOD_TYPE = methodType(Supplier.class),
+    public final @NotNull MethodType SUPPLIER__METHOD_TYPE = methodType(Supplier.class);
     /**
      * Method type of signature: <code>{@link Runnable}({@link Object})</code>
      */
-    RUNNABLE_OBJECT__METHOD_TYPE = methodType(Runnable.class, Object.class),
+    public final @NotNull MethodType RUNNABLE_OBJECT__METHOD_TYPE = methodType(Runnable.class, Object.class);
     /**
      * Method type of signature: <code>{@link Supplier}({@link Object})</code>
      */
-    SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
+    public final @NotNull MethodType SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
 
-    private final @NonNull Cache<Class<?>, Lookup> LOOKUPS
+    private final @NonNull Cache<@NotNull Class<?>, @NotNull Lookup> LOOKUPS
             = Caffeine.newBuilder()
             .softValues() // because there is no need to GC lookups which may be expansive to create
             .build();
@@ -80,14 +80,14 @@ public class InvokeUtil {
     /**
      * Lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
      */
-    private final LookupFactory DELEGATING_LOOKUP_FACTORY = InvokeUtil::lookup;
+    private final @NotNull LookupFactory DELEGATING_LOOKUP_FACTORY = InvokeUtil::lookup;
 
     /**
      * Gets the proxy lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
      *
      * @return proxy lookup factory
      */
-    public LookupFactory getDelegatingLookupFactory() {
+    public @NotNull LookupFactory getDelegatingLookupFactory() {
         return DELEGATING_LOOKUP_FACTORY;
     }
 
@@ -95,9 +95,10 @@ public class InvokeUtil {
      * Creates a cache {@link Lookup} for the given class.
      *
      * @param clazz class for which to create a lookup
-     * @return created cached lookup fir the given class
+     * @return created cached lookup for the given class
      */
     public @NotNull Lookup lookup(final @NonNull Class<?> clazz) {
+        //noinspection ConstantConditions: the result cannot be null as `create(Class<?>)` is non-null
         return LOOKUPS.get(clazz, LOOKUP_FACTORY::create);
     }
 
@@ -108,7 +109,7 @@ public class InvokeUtil {
      * @param <T> type of target value
      * @return created invoke factory
      */
-    public <F, T> InvokeFactory<F, T> invokeFactory() {
+    public <F, T> @NotNull InvokeFactory<F, T> invokeFactory() {
         return SimpleInvokeFactory
                 .<F, T>newInstance()
                 .using(DELEGATING_LOOKUP_FACTORY);
