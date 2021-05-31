@@ -1,7 +1,7 @@
 package ru.progrm_jarvis.javacommons.delegate;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
@@ -13,9 +13,8 @@ import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
-import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
-import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
+import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -28,12 +27,6 @@ import static org.objectweb.asm.Type.*;
 
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
-
-    /**
-     * Name of a system property responsible for {@link #factories} concurrency level
-     */
-    public static final @NotNull String FACTORIES_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeUtil.class.getCanonicalName() + ".factories-cache-concurrency-level";
 
     /**
      * Lookup of this class
@@ -268,10 +261,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
          * Instance of {@link AsmDelegateFactory ASM-based delegate factory}
          */
         private final @NotNull DelegateFactory INSTANCE = new AsmDelegateFactory(
-                CacheBuilder.newBuilder()
-                        .concurrencyLevel(Math.max(
-                                1, Integer.getInteger(FACTORIES_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)
-                        ))
+                Caffeine.newBuilder()
                         .weakKeys() // classes are GC-friendly loaded so they may be effectively weakly-referenced
                         .build()
         );

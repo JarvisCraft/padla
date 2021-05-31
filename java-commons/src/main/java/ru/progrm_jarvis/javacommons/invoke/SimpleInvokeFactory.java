@@ -11,9 +11,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.function.Function;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 /**
  * Simple implementation of {@link InvokeFactory}.
  *
@@ -76,7 +73,9 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
     public InvokeFactory<F, T> implementing(final @NonNull MethodType functionalInterface,
                                             final @NonNull String functionalMethodName,
                                             final @NonNull MethodType functionalMethodSignature) {
-        checkArgument(functionalInterface.parameterCount() == 0, "functionalInterface should have no parameters");
+        if (functionalInterface.parameterCount() != 0) throw new IllegalArgumentException(
+                "Functional interface should have no parameters"
+        );
 
         this.functionalInterface = functionalInterface;
         this.functionalMethodName = functionalMethodName;
@@ -110,11 +109,11 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
 
     @Override
     public F create() throws Throwable {
-        checkState(lookupFactory != null, "lookupFactory is not set");
-        checkState(functionalInterface != null, "functionalInterface is not set");
-        checkState(functionalMethodSignature != null, "functionalMethodSignature is not set");
-        checkState(functionalMethodName != null, "functionalMethodName is not set");
-        checkState(methodHandleCreator != null, "methodHandleCreator is not set");
+        val lookupFactory = checkSet(this.lookupFactory, "Lookup factory");
+        val functionalInterface = checkSet(this.functionalInterface, "Functional interface");
+        val functionalMethodSignature = checkSet(this.functionalMethodSignature, "Functional method signature");
+        val functionalMethodName = checkSet(this.functionalMethodName, "Functional method name");
+        val methodHandleCreator = checkSet(this.methodHandleCreator, "Method handle creator");
 
         val lookup = lookupFactory.create(targetClass);
         val methodHandle = methodHandleCreator.apply(lookup);
@@ -140,10 +139,15 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
                 functionalInterface.appendParameterTypes(target.getClass()),
                 functionalMethodSignature, methodHandle,
                 MethodTypeUtil.integrateTypes(methodHandle.type().dropParameterTypes(0, 1), functionalMethodSignature)
-
         ).getTarget();
 
         //noinspection unchecked
         return (F) targetMethodHandle.invoke(target);
+    }
+
+    private static <T> @NotNull T checkSet(final @Nullable T value, final @NotNull String identifier) {
+        if (value == null) throw new IllegalStateException(identifier + " is not set");
+
+        return value;
     }
 }

@@ -1,9 +1,12 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import lombok.*;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
@@ -14,13 +17,10 @@ import ru.progrm_jarvis.reflector.wrapper.ReflectorWrappers;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * {@link DynamicMethodWrapper} based on {@link java.lang.invoke Invoke API}.
@@ -34,18 +34,10 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         extends AbstractMethodWrapper<T, R> implements DynamicMethodWrapper<T, R> {
 
     /**
-     * Name of the property responsible for concurrency level of {@link #CACHE}
-     */
-    protected static final @NotNull String CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = InvokeDynamicMethodWrapper.class.getCanonicalName() + ".cache-concurrency-level";
-    /**
      * Weak cache of allocated instance of this constructor wrapper
      */
     private static final @NotNull Cache<@NotNull Method, @NotNull DynamicMethodWrapper<?, ?>> CACHE
-            = CacheBuilder.newBuilder()
-            .weakValues()
-            .concurrencyLevel(Math.max(1, Integer.getInteger(CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4)))
-            .build();
+            = Caffeine.newBuilder().weakValues().build();
 
     /**
      * Bi-function performing the method invocation
@@ -75,23 +67,35 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
      * @return cached dynamic method wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     public static <@NotNull T, R> DynamicMethodWrapper<T, R> from(
             final @NonNull Method method
     ) {
-        return (DynamicMethodWrapper<T, R>) CACHE.get(method, () -> {
-            checkArgument(!Modifier.isStatic(method.getModifiers()), "method should be non-static");
+        if (Modifier.isStatic(method.getModifiers())) throw new IllegalArgumentException("Method should be non-static");
 
-            val noReturn = method.getReturnType() == void.class;
-            switch (method.getParameterCount()) {
+        return (DynamicMethodWrapper<T, R>) CACHE.get(method, checkedMethod -> {
+            val noReturn = checkedMethod.getReturnType() == void.class;
+            switch (checkedMethod.getParameterCount()) {
                 case 0: return noReturn
-                        ? from(method, (Consumer<Object>) generateImplementation(Consumer.class, method))
-                        : from(method, (Function<Object, R>) generateImplementation(Function.class, method));
+                        ? from(checkedMethod, generateImplementation(Consumer.class, checkedMethod))
+                        : from(checkedMethod, generateImplementation(Function.class, checkedMethod));
                 case 1: return noReturn
-                        ? from(method, (BiConsumer<Object, Object>) generateImplementation(BiConsumer.class, method))
-                        : from(method, (BiFunction<Object, Object, R>) generateImplementation(BiFunction.class, method)
+                        ? from(checkedMethod, generateImplementation(BiConsumer.class, checkedMethod))
+                        : from(checkedMethod, generateImplementation(BiFunction.class, checkedMethod)
                 );
-                default: return from(method, InvokeUtil.lookup(method.getDeclaringClass()).unreflect(method));
+                default: {
+                    final MethodHandle methodHandle;
+                    {
+                        val lookup = InvokeUtil.lookup(checkedMethod.getDeclaringClass());
+                        try {
+                            methodHandle = lookup.unreflect(checkedMethod);
+                        } catch (final IllegalAccessException e) {
+                            throw new RuntimeException(
+                                    "Cannot create MethodHandle for method " + checkedMethod, e
+                            );
+                        }
+                    }
+                    return from(checkedMethod, methodHandle);
+                }
             }
         });
     }

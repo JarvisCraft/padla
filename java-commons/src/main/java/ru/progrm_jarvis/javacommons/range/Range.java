@@ -1,10 +1,9 @@
 package ru.progrm_jarvis.javacommons.range;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.collection.Iterables;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Own;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Ref;
 
@@ -409,7 +408,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} not preserving order
      */
     static <T> @NotNull Range<T> anyOfCopy(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
-        return anyOf(Sets.newHashSet(ranges));
+        return anyOf(Iterables.toSet(ranges));
     }
 
     /**
@@ -422,7 +421,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} preserving order
      */
     static <T> @NotNull Range<T> anyOfCopyOrdered(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
-        return anyOf(Lists.newArrayList(ranges));
+        return anyOf(Iterables.toList(ranges));
     }
 
     /**
@@ -484,7 +483,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} not preserving order
      */
     static <T> @NotNull Range<T> allOfCopy(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
-        return allOf(Sets.newHashSet(ranges));
+        return allOf(Iterables.toSet(ranges));
     }
 
     /**
@@ -497,7 +496,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} preserving order
      */
     static <T> @NotNull Range<T> allOfCopyOrdered(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
-        return allOf(Lists.newArrayList(ranges));
+        return allOf(Iterables.toList(ranges));
     }
 
     /**
@@ -559,7 +558,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} not preserving order
      */
     static <T> @NotNull Range<T> noneOfCopy(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
-        return noneOf(Sets.newHashSet(ranges));
+        return noneOf(Iterables.toSet(ranges));
     }
 
     /**
@@ -572,6 +571,6 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} preserving order
      */
     static <T> @NotNull Range<T> noneOfCopyOrdered(final @Ref @NonNull Iterable<@NotNull Range<T>> ranges) {
-        return noneOf(Lists.newArrayList(ranges));
+        return noneOf(Iterables.toList(ranges));
     }
 }

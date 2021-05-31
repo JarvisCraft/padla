@@ -6,11 +6,10 @@
 <#assign wrapperType=preamble.wrapperTypeOf(primitiveType) />
 package ${packageName};
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.collection.Iterables;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Own;
 import ru.progrm_jarvis.javacommons.ownership.annotation.Ref;
 import ${preamble.rootPackage}.util.function.${capitalizedPrimitiveType}Predicate;
@@ -328,7 +327,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      * @apiNote this copies {@code ranges} not preserving order
      */
     static @NotNull ${className} anyOfCopy(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
-        return anyOf(Sets.newHashSet(ranges));
+        return anyOf(Iterables.toSet(ranges));
     }
 
     /**
@@ -340,7 +339,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      * @apiNote this copies {@code ranges} preserving order
      */
     static @NotNull ${className} anyOfCopyOrdered(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
-        return anyOf(Lists.newArrayList(ranges));
+        return anyOf(Iterables.toList(ranges));
     }
 
     /**
@@ -396,7 +395,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      * @apiNote this copies {@code ranges} not preserving order
      */
     static @NotNull ${className} allOfCopy(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
-        return allOf(Sets.newHashSet(ranges));
+        return allOf(Iterables.toSet(ranges));
     }
 
     /**
@@ -408,7 +407,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      * @apiNote this copies {@code ranges} preserving order
      */
     static @NotNull ${className} allOfCopyOrdered(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
-        return allOf(Lists.newArrayList(ranges));
+        return allOf(Iterables.toList(ranges));
     }
 
     /**
@@ -464,7 +463,7 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      * @apiNote this copies {@code ranges} not preserving order
      */
     static @NotNull ${className} noneOfCopy(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
-        return noneOf(Sets.newHashSet(ranges));
+        return noneOf(Iterables.toSet(ranges));
     }
 
     /**
@@ -476,6 +475,6 @@ public interface ${className} extends ${capitalizedPrimitiveType}Predicate {
      * @apiNote this copies {@code ranges} preserving order
      */
     static @NotNull ${className} noneOfCopyOrdered(final @Ref @NonNull Iterable${'<@NotNull ${className}>'} ranges) {
-        return noneOf(Lists.newArrayList(ranges));
+        return noneOf(Iterables.toList(ranges));
     }
 }

@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
  * {@link Placeholders} implementation which recognized placeholders by the given prefix and suffix
  * and allows usage of escape character in order to allow raw usage of those.
@@ -301,10 +299,10 @@ public class SimplePlaceholders<T> implements Placeholders<T> {
 
     @Override
     public void add(final @NonNull String name, final @NonNull StringFormatter<T> formatter) {
-        checkArgument(
-                name.indexOf(escapeCharacter) == -1, "name should not contain escape character (%s)", escapeCharacter
+        if (name.indexOf(escapeCharacter) != -1) throw new IllegalArgumentException(
+                "Placeholder name should not contain the escape character (" + escapeCharacter + ')'
         );
-        checkArgument(!name.isEmpty(), "name should not be empty (%s)");
+        if (name.isEmpty()) throw new IllegalArgumentException("Placeholder name should not be empty");
 
         handlers.put(name, formatter);
     }

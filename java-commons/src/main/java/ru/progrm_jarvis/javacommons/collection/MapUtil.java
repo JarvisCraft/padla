@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.collection;
 
-import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -49,7 +48,9 @@ public class MapUtil {
     public <M extends Map<?, ?>> M fillMap(final @NonNull M map, final @NonNull Object... keyValuePairs) {
         val length = keyValuePairs.length;
         if (length == 0) return map;
-        Preconditions.checkArgument(length % 2 == 0, "Key-Value pairs array should have an even number of elements");
+        if (length % 2 != 0) throw new IllegalArgumentException(
+                "Key-Value pairs array should have an even number of elements"
+        );
 
         fillMapNoChecks(map, keyValuePairs);
 
@@ -74,7 +75,9 @@ public class MapUtil {
     public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map, final K firstValueKey, final V firstValue,
                                                  final @NonNull Object... keyValuePairs) {
         val length = keyValuePairs.length;
-        Preconditions.checkArgument(length % 2 == 0, "Key-Value pairs array should have an even number of elements");
+        if(length % 2 != 0) throw new IllegalArgumentException(
+                "Key-Value pairs array should have an even number of elements"
+        );
 
         map.put(firstValueKey, firstValue);
         fillMapNoChecks(map, keyValuePairs);

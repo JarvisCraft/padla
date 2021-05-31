@@ -1,7 +1,7 @@
 package ru.progrm_jarvis.javacommons.collection;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import javassist.*;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -18,12 +18,13 @@ import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.Pair;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
-import static java.lang.Integer.getInteger;
 import static java.util.Collections.unmodifiableSet;
 
 /**
@@ -44,12 +45,6 @@ public class CollectionFactory {
             .createPaginated(CollectionFactory.class.getName() + "$$Generated$$ImmutableEnumSet$$");
 
     /**
-     * Name of a property specifying concurrency level of {@link #IMMUTABLE_ENUM_SETS instances cache}
-     */
-    private final @NonNull String IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME
-            = CollectionFactory.class.getCanonicalName() + ".immutable-enum-set-instance-cache-concurrency-level";
-
-    /**
      * Default javassist class pool
      */
     private final @NonNull Lazy<ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
@@ -58,13 +53,7 @@ public class CollectionFactory {
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
     private final @NonNull Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
-            = CacheBuilder
-            .newBuilder()
-            .concurrencyLevel(
-                    Math.max(4, getInteger(IMMUTABLE_ENUM_SET_INSTANCE_CACHE_CONCURRENCY_LEVEL_SYSTEM_PROPERTY_NAME, 4))
-            )
-            .weakValues()
-            .build();
+            = Caffeine.newBuilder().weakValues().build();
 
     /**
      * {@link CtClass} representation of {@link AbstractImmutableSet} wrapped in {@link Lazy}
@@ -83,60 +72,6 @@ public class CollectionFactory {
     public static final @NotNull CtClass @NotNull @Unmodifiable [] EMPTY_CT_CLASS_ARRAY = new CtClass[0];
 
     /**
-     * Gets {@link CtClass} representation of the given class.
-     *
-     * @param clazz class whose {@link CtClass} representation is needed
-     * @return {@link CtClass} representation of the given class
-     *
-     * @throws IllegalStateException if it is impossible to find {@link CtClass} representation of the given class
-     */
-    private CtClass toCtClass(final @NonNull Class<?> clazz) {
-        try {
-            return CLASS_POOL.get().get(clazz.getName());
-        } catch (final NotFoundException e) {
-            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName(), e);
-        }
-    }
-
-    /**
-     * Adds an empty constructor to given {@link CtClass}.
-     *
-     * @param targetClass class to which to add an empty constructor
-     * @throws CannotCompileException if a javassist compilation exception occurs
-     */
-    private void addEmptyConstructor(final @NonNull CtClass targetClass) throws CannotCompileException {
-        targetClass.addConstructor(CtNewConstructor.make(EMPTY_CT_CLASS_ARRAY, EMPTY_CT_CLASS_ARRAY, targetClass));
-    }
-
-    /**
-     * Adds a field based on given source code to given {@link CtClass}.
-     *
-     * @param src source code of the field
-     * @param targetClass class to which to add the field
-     * @throws CannotCompileException if a javassist compilation exception occurs
-     */
-    private void addCtField(
-            @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
-                               suffix = "}") final String src, final @NonNull CtClass targetClass)
-            throws CannotCompileException {
-        targetClass.addField(CtField.make(src, targetClass));
-    }
-
-    /**
-     * Adds a method based on given source code to given {@link CtClass}.
-     *
-     * @param src source code of the method
-     * @param targetClass class to which to add the method
-     * @throws CannotCompileException if a javassist compilation exception occurs
-     */
-    private void addCtMethod(
-            @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
-                               suffix = "}") final String src, final @NonNull CtClass targetClass)
-            throws CannotCompileException {
-        targetClass.addMethod(CtNewMethod.make(src, targetClass));
-    }
-
-    /**
      * Creates an immutable enum {@link Set set} from the given array of stored enum constants.
      *
      * @param values enum constants to be stored in the given set
@@ -150,7 +85,6 @@ public class CollectionFactory {
      */
     @SafeVarargs
     @SuppressWarnings("unchecked")
-    @SneakyThrows(ExecutionException.class)
     @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
     @UsesBytecodeModification(value = CommonBytecodeLibrary.JAVASSIST, optional = true)
     public <E extends Enum<E>> Set<E> createImmutableEnumSet(final @NonNull E... values) {
@@ -165,9 +99,9 @@ public class CollectionFactory {
                     .toArray(Enum[]::new);
 
             //noinspection unchecked
-            return (Set<E>) IMMUTABLE_ENUM_SETS.get(enumValues, () -> {
+            return (Set<E>) IMMUTABLE_ENUM_SETS.get(enumValues, valuesArray -> {
                 //<editor-fold desc="Class generation" defaultstate="collapsed">
-                val enumType = values.getClass().getComponentType();
+                val enumType = valuesArray.getClass().getComponentType();
                 // name of the class of the enum
                 val enumTypeName = enumType.getCanonicalName();
                 // number of enum constants
@@ -176,7 +110,7 @@ public class CollectionFactory {
                 val classPool = CLASS_POOL.get();
                 // generated class
                 val clazz = classPool.makeClass(IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY.get());
-                clazz.setSuperclass(ABSTRACT_IMMUTABLE_SET_CT_CLASS.get());
+                setSuperClass(clazz, ABSTRACT_IMMUTABLE_SET_CT_CLASS.get());
                 addEmptyConstructor(clazz);
 
                 /* Generated methods */
@@ -270,7 +204,7 @@ public class CollectionFactory {
                     addCtMethod(src.append('}').toString(), clazz);
                 }
                 // `hashCode()`
-                addCtMethod("int hashCode() {return " + Arrays.hashCode(values) + ";}", clazz);
+                addCtMethod("int hashCode() {return " + Arrays.hashCode(valuesArray) + ";}", clazz);
                 // `equals()`
                 {// `boolean equals(Object)`
                     addCtMethod(
@@ -323,12 +257,34 @@ public class CollectionFactory {
                     }
                 }
 
-                return (Set<Enum<?>>) GcClassDefiners.getDefault()
-                        .defineClasses(
-                                LOOKUP,
-                                Pair.of(iteratorClazz.getName(), iteratorClazz.toBytecode()),
-                                Pair.of(clazz.getName(), clazz.toBytecode())
-                        )[1].getDeclaredConstructor().newInstance();
+                final Constructor<Set<Enum<?>>> constructor;
+                {
+                    final byte[] iteratorBytecode, bytecode;
+                    try {
+                        iteratorBytecode = iteratorClazz.toBytecode();
+                        bytecode = clazz.toBytecode();
+                    } catch (final IOException | CannotCompileException e) {
+                        throw new RuntimeException("Cannot get bytecode for generated classes", e);
+                    }
+
+                    val loadedClass = GcClassDefiners.getDefault()
+                            .defineClasses(
+                                    LOOKUP,
+                                    Pair.of(iteratorClazz.getName(), iteratorBytecode),
+                                    Pair.of(clazz.getName(), bytecode)
+                            )[1];
+                    try {
+                        constructor = (Constructor<Set<Enum<?>>>) loadedClass.getDeclaredConstructor();
+                    } catch (final NoSuchMethodException e) {
+                        throw new RuntimeException("Could not find generated constructor", e);
+                    }
+                }
+
+                try {
+                    return constructor.newInstance();
+                } catch (final InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException("Could not call generated constructor", e);
+                }
                 //</editor-fold>
             });
         } else {
@@ -342,5 +298,68 @@ public class CollectionFactory {
                 default: return unmodifiableSet(EnumSet.copyOf(Arrays.asList(values)));
             }
         }
+    }
+
+    /**
+     * Gets {@link CtClass} representation of the given class.
+     *
+     * @param clazz class whose {@link CtClass} representation is needed
+     * @return {@link CtClass} representation of the given class
+     *
+     * @throws IllegalStateException if it is impossible to find {@link CtClass} representation of the given class
+     */
+    private @NotNull CtClass toCtClass(final @NotNull Class<?> clazz) {
+        try {
+            return CLASS_POOL.get().get(clazz.getName());
+        } catch (final NotFoundException e) {
+            throw new IllegalStateException("Unable to get CtClass by name " + clazz.getName(), e);
+        }
+    }
+
+    /**
+     * Adds an empty constructor to given {@link CtClass}.
+     *
+     * @param targetClass class to which to add an empty constructor
+     */
+    @SneakyThrows(CannotCompileException.class)
+    private void addEmptyConstructor(final @NotNull CtClass targetClass) {
+        targetClass.addConstructor(CtNewConstructor.make(EMPTY_CT_CLASS_ARRAY, EMPTY_CT_CLASS_ARRAY, targetClass));
+    }
+
+    /**
+     * Sets the super-class of the given {@link CtClass}.
+     *
+     * @param targetClass class to which to set the super-class
+     * @param superClass super-class of the target class
+     */
+    @SneakyThrows(CannotCompileException.class)
+    private void setSuperClass(final @NotNull CtClass targetClass, final @NotNull CtClass superClass) {
+        targetClass.setSuperclass(superClass);
+    }
+
+    /**
+     * Adds a field based on given source code to given {@link CtClass}.
+     *
+     * @param src source code of the field
+     * @param targetClass class to which to add the field
+     */
+    @SneakyThrows(CannotCompileException.class)
+    private void addCtField(
+            @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
+                               suffix = "}") final String src, final @NonNull CtClass targetClass) {
+        targetClass.addField(CtField.make(src, targetClass));
+    }
+
+    /**
+     * Adds a method based on given source code to given {@link CtClass}.
+     *
+     * @param src source code of the method
+     * @param targetClass class to which to add the method
+     */
+    @SneakyThrows(CannotCompileException.class)
+    private void addCtMethod(
+            @NonNull @Language(value = "java", prefix = "public class Foo extends GeneratedImmutableEnumSetTemplate {",
+                               suffix = "}") final String src, final @NonNull CtClass targetClass) {
+        targetClass.addMethod(CtNewMethod.make(src, targetClass));
     }
 }

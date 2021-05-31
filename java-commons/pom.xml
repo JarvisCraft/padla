@@ -6,7 +6,7 @@
     <parent>
         <artifactId>padla</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
-        <version>1.0.0-rc.2</version>
+        <version>1.0.0-rc.3</version>
     </parent>
     <artifactId>java-commons</artifactId>
 
@@ -24,9 +24,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>

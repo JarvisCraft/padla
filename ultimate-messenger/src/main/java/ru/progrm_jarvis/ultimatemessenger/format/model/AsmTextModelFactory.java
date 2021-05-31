@@ -1,7 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
@@ -25,7 +25,6 @@ import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -243,13 +242,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * Cache of descriptors of methods accepting {@link String string arguments} returning {@link String a string}.
          */
         private static final @NotNull Cache<@NotNull Integer, @NotNull String>
-                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = CacheBuilder
-                .newBuilder()
-                .softValues()
-                .concurrencyLevel(Math.max(1, Integer.getInteger(
-                        STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE_CONCURRENCY_SYSTEM_PROPERTY_NAME, 4
-                )))
-                .build();
+                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = Caffeine.newBuilder().softValues().build();
 
         /**
          * Class naming strategy used to allocate names for generated classes
@@ -549,16 +542,15 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * @param stringArgumentsCount amount of {@link String string arguments} accepted by the method
          * @return descriptor of the name with the specified signature
          */
-        @SneakyThrows(ExecutionException.class)
         private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
             assert stringArgumentsCount >= 0 : "stringArgumentsCount should be non-negative";
 
-            return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, () -> {
+            return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, count -> {
                 val result = new StringBuilder(
-                        STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */
+                        STRING_DESCRIPTOR_LENGTH * (count + 1) /* all arguments + return */
                                 + 2 /* parentheses */
                 ).append('(');
-                for (var i = 0; i < stringArgumentsCount; i++) result.append(STRING_DESCRIPTOR);
+                for (var i = 0; i < count; i++) result.append(STRING_DESCRIPTOR);
 
                 return result.append(')').append(STRING_DESCRIPTOR).toString();
             });

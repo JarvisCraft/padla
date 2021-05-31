@@ -6,7 +6,7 @@
     <parent>
         <artifactId>padla</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
-        <version>1.0.0-rc.2</version>
+        <version>1.0.0-rc.3</version>
     </parent>
     <artifactId>reflector</artifactId>
 
@@ -15,22 +15,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>java-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
         </dependency>
 
         <dependency>
@@ -40,6 +30,15 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
         </dependency>
     </dependencies>
 </project>
