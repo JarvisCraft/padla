@@ -1,7 +1,5 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +23,7 @@ import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -237,12 +236,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * Lookup of this class.
          */
         private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-
-        /**
-         * Cache of descriptors of methods accepting {@link String string arguments} returning {@link String a string}.
-         */
-        private static final @NotNull Cache<@NotNull Integer, @NotNull String>
-                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = Caffeine.newBuilder().softValues().build();
 
         /**
          * Class naming strategy used to allocate names for generated classes
@@ -535,28 +528,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }
 
-        /**
-         * Creates or gets a cache descriptor for a method accepting the given amount of {@link String strings} which
-         * returns a {@link String string}.
-         *
-         * @param stringArgumentsCount amount of {@link String string arguments} accepted by the method
-         * @return descriptor of the name with the specified signature
-         */
-        private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
-            assert stringArgumentsCount >= 0 : "stringArgumentsCount should be non-negative";
-
-            //noinspection ConstantConditions: the result is null only if lambda returns null
-            return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, count -> {
-                val result = new StringBuilder(
-                        STRING_DESCRIPTOR_LENGTH * (count + 1) /* all arguments + return */
-                                + 2 /* parentheses */
-                ).append('(');
-                for (var i = 0; i < count; i++) result.append(STRING_DESCRIPTOR);
-
-                return result.append(')').append(STRING_DESCRIPTOR).toString();
-            });
-        }
-
         @Override
         protected @NotNull TextModel<T> performTextModelBuild(final boolean release) {
             final ClassWriter clazz;
@@ -813,7 +784,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                         }
 
                         method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_METHOD_NAME, stringsToStringDescriptor(dynamicNodeCount),
+                                MAKE_CONCAT_METHOD_NAME, DescriptorCache.stringsToStringDescriptor(dynamicNodeCount),
                                 MAKE_CONCAT_HANDLE /* no bootstrap arguments */
                         );
                     } else {
@@ -841,7 +812,8 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                             } else recipe.append(node.asStatic().getText());
 
                             method.visitInvokeDynamicInsn(
-                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodeCount),
+                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
+                                    DescriptorCache.stringsToStringDescriptor(dynamicNodeCount),
                                     MAKE_CONCAT_WITH_CONSTANTS_HANDLE, recipe.toString() /* bootstrap argument */
                             );
                         } else {
@@ -885,8 +857,8 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
 
                             bootstrapArguments[0] = recipe.toString();
                             method.visitInvokeDynamicInsn(
-                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
-                                            this.dynamicNodeCount),
+                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
+                                    DescriptorCache.stringsToStringDescriptor(this.dynamicNodeCount),
                                     MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments
                             );
                         }
@@ -960,7 +932,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                      * Make the first concatenation
                      */
                     val maxDynamicArgumentsStringDescriptor
-                            = stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+                            = DescriptorCache.stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
                     if (containsConstants) {
                         bootstrapArguments.set(0, recipe.toString());
                         method.visitInvokeDynamicInsn(
@@ -1044,7 +1016,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                     if (dynamicSlotsRemaining != 0) if (containsConstants) {
                         bootstrapArguments.set(0, recipe.toString());
                         method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
+                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, DescriptorCache.stringsToStringDescriptor(
                                         STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - dynamicSlotsRemaining
                                 ), MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
                         );
@@ -1160,6 +1132,76 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             // set the field to the computed value
             staticInitializer.visitFieldInsn(PUTSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
         }
+
+        /**
+         * Internal cache of specific dynamic descriptors.
+         */
+        private static final class DescriptorCache {
+
+            /**
+             * Cache of descriptors of methods accepting {@link String string}
+             * returning a {@link String string}.
+             */
+            private static final @Nullable SoftReference<String> @NotNull [] STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE
+                    = uncheckedSoftReferenceArrayCast(
+                    new SoftReference<?>[STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1]
+            );
+
+            /**
+             * Casts the given array of wild-carded {@link SoftReference soft references}
+             * into the array of {@link SoftReference soft references} with generic type being {@link String}.
+             *
+             * @param type raw-typed array of soft references
+             * @return the provided array of soft references with its generic type cast to {@link String}
+             *
+             * @apiNote this is effectively no-op
+             */
+            // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+            @Contract("_ -> param1")
+            @SuppressWarnings("unchecked")
+            private static SoftReference<String>[] uncheckedSoftReferenceArrayCast(final SoftReference<?>[] type) {
+                return (SoftReference<String>[]) type;
+            }
+
+            /**
+             * Creates or gets a cached descriptor for a method
+             * accepting the given amount of {@link String strings} which returns a {@link String string}.
+             *
+             * @param stringArgumentsCount amount of {@link String string arguments} accepted by the method
+             * @return descriptor of the name with the specified signature
+             */
+            private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
+                assert 0 <= stringArgumentsCount && stringArgumentsCount <= STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS
+                        : "stringArgumentsCount should be in range ["
+                        + 0 + "; " + STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + "] but got " + stringArgumentsCount;
+
+                // note: there is no need for providing concurrency safety here because the function is idempotent
+                // i.e. if two concurrent calls happen to get the value for the same `stringArgumentsCount`
+                // then the equivalent values will just be written twice to the corresponding cache cell
+                // which is not a problem at all as there is no need for string identity
+
+                String descriptor;
+                { // try getting from cache
+                    final SoftReference<String> descriptorReference;
+                    if ((descriptorReference = STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE[stringArgumentsCount]) != null
+                            && (descriptor = descriptorReference.get()) != null /* this acquires strong reference */
+                    ) return descriptor; // return the already cached value
+                }
+                { // generate new cache entry
+                    val result = new StringBuilder(
+                            STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */
+                                    + 2 /* parentheses */
+                    ).append('(');
+                    for (var i = 0; i < stringArgumentsCount; i++) result.append(STRING_DESCRIPTOR);
+
+                    descriptor = result.append(')').append(STRING_DESCRIPTOR).toString();
+                }
+                // cache the computed value
+                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE[stringArgumentsCount] = new SoftReference<>(descriptor);
+
+                return descriptor;
+            }
+        }
     }
 
     //<editor-fold desc="Configuration implementation" defaultstate="collapsed">
@@ -1211,7 +1253,8 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
     //</editor-fold>
 
     /**
-     * {@link AbstractGeneratingTextModelFactoryBuilder.Node Node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     * {@link AbstractGeneratingTextModelFactoryBuilder.Node Node}
+     * specific to {@link AsmTextModelFactory ASM-based text model factory}.
      *
      * @param <T> type of object according to which the created text models are formatted
      */
