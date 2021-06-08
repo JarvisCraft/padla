@@ -1143,7 +1143,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
              * returning a {@link String string}.
              */
             private static final @Nullable SoftReference<String> @NotNull [] STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE
-                    = uncheckedSoftReferenceArrayCast(
+                    = uncheckedStringSoftReferenceArrayCast(
                     new SoftReference<?>[STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1]
             );
 
@@ -1159,7 +1159,9 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
             @Contract("_ -> param1")
             @SuppressWarnings("unchecked")
-            private static SoftReference<String>[] uncheckedSoftReferenceArrayCast(final SoftReference<?>[] type) {
+            private static SoftReference<String>[] uncheckedStringSoftReferenceArrayCast(
+                    final SoftReference<?>[] type
+            ) {
                 return (SoftReference<String>[]) type;
             }
 
