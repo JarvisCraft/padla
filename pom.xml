@@ -21,7 +21,7 @@
         <!-- Testing -->
         <version.junit>5.7.2</version.junit>
         <version.junit.platform>1.7.2</version.junit.platform>
-        <version.mockito>3.10.0</version.mockito>
+        <version.mockito>3.11.0</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -119,7 +119,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                     <configuration>
                         <tags>
                             <tag>
@@ -198,7 +198,7 @@
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>21.0.0</version>
+                <version>21.0.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
