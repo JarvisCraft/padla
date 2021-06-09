@@ -81,7 +81,7 @@
                 <plugin>
                     <groupId>org.apache.drill.tools</groupId>
                     <artifactId>drill-fmpp-maven-plugin</artifactId>
-                    <version>1.18.0</version>
+                    <version>1.19.0</version>
                     <executions>
                         <execution>
                             <id>generate-fmpp</id>
