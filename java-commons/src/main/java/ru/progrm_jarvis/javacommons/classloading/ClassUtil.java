@@ -122,13 +122,26 @@ public class ClassUtil {
      *
      * @throws IllegalArgumentException if the given class is not primitive
      */
-    public @NotNull Class<?> toPrimitiveWrapper(@NotNull /* hot spot */ final Class<?> primitiveClass) {
+    public @NotNull Class<?> toPrimitiveWrapper(final @NotNull /* hot spot */ Class<?> primitiveClass) {
         final int primitiveClassIndex;
         if ((primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_CLASSES, primitiveClass, CLASS_HASH_CODE_COMPARATOR
         )) < 0) throw new IllegalArgumentException("Given class is not primitive");
 
         return PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
+    }
+
+    /**
+     * Either returns a primitive-wrapper class for the given one if it is primitive or the provided class otherwise.
+     *
+     * @param originalClass class whose wrapper should be returned on demand
+     * @return primitive-wrapper class for the given class if it is primitive or the provided class otherwise
+     */
+    public @NotNull Class<?> toNonPrimitive(final @NotNull /* hot spot */ Class<?> originalClass) {
+        final int primitiveClassIndex;
+        return (primitiveClassIndex = Arrays.binarySearch(
+                SORTED_PRIMITIVE_CLASSES, originalClass, CLASS_HASH_CODE_COMPARATOR
+        )) < 0 ? originalClass : PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
     }
 
     /**
