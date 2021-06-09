@@ -1,10 +1,12 @@
 package ru.progrm_jarvis.javacommons.recursion;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,19 +15,29 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 class RecursionsTest {
 
+    private static @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classToParentsFunction() {
+        return clazz -> {
+            final Class<?> superClass;
+            return Stream.concat(
+                    (superClass = clazz.getSuperclass()) == null
+                            ? Stream.empty() : Stream.of(superClass),
+                    Arrays.stream(clazz.getInterfaces())
+            );
+        };
+    }
+
+    private static @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Method>
+            > classToMethodStreamFunction() {
+        return clazz -> Arrays.stream(clazz.getDeclaredMethods());
+    }
+
     @Test
     void testRecurseClassHierarchy() {
         assertThat(
-                Recursions.<Class<?>, Method>recurse(TestSubjects.D.class,
-                                clazz -> {
-                                    final Class<?> superClass;
-                                    return Stream.concat(
-                                            (superClass = clazz.getSuperclass()) == null
-                                                    ? Stream.empty() : Stream.of(superClass),
-                                            Arrays.stream(clazz.getInterfaces())
-                                    );
-                                }, clazz -> Arrays.stream(clazz.getDeclaredMethods())
-                        )
+                Recursions.recurse(TestSubjects.D.class, classToParentsFunction(), classToMethodStreamFunction())
                         .collect(Collectors.toCollection(HashSet::new)),
                 containsInAnyOrder(Stream.of(
                         Object.class.getDeclaredMethods(),
@@ -55,7 +67,7 @@ class RecursionsTest {
         }
 
         private static class D extends A implements B, C {
-            public void xx() {}
+            public void d() {}
 
             @Override
             public void fooB() {}
