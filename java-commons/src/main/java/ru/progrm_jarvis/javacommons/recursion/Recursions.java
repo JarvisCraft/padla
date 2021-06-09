@@ -14,12 +14,69 @@ import java.util.stream.Stream;
 
 /**
  * Utilities for performing common recursive operations.
+ *
+ * @author xdark
+ * @author progrm_jarvis
  */
 @UtilityClass
 public class Recursions {
 
     /**
-     * Recursively traverses the sources evaluating to the stream of results.
+     * Recursively traverses the sources evaluating to the recursive hierarchy.
+     * The provided {@link Stream} will attempt to be as lazy as possible.
+     *
+     * @param sources stream of sources which should be traversed recursively
+     * @param digger function used to generate the stream of child elements from the base one
+     * @param <S> type of source elements
+     * @return stream of recursive hierarchy
+     *
+     * @throws NullPointerException if {@code sources} is {@code null}
+     * @throws NullPointerException if {@code digger} is {@code null}
+     * @see #recurse(Object, Function) equivalent method with single source
+     */
+    public <S> Stream<S> recurse(
+            final @NonNull Stream<? extends S> sources,
+            final @NonNull Function<? super S, @NotNull Stream<? extends S>> digger
+    ) {
+        return sources.flatMap(source -> lazyRecursiveStep(source, digger));
+    }
+
+    /**
+     * <p>Recursively traverses the source evaluating to the recursive hierarchy.
+     * The provided {@link Stream} will attempt to be as lazy as possible.</p>
+     * <p>An example providing the stream of class hierarchy of {@link String} class:
+     * <pre>{@code
+     * Recursions.<Class<?>, Method>recurse(
+     *         String.class,
+     *         clazz -> {
+     *             final Class<?> superClass;
+     *             return Stream.concat(
+     *                     (superClass = clazz.getSuperclass()) == null
+     *                             ? Stream.empty() : Stream.of(superClass),
+     *                     Arrays.stream(clazz.getInterfaces())
+     *             );
+     *         }
+     * )
+     * }</pre>
+     * </p>
+     *
+     * @param source source element used
+     * @param digger function used to generate the stream of child elements from the base one
+     * @param <S> type of source elements
+     * @return stream of recursive hierarchy
+     *
+     * @throws NullPointerException if {@code digger} is {@code null}
+     * @see #recurse(Stream, Function) equivalent method with {@link Stream} source
+     */
+    public <S> Stream<S> recurse(
+            final S source,
+            final @NonNull Function<? super S, @NotNull Stream<? extends S>> digger
+    ) {
+        return lazyRecursiveStep(source, digger);
+    }
+
+    /**
+     * Recursively traverses the sources evaluating to the {@link Stream stream} of hierarchy members' components.
      *
      * @param sources stream of sources which should be traversed recursively
      * @param digger function used to generate the stream of child elements from the base one
@@ -28,23 +85,24 @@ public class Recursions {
      * @param <E> type of resulting elements
      * @return stream of elements got from recursive hierarchy
      *
-     * @see #recurse(Object, Function, Function) equivalent method with single source
-     *
      * @throws NullPointerException if {@code sources} is {@code null}
      * @throws NullPointerException if {@code digger} is {@code null}
      * @throws NullPointerException if {@code elementGetter} is {@code null}
+     * @see #recurseFully(Object, Function, Function) equivalent method with single source
      */
-    public <S, E> Stream<E> recurse(final @NonNull Stream<? extends S> sources,
-                                    final @NonNull Function<? super S, @NotNull Stream<? extends S>> digger,
-                                    final @NonNull Function<? super S, @NotNull Stream<? extends E>> elementGetter) {
-        return recurseInternal(sources.map(SourceOrElement::source), digger, elementGetter);
+    public <S, E> Stream<E> recurseFully(
+            final @NonNull Stream<? extends S> sources,
+            final @NonNull Function<? super S, @NotNull Stream<? extends S>> digger,
+            final @NonNull Function<? super S, @NotNull Stream<? extends E>> elementGetter
+    ) {
+        return recurseFullyInternal(sources.map(SourceOrElement::source), digger, elementGetter);
     }
 
     /**
-     * <p>Recursively traverses the source evaluating to the stream of results.</p>
+     * <p>Recursively traverses the source evaluating to the {@link Stream stream} hierarchy members' components.</p>
      * <p>An example providing the stream of all declared method in {@link String} class hierarchy:
      * <pre>{@code
-     * Recursions.<Class<?>, Method>recurse(
+     * Recursions.<Class<?>, Method>recurseFully(
      *         String.class,
      *         clazz -> {
      *             final Class<?> superClass;
@@ -66,15 +124,34 @@ public class Recursions {
      * @param <E> type of resulting elements
      * @return stream of elements got from recursive hierarchy
      *
-     * @see #recurse(Stream, Function, Function) equivalent method with {@link Stream} source
-     *
      * @throws NullPointerException if {@code digger} is {@code null}
      * @throws NullPointerException if {@code elementGetter} is {@code null}
+     * @see #recurseFully(Stream, Function, Function) equivalent method with {@link Stream} source
      */
-    public <S, E> Stream<E> recurse(final S source,
-                                    final @NonNull Function<? super S, @NotNull Stream<? extends S>> digger,
-                                    final @NonNull Function<? super S, @NotNull Stream<? extends E>> elementGetter) {
-        return recurseInternal(Stream.of(SourceOrElement.source(source)), digger, elementGetter);
+    public <S, E> Stream<E> recurseFully(
+            final S source,
+            final @NonNull Function<? super S, @NotNull Stream<? extends S>> digger,
+            final @NonNull Function<? super S, @NotNull Stream<? extends E>> elementGetter
+    ) {
+        return recurseFullyInternal(Stream.of(SourceOrElement.source(source)), digger, elementGetter);
+    }
+
+    /**
+     * Performs a lazy <i>recursive step</i>.
+     *
+     * @param source source element used
+     * @param digger function used to generate the stream of child elements from the base one
+     * @param <S> type of source elements
+     * @return stream of elements in recursive hierarchy
+     */
+    private <S> Stream<S> lazyRecursiveStep(
+            final S source,
+            final @NotNull Function<? super S, @NotNull Stream<? extends S>> digger
+    ) {
+        return Stream.concat(
+                Stream.of(source),
+                Stream.of(source).flatMap(digger).flatMap(child -> lazyRecursiveStep(child, digger))
+        );
     }
 
     /**
@@ -87,11 +164,11 @@ public class Recursions {
      * @param <E> type of resulting elements
      * @return stream of elements got from recursive hierarchy
      */
-    private <S, E> @NotNull Stream<E> recurseInternal(final @NotNull Stream<@NotNull SourceOrElement<S, E>> source,
-                                                      final @NotNull Function<? super S, @NotNull Stream<? extends S>>
-                                                              digger,
-                                                      final @NotNull Function<? super S, @NotNull Stream<? extends E>>
-                                                              elementGetter) {
+    private <S, E> @NotNull Stream<E> recurseFullyInternal(
+            final @NotNull Stream<@NotNull SourceOrElement<S, E>> source,
+            final @NotNull Function<? super S, @NotNull Stream<? extends S>> digger,
+            final @NotNull Function<? super S, @NotNull Stream<? extends E>> elementGetter
+    ) {
         final ReferenceWrapper<Function<SourceOrElement<S, E>, Stream<SourceOrElement<S, E>>>> mapperReference;
         (mapperReference = ReferenceWrapper.create())
                 .set(sourceOrElement -> sourceOrElement.isSource() ? Stream.concat(
