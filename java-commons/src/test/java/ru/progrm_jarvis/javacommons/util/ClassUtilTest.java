@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.progrm_jarvis.javacommons.classloading.ClassUtil;
 
+import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -60,6 +61,14 @@ class ClassUtilTest {
                 arguments(long.class, Long.class),
                 arguments(float.class, Float.class),
                 arguments(double.class, Double.class)
+        );
+    }
+
+    protected static Stream<Arguments> provideClassesToNonPrimitive() {
+        return Stream.concat(
+                providePrimitivesToPrimitiveWrappers(),
+                Stream.of(Object.class, String.class, List.class, ArrayList.class, Annotation.class, Override.class)
+                        .map(clazz -> arguments(clazz, clazz))
         );
     }
 
@@ -158,6 +167,12 @@ class ClassUtilTest {
     @MethodSource("provideNonPrimitiveOrWrappers")
     void testToPrimitiveWithNonPrimitiveOrWrapperClasses(final @NotNull Class<?> nonPrimitiveOrWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(nonPrimitiveOrWrapper));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideClassesToNonPrimitive")
+    void testToNonPrimitive(final @NotNull Class<?> original, final @NotNull Class<?> nonPrimitive) {
+        assertSame(nonPrimitive, ClassUtil.toNonPrimitive(original));
     }
 
     @ParameterizedTest
