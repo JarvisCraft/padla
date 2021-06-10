@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.progrm_jarvis.javacommons.classloading.ClassUtil;
 
+import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -17,29 +18,40 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class ClassUtilTest {
 
-    protected static Stream<Class<?>> primitiveClassesStream() {
+    protected static @NotNull Stream<@NotNull Class<?>> primitiveClasses() {
         return Stream.of(
                 boolean.class, byte.class, char.class, short.class,
                 int.class, long.class, float.class, double.class
         );
     }
 
-    protected static Stream<Class<?>> primitiveWrapperClassesStream() {
+    protected static @NotNull Stream<@NotNull Class<?>> primitiveWrapperClasses() {
         return Stream.of(
                 Boolean.class, Byte.class, Character.class, Short.class,
                 Integer.class, Long.class, Float.class, Double.class
         );
     }
 
-    protected static Stream<Arguments> providePrimitives() {
-        return primitiveClassesStream().map(Arguments::arguments);
+    protected static @NotNull Stream<@NotNull Arguments> providePrimitives() {
+        return primitiveClasses().map(Arguments::arguments);
     }
 
-    protected static Stream<Arguments> providePrimitiveWrappers() {
-        return primitiveWrapperClassesStream().map(Arguments::arguments);
+    protected static @NotNull Stream<@NotNull Arguments> providePrimitiveWrappers() {
+        return primitiveWrapperClasses().map(Arguments::arguments);
     }
 
-    protected static Stream<Arguments> provideNonPrimitiveOrWrappers() {
+    protected static @NotNull Stream<@NotNull Class<?>> nonPrimitiveNonWrapperClasses() {
+        return Stream.of(
+                Object.class, String.class,
+                BigInteger.class, BigDecimal.class, BitSet.class,
+                ClassUtilTest.class,
+                List.class, ArrayList.class,
+                Annotation.class,
+                Override.class
+        );
+    }
+
+    protected static @NotNull Stream<@NotNull Arguments> provideNonPrimitiveOrWrappers() {
         return Stream.of(
                 arguments(Object.class),
                 arguments(String.class),
@@ -50,7 +62,7 @@ class ClassUtilTest {
         );
     }
 
-    protected static Stream<Arguments> providePrimitivesToPrimitiveWrappers() {
+    protected static @NotNull Stream<@NotNull Arguments> providePrimitivesToPrimitiveWrappers() {
         return Stream.of(
                 arguments(boolean.class, Boolean.class),
                 arguments(byte.class, Byte.class),
@@ -63,25 +75,35 @@ class ClassUtilTest {
         );
     }
 
-    protected static Stream<Arguments> provideDifferentPrimitivePairs() {
-        return primitiveClassesStream()
-                .flatMap(primitive -> primitiveClassesStream()
+    protected static @NotNull Stream<@NotNull Arguments> provideClassesToNonPrimitive() {
+        return Stream.concat(
+                providePrimitivesToPrimitiveWrappers(),
+                Stream.concat(
+                        primitiveWrapperClasses(),
+                        nonPrimitiveNonWrapperClasses()
+                ).map(clazz -> arguments(clazz, clazz))
+        );
+    }
+
+    protected static @NotNull Stream<@NotNull Arguments> provideDifferentPrimitivePairs() {
+        return primitiveClasses()
+                .flatMap(primitive -> primitiveClasses()
                         .flatMap(otherPrimitive -> primitive == otherPrimitive
                                 ? Stream.empty() : Stream.of(arguments(primitive, otherPrimitive))
                         )
                 );
     }
 
-    protected static Stream<Arguments> provideDifferentPrimitiveWrapperPairs() {
-        return primitiveWrapperClassesStream()
-                .flatMap(primitiveWrapper -> primitiveWrapperClassesStream()
+    protected static @NotNull Stream<@NotNull Arguments> provideDifferentPrimitiveWrapperPairs() {
+        return primitiveWrapperClasses()
+                .flatMap(primitiveWrapper -> primitiveWrapperClasses()
                         .flatMap(otherPrimitive -> primitiveWrapper == otherPrimitive
                                 ? Stream.empty() : Stream.of(arguments(primitiveWrapper, otherPrimitive))
                         )
                 );
     }
 
-    protected static Stream<Arguments> provideOneSideIntegrableNonPrimitivePairs() {
+    protected static @NotNull Stream<@NotNull Arguments> provideOneSideIntegrableNonPrimitivePairs() {
         return Stream.of(
                 arguments(String.class, CharSequence.class),
                 arguments(StringBuilder.class, CharSequence.class),
@@ -94,7 +116,7 @@ class ClassUtilTest {
         );
     }
 
-    protected static Stream<Arguments> provideUnassignablePairs() {
+    protected static @NotNull Stream<@NotNull Arguments> provideUnassignablePairs() {
         return Stream.of(
                 arguments(String.class, ArrayList.class),
                 arguments(String.class, HashSet.class),
@@ -158,6 +180,12 @@ class ClassUtilTest {
     @MethodSource("provideNonPrimitiveOrWrappers")
     void testToPrimitiveWithNonPrimitiveOrWrapperClasses(final @NotNull Class<?> nonPrimitiveOrWrapper) {
         assertThrows(IllegalArgumentException.class, () -> ClassUtil.toPrimitive(nonPrimitiveOrWrapper));
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideClassesToNonPrimitive")
+    void testToNonPrimitive(final @NotNull Class<?> original, final @NotNull Class<?> nonPrimitive) {
+        assertSame(nonPrimitive, ClassUtil.toNonPrimitive(original));
     }
 
     @ParameterizedTest
