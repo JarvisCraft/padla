@@ -1,11 +1,14 @@
 package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.experimental.UtilityClass;
+import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Utility for class-related stuff.
@@ -191,5 +194,57 @@ public class ClassUtil {
         );
 
         return wrapper;
+    }
+
+    /**
+     * Creates a class-digger for use with {@link ru.progrm_jarvis.javacommons.recursion.Recursions Recursions API}
+     * which digs the class hierarchy.
+     *
+     * @param interfaces whether interfaces should be considered
+     * @return digger which returns a {@link Stream stream} of super-classes and implemented interfaces (optionally)
+     * of the provided class
+     */
+    public @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classDigger(final boolean interfaces) {
+        return interfaces ? classDiggerWithInterfaces() : classDiggerWithoutInterfaces();
+    }
+
+    /**
+     * Creates a class-digger for use with {@link ru.progrm_jarvis.javacommons.recursion.Recursions Recursions API}
+     * which digs the class hierarchy only including super-classes.
+     *
+     * @return digger which returns a {@link Stream stream} of super-classes of the provided class
+     */
+    public @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classDiggerWithoutInterfaces() {
+        return clazz -> {
+            final Class<?> superClass;
+            return (superClass = clazz.getSuperclass()) == null ? Stream.empty() : Stream.of(superClass);
+        };
+    }
+
+    /**
+     * Creates a class-digger for use with {@link ru.progrm_jarvis.javacommons.recursion.Recursions Recursions API}
+     * which digs the class hierarchy including super-classes and parent interfaces.
+     *
+     * @return digger which returns a {@link Stream stream} of super-classes and implemented interfaces
+     * of the provided class
+     */
+    public @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classDiggerWithInterfaces() {
+        return clazz -> {
+            val interfaces = clazz.getInterfaces();
+
+            final Class<?> superClass;
+            if ((superClass = clazz.getSuperclass()) == null) return interfaces.length == 0
+                    ? Stream.empty() : Arrays.stream(interfaces);
+
+            val superClassStream = Stream.<Class<?>>of(superClass);
+            return interfaces.length == 0
+                    ? superClassStream : Stream.concat(superClassStream, Arrays.stream(interfaces));
+        };
     }
 }
