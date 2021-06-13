@@ -44,7 +44,7 @@ public class Recursions {
     /**
      * <p>Recursively traverses the source evaluating to the recursive hierarchy.
      * The provided {@link Stream} will attempt to be as lazy as possible.</p>
-     * <p>An example providing the stream of class hierarchy of {@link String} class:
+     * <p>An example providing the stream of class hierarchy of {@link String} class:</p>
      * <pre>{@code
      * Recursions.<Class<?>, Method>recurse(
      *         String.class,
@@ -58,7 +58,6 @@ public class Recursions {
      *         }
      * )
      * }</pre>
-     * </p>
      *
      * @param source source element used
      * @param digger function used to generate the stream of child elements from the base one
@@ -100,7 +99,7 @@ public class Recursions {
 
     /**
      * <p>Recursively traverses the source evaluating to the {@link Stream stream} hierarchy members' components.</p>
-     * <p>An example providing the stream of all declared method in {@link String} class hierarchy:
+     * <p>An example providing the stream of all declared method in {@link String} class hierarchy:</p>
      * <pre>{@code
      * Recursions.<Class<?>, Method>recurseFully(
      *         String.class,
@@ -115,7 +114,6 @@ public class Recursions {
      *         clazz -> Arrays.stream(clazz.getDeclaredMethods())
      * )
      * }</pre>
-     * </p>
      *
      * @param source source element used
      * @param digger function used to generate the stream of child elements from the base one
