@@ -1,7 +1,5 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
@@ -18,13 +16,17 @@ import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
+import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -41,7 +43,7 @@ import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
 @ToString
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
-@FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
@@ -171,7 +173,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * @return algorithm which should be used for producing string concatenation logic
          */
         @Contract(pure = true)
-        StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
+        @NotNull StringConcatFactoryAlgorithm stringConcatFactoryAlgorithm();
     }
 
     /**
@@ -220,12 +222,13 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
      * generation and is capable of joining nearby static text blocks and optimizing {@link #buildAndRelease()}.
      *
      * @param <T> type of object according to which the created text models are formatted
-     * @implNote this class is {@code protected} so that it is accessible by generated classes
+     * @implNote this class is {@code private} so that it is accessible by generated classes
      */
     @ToString
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this will also allow caching of instances)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    // note: the class is `protected` so that it is available to generated classes
     protected static final class AsmTextModelBuilder<T> extends AbstractGeneratingTextModelFactoryBuilder<
             T, AsmNode<T>, StaticAsmNode<T>, DynamicAsmNode<T>> {
 
@@ -233,16 +236,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * Lookup of this class.
          */
         private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
-
-        public static final @NotNull String STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE_CONCURRENCY_SYSTEM_PROPERTY_NAME
-                = AsmTextModelBuilder.class.getCanonicalName()
-                + ".strings-to-string-method-descriptor-cache-concurrency";
-
-        /**
-         * Cache of descriptors of methods accepting {@link String string arguments} returning {@link String a string}.
-         */
-        private static final @NotNull Cache<@NotNull Integer, @NotNull String>
-                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE = Caffeine.newBuilder().softValues().build();
 
         /**
          * Class naming strategy used to allocate names for generated classes
@@ -535,40 +528,16 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }
 
-        /**
-         * Creates or gets a cache descriptor for a method accepting the given amount of {@link String strings} which
-         * returns a {@link String string}.
-         *
-         * @param stringArgumentsCount amount of {@link String string arguments} accepted by the method
-         * @return descriptor of the name with the specified signature
-         */
-        private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
-            assert stringArgumentsCount >= 0 : "stringArgumentsCount should be non-negative";
-
-            return STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE.get(stringArgumentsCount, count -> {
-                val result = new StringBuilder(
-                        STRING_DESCRIPTOR_LENGTH * (count + 1) /* all arguments + return */
-                                + 2 /* parentheses */
-                ).append('(');
-                for (var i = 0; i < count; i++) result.append(STRING_DESCRIPTOR);
-
-                return result.append(')').append(STRING_DESCRIPTOR).toString();
-            });
-        }
-
         @Override
         protected @NotNull TextModel<T> performTextModelBuild(final boolean release) {
-            val clazz = new ClassWriter(0); // MAXs are already computed 😎
-
+            final ClassWriter clazz;
             //<editor-fold desc="ASM class generation" defaultstate="collapsed">
-            val className = CLASS_NAMING_STRATEGY.get();
-
-            // ASM does not provide any comfortable method fot this :(
-            // PS yet ASM is <3
-            val internalClassName = className.replace('.', '/');
-            clazz.visit(
-                    V1_8 /* generate bytecode for JVM1.8 */, OPCODES_ACC_PUBLIC_FINAL_SUPER,
-                    internalClassName, GENERIC_CLASS_SIGNATURE, OBJECT_INTERNAL_NAME /* inherit Object */,
+            final String className;
+            final String internalClassName;
+            (clazz = new ClassWriter(0) /* MAXs are already computed :sunglasses: */).visit(
+                    V1_8, OPCODES_ACC_PUBLIC_FINAL_SUPER,
+                    internalClassName = classNameToInternalName(className = CLASS_NAMING_STRATEGY.get()),
+                    GENERIC_CLASS_SIGNATURE, OBJECT_INTERNAL_NAME /* inherit Object */,
                     TEXT_MODEL_INTERNAL_NAME_ARRAY /* implement TextModel interface */
             );
             // add an empty constructor
@@ -582,16 +551,62 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             clazz.visitEnd();
             //</editor-fold>
 
-            try {
-                val constructor = GcClassDefiners.getDefault()
-                        .defineClass(LOOKUP, className, clazz.toByteArray()).getDeclaredConstructor();
-                constructor.setAccessible(true);
-                //noinspection unchecked
-                return (TextModel<T>) constructor.newInstance();
-            } catch (final NoSuchMethodException | InstantiationException
-                    | IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalStateException("Could not compile and instantiate TextModel from the given nodes", e);
+            final MethodHandle constructor;
+            {
+                final Class<? extends TextModel<T>> definedClass = uncheckedClassCast(
+                        GcClassDefiners.getDefault()
+                                .defineClass(LOOKUP, className, clazz.toByteArray())
+                );
+
+                try {
+                    constructor = LOOKUP.findConstructor(definedClass, InvokeUtil.VOID__METHOD_TYPE);
+                } catch (final NoSuchMethodException | IllegalAccessException e) {
+                    throw new AssertionError(
+                            "Generated class " + className + " should contain an available empty constructor", e
+                    );
+                }
             }
+            try {
+                // note: `invokeExact()` cannot be used as return-type is only resolved at runtime
+                // because the constructed class is generated
+                return uncheckedTextModelCast((TextModel<?>) constructor.invoke());
+            } catch (final Throwable x) {
+                throw new AssertionError(
+                        "Generated class " + className + " cannot be instantiated", x
+                );
+            }
+        }
+
+        /**
+         * Casts the given class object into the specific one.
+         *
+         * @param type raw-typed class object
+         * @param <T> exact wanted type of class object
+         * @return the provided class object with its type cast to the specific one
+         *
+         * @apiNote this is effectively no-op
+         */
+        // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+        @Contract("_ -> param1")
+        @SuppressWarnings("unchecked")
+        private static <T> Class<T> uncheckedClassCast(final Class<?> type) {
+            return (Class<T>) type;
+        }
+
+        /**
+         * Casts the given text model into the specific one.
+         *
+         * @param textModel raw-typed text model
+         * @param <T> exact wanted type of text model
+         * @return the provided text model with its type cast to the specific one
+         *
+         * @apiNote this is effectively no-op
+         */
+        // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+        @Contract("_ -> param1")
+        @SuppressWarnings("unchecked")
+        private static <T> TextModel<T> uncheckedTextModelCast(final TextModel<?> textModel) {
+            return (TextModel<T>) textModel;
         }
 
         /**
@@ -604,20 +619,19 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
         private void asm$implementGetTextMethodViaStringBuilder(final @NotNull ClassWriter clazz,
                                                                 final @NotNull String internalClassName) {
             // Implement `TextModel#getText(T)` method and add fields
-            val method = clazz.visitMethod(
+            final MethodVisitor method;
+            (method = clazz.visitMethod(
                     ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
                     STRING_GENERIC_T_METHOD_DESCRIPTOR, null
-            );
-
-            method.visitCode();
+            )).visitCode();
 
             //<editor-fold desc="Method code generation" defaultstate="collapsed">
             {
-                val staticInitializer = visitStaticInitializer(clazz);
-                staticInitializer.visitCode();
+                final MethodVisitor staticInitializer;
+                (staticInitializer = visitStaticInitializer(clazz)).visitCode();
 
-                val staticLength = this.staticLength;
-                if (staticLength == 0) { // there are no static nodes (and at least 2 dynamic)
+                final int staticLength;
+                if ((staticLength = this.staticLength) == 0) { // there are no static nodes (and at least 2 dynamic)
                     /* ************************ Invoke `StringBuilder(int)` constructor ************************ */
                     String fieldName = GENERATED_FIELD_NAME_PREFIX + 0;
                     // Specify first `StringBuilder` node
@@ -638,15 +652,15 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                             CONSTRUCTOR_METHOD_NAME, VOID_STRING_METHOD_DESCRIPTOR, false
                     );
 
-                    val iterator = nodes.iterator();
+                    final Iterator<AsmNode<T>> iterator;
                     asm$addStaticFieldWithInitializer(
                             clazz, internalClassName, staticInitializer,
-                            fieldName, iterator.next().asDynamic().getContent()
+                            fieldName, (iterator = nodes.iterator()).next().asDynamic().getContent()
                     );
                     // dynamic nodes count is at least 2
                     var dynamicIndex = 0;
                     while (iterator.hasNext()) {
-                        fieldName = (GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex));
+                        fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex;
 
                         asm$addStaticFieldWithInitializer(
                                 clazz, internalClassName, staticInitializer,
@@ -678,18 +692,19 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                     var dynamicIndex = -1;
                     // Lists are commonly faster with random access
                     for (val node : nodes) if (node.isDynamic()) { // Load static text value from dynamic constant
-                        val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                        final String fieldName;
                         asm$addStaticFieldWithInitializer(
                                 clazz, internalClassName, staticInitializer,
-                                fieldName, node.asDynamic().getContent()
+                                fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex,
+                                node.asDynamic().getContent()
                         );
                         asm$pushStaticTextModelFieldGetTextInvocationResult(
                                 method, internalClassName, fieldName
                         );
                         asm$invokeStringBuilderAppendString(method);
                     } else {
-                        val staticText = node.asStatic().getText();
-                        if (staticText.length() == 1) {
+                        final String staticText;
+                        if ((staticText = node.asStatic().getText()).length() == 1) {
                             pushCharUnsafely(method, staticText.charAt(0));
                             asm$invokeStringBuilderAppendChar(method);
                         } else {
@@ -737,109 +752,116 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             addLookup(clazz);
 
             // Implement `TextModel#getText(T)` method and add fields
-            val method = clazz.visitMethod(
+            final MethodVisitor method;
+            (method = clazz.visitMethod(
                     ACC_PUBLIC, GET_TEXT_METHOD_NAME, STRING_OBJECT_METHOD_DESCRIPTOR,
                     STRING_GENERIC_T_METHOD_DESCRIPTOR, null
-            );
-
-            method.visitCode();
+            )).visitCode();
 
             //<editor-fold desc="Method code generation" defaultstate="collapsed">
             {
-                val staticInitializer = visitStaticInitializer(clazz);
-                staticInitializer.visitCode();
+                final MethodVisitor staticInitializer;
+                (staticInitializer = visitStaticInitializer(clazz)).visitCode();
 
-                val dynamicNodes = dynamicNodeCount;
-                if (dynamicNodeCount <= STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS) {
+                final int dynamicNodeCount;
+                if ((dynamicNodeCount = this.dynamicNodeCount) <= STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS) {
                     // The amount of dynamic nodes does not exceed the maximal amount of those
                     // passed into the `StringConcatFactory`'s `makeConcat` methods
                     //<editor-fold desc="Fast implementation" defaultstate="collapsed">
-                    val staticLength = this.staticLength;
-                    if (staticLength == 0) { // there only are dynamic nodes
+                    final int staticLength;
+                    if ((staticLength = this.staticLength) == 0) { // there only are dynamic nodes
                         // dynamic nodes count is at least 2
                         var dynamicIndex = -1;
                         // add fields containing dynamic nodes and their invocation
                         for (val node : nodes) {
-                            val fieldName = (GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex));
+                            final String fieldName;
                             asm$addStaticFieldWithInitializer(
                                     clazz, internalClassName, staticInitializer,
-                                    fieldName, node.asDynamic().getContent()
+                                    fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex,
+                                    node.asDynamic().getContent()
                             );
                             asm$pushStaticTextModelFieldGetTextInvocationResult(method, internalClassName, fieldName);
                         }
 
                         method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_METHOD_NAME, stringsToStringDescriptor(dynamicNodes),
+                                MAKE_CONCAT_METHOD_NAME, DescriptorCache.stringsToStringDescriptor(dynamicNodeCount),
                                 MAKE_CONCAT_HANDLE /* no bootstrap arguments */
                         );
-                    } else if (staticNodeHandledAsDynamicCount == 0) {// there are static nodes
-                        val recipe = new StringBuilder(staticLength + dynamicNodes);
-
-                        var dynamicIndex = -1;
-                        // Lists are commonly faster with random access
-                        for (val node : nodes) if (node.isDynamic()) {
-                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                            // push String (got from dynamic TextModel's `getText(T)` invocation) ...
-                            asm$addStaticFieldWithInitializer(
-                                    clazz, internalClassName, staticInitializer,
-                                    fieldName, node.asDynamic().getContent()
-                            );
-                            asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                    method, internalClassName, fieldName
-                            );
-                            // ... which is referenced in the recipe as a dynamic one (it may differ from
-                            // call to call)
-                            recipe.append('\1');
-                        } else recipe.append(node.asStatic().getText());
-
-                        method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodes),
-                                MAKE_CONCAT_WITH_CONSTANTS_HANDLE, recipe.toString() /* bootstrap argument */
-                        );
                     } else {
-                        val recipe = new StringBuilder(
-                                staticLength + dynamicNodes + staticNodeHandledAsDynamicCount
-                        );
+                        final int staticNodeHandledAsDynamicCount;
+                        if ((staticNodeHandledAsDynamicCount = this.staticNodeHandledAsDynamicCount) == 0) {
+                            // there are static nodes
+                            val recipe = new StringBuilder(staticLength + dynamicNodeCount);
 
-                        Object[] bootstrapArguments = new Object[1 + staticNodeHandledAsDynamicCount];
+                            var dynamicIndex = -1;
+                            // Lists are commonly faster with random access
+                            for (val node : nodes) if (node.isDynamic()) {
+                                final String fieldName;
+                                // push String (got from dynamic TextModel's `getText(T)` invocation) ...
+                                asm$addStaticFieldWithInitializer(
+                                        clazz, internalClassName, staticInitializer,
+                                        fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex,
+                                        node.asDynamic().getContent()
+                                );
+                                asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                        method, internalClassName, fieldName
+                                );
+                                // ... which is referenced in the recipe as a dynamic one (it may differ from
+                                // call to call)
+                                recipe.append('\1');
+                            } else recipe.append(node.asStatic().getText());
 
-                        int dynamicIndex = -1, bootstrapArgumentIndex = 0;
-                        // Lists are commonly faster with random access
-                        for (val node : nodes) if (node.isDynamic()) {
-                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
-                            // push String (got from dynamic TextModel's `getText(T)` invocation) ...
-                            asm$addStaticFieldWithInitializer(
-                                    clazz, internalClassName, staticInitializer,
-                                    fieldName, node.asDynamic().getContent()
+                            method.visitInvokeDynamicInsn(
+                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
+                                    DescriptorCache.stringsToStringDescriptor(dynamicNodeCount),
+                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, recipe.toString() /* bootstrap argument */
                             );
-                            asm$pushStaticTextModelFieldGetTextInvocationResult(
-                                    method, internalClassName, fieldName
-                            );
-                            // ... which is referenced in the recipe as a dynamic one (it may differ from
-                            // call to call)
-                            recipe.append('\1');
                         } else {
-                            val staticNode = node.asStatic();
-                            if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
-                                // add as static value pushed as bootstrap argument because
-                                // StringConcatFactory ...
-                                // ... would otherwise consider `\1` or `\2` as parts of pattern)
+                            val recipe = new StringBuilder(
+                                    staticLength + dynamicNodeCount + staticNodeHandledAsDynamicCount
+                            );
+                            val bootstrapArguments = new Object[1 + staticNodeHandledAsDynamicCount];
 
-                                // add the String value (which cannot be part of the raw recipe) to the array
-                                // ...
-                                // ... of bootstrap arguments at index (starting from [1] as [0] is for the
-                                // recipe)
-                                bootstrapArguments[++bootstrapArgumentIndex] = staticNode.getText();
-                                // ... and make the recipe aware of this always static node
-                                recipe.append('\2'); // this one is used only for strings containing \1 anf \2
-                            } else recipe.append(staticNode.getText());
+                            int dynamicIndex = -1, bootstrapArgumentIndex = 0;
+                            // Lists are commonly faster with random access
+                            for (val node : nodes) if (node.isDynamic()) {
+                                final String fieldName;
+                                // push String (got from dynamic TextModel's `getText(T)` invocation) ...
+                                asm$addStaticFieldWithInitializer(
+                                        clazz, internalClassName, staticInitializer,
+                                        fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex,
+                                        node.asDynamic().getContent()
+                                );
+                                asm$pushStaticTextModelFieldGetTextInvocationResult(
+                                        method, internalClassName, fieldName
+                                );
+                                // ... which is referenced in the recipe as a dynamic one (it may differ from
+                                // call to call)
+                                recipe.append('\1');
+                            } else {
+                                final StaticAsmNode<T> staticNode;
+                                if ((staticNode = node.asStatic()).isTreatAsDynamicValueInStringConcatFactory()) {
+                                    // add as static value pushed as bootstrap argument because
+                                    // StringConcatFactory ...
+                                    // ... would otherwise consider `\1` or `\2` as parts of pattern)
+
+                                    // add the String value (which cannot be part of the raw recipe) to the array
+                                    // ...
+                                    // ... of bootstrap arguments at index (starting from [1] as [0] is for the
+                                    // recipe)
+                                    bootstrapArguments[++bootstrapArgumentIndex] = staticNode.getText();
+                                    // ... and make the recipe aware of this always static node
+                                    recipe.append('\2'); // this one is used only for strings containing \1 anf \2
+                                } else recipe.append(staticNode.getText());
+                            }
+
+                            bootstrapArguments[0] = recipe.toString();
+                            method.visitInvokeDynamicInsn(
+                                    MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
+                                    DescriptorCache.stringsToStringDescriptor(this.dynamicNodeCount),
+                                    MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments
+                            );
                         }
-
-                        bootstrapArguments[0] = recipe.toString();
-                        method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(dynamicNodeCount),
-                                MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments
-                        );
                     }
                     /*
                      * Each dynamic node gets pushed because it gets passed as a dynamic parameter
@@ -851,7 +873,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                      * StringConcatFactory happen and as those get passed to thus (except fot the first one) the
                      * worst case
                      */
-                    method.visitMaxs(dynamicNodeCount + 1, 2 /* [this + local variable] */);
+                    method.visitMaxs(this.dynamicNodeCount + 1, 2 /* [this + local variable] */);
                     //</editor-fold>
                     // The amount of dynamic nodes exceeds the maximal amount of those
                     // passed into the `StringConcatFactory`'s `makeConcat` methods
@@ -871,20 +893,21 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                     // for the first `makeConcat` use all slots for the dynamic elements
                     // also, don't add static elements after the last dynamic one
 
-                    val bootstrapArguments = new ArrayList<>(1);
-                    bootstrapArguments.add(null); // gets set to `recipe` when needed
-                    val recipe = new StringBuilder(dynamicNodes);
+                    final List<Object> bootstrapArguments;
+                    (bootstrapArguments = new ArrayList<>(1)).add(null); // gets set to `recipe` when needed
+                    val recipe = new StringBuilder(dynamicNodeCount);
 
                     var containsConstants = false;
                     var dynamicIndex = -1;
                     var dynamicSlotsRemaining = STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS;
                     while (true) {
-                        val node = nodes.next();
-                        if (node.isDynamic()) {
-                            val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                        final AsmNode<T> node;
+                        if ((node = nodes.next()).isDynamic()) {
+                            final String fieldName;
                             asm$addStaticFieldWithInitializer(
                                     clazz, internalClassName, staticInitializer,
-                                    fieldName, node.asDynamic().getContent()
+                                    fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex,
+                                    node.asDynamic().getContent()
                             );
                             asm$pushStaticTextModelFieldGetTextInvocationResult(
                                     method, internalClassName, fieldName
@@ -894,8 +917,8 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                             // when all dynamic slots get occupied, do `makeConcat`
                             if (--dynamicSlotsRemaining == 0) break;
                         } else {
-                            val staticNode = node.asStatic();
-                            if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+                            final StaticAsmNode<T> staticNode;
+                            if ((staticNode = node.asStatic()).isTreatAsDynamicValueInStringConcatFactory()) {
                                 bootstrapArguments.add(staticNode.getText());
                                 recipe.append('\2');
                             } else {
@@ -909,7 +932,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                      * Make the first concatenation
                      */
                     val maxDynamicArgumentsStringDescriptor
-                            = stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+                            = DescriptorCache.stringsToStringDescriptor(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
                     if (containsConstants) {
                         bootstrapArguments.set(0, recipe.toString());
                         method.visitInvokeDynamicInsn(
@@ -942,12 +965,13 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
 
                         // add the node
                         {
-                            val node = nodes.next();
-                            if (node.isDynamic()) {
-                                val fieldName = GENERATED_FIELD_NAME_PREFIX + (++dynamicIndex);
+                            final AsmNode<T> node;
+                            if ((node = nodes.next()).isDynamic()) {
+                                final String fieldName;
                                 asm$addStaticFieldWithInitializer(
                                         clazz, internalClassName, staticInitializer,
-                                        fieldName, node.asDynamic().getContent()
+                                        fieldName = GENERATED_FIELD_NAME_PREFIX + ++dynamicIndex,
+                                        node.asDynamic().getContent()
                                 );
                                 asm$pushStaticTextModelFieldGetTextInvocationResult(
                                         method, internalClassName, fieldName
@@ -973,8 +997,8 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                                         MAKE_CONCAT_HANDLE /* no bootstrap arguments */
                                 );
                             } else {
-                                val staticNode = node.asStatic();
-                                if (staticNode.isTreatAsDynamicValueInStringConcatFactory()) {
+                                final StaticAsmNode<T> staticNode;
+                                if ((staticNode = node.asStatic()).isTreatAsDynamicValueInStringConcatFactory()) {
                                     bootstrapArguments.add(staticNode.getText());
                                     recipe.append('\2');
                                 } else {
@@ -992,7 +1016,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                     if (dynamicSlotsRemaining != 0) if (containsConstants) {
                         bootstrapArguments.set(0, recipe.toString());
                         method.visitInvokeDynamicInsn(
-                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, stringsToStringDescriptor(
+                                MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, DescriptorCache.stringsToStringDescriptor(
                                         STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS - dynamicSlotsRemaining
                                 ), MAKE_CONCAT_WITH_CONSTANTS_HANDLE, bootstrapArguments.toArray()
                         );
@@ -1108,6 +1132,78 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
             // set the field to the computed value
             staticInitializer.visitFieldInsn(PUTSTATIC, internalClassName, fieldName, TEXT_MODEL_DESCRIPTOR);
         }
+
+        /**
+         * Internal cache of specific dynamic descriptors.
+         */
+        private static final class DescriptorCache {
+
+            /**
+             * Cache of descriptors of methods accepting {@link String string}
+             * returning a {@link String string}.
+             */
+            private static final @Nullable SoftReference<String> @NotNull [] STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE
+                    = uncheckedStringSoftReferenceArrayCast(
+                    new SoftReference<?>[STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + 1]
+            );
+
+            /**
+             * Casts the given array of wild-carded {@link SoftReference soft references}
+             * into the array of {@link SoftReference soft references} with generic type being {@link String}.
+             *
+             * @param type raw-typed array of soft references
+             * @return the provided array of soft references with its generic type cast to {@link String}
+             *
+             * @apiNote this is effectively no-op
+             */
+            // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
+            @Contract("_ -> param1")
+            @SuppressWarnings("unchecked")
+            private static SoftReference<String>[] uncheckedStringSoftReferenceArrayCast(
+                    final SoftReference<?>[] type
+            ) {
+                return (SoftReference<String>[]) type;
+            }
+
+            /**
+             * Creates or gets a cached descriptor for a method
+             * accepting the given amount of {@link String strings} which returns a {@link String string}.
+             *
+             * @param stringArgumentsCount amount of {@link String string arguments} accepted by the method
+             * @return descriptor of the name with the specified signature
+             */
+            private static @NotNull String stringsToStringDescriptor(final int stringArgumentsCount) {
+                assert 0 <= stringArgumentsCount && stringArgumentsCount <= STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS
+                        : "stringArgumentsCount should be in range ["
+                        + 0 + "; " + STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS + "] but got " + stringArgumentsCount;
+
+                // note: there is no need for providing concurrency safety here because the function is idempotent
+                // i.e. if two concurrent calls happen to get the value for the same `stringArgumentsCount`
+                // then the equivalent values will just be written twice to the corresponding cache cell
+                // which is not a problem at all as there is no need for string identity
+
+                String descriptor;
+                { // try getting from cache
+                    final SoftReference<String> descriptorReference;
+                    if ((descriptorReference = STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE[stringArgumentsCount]) != null
+                            && (descriptor = descriptorReference.get()) != null /* this acquires strong reference */
+                    ) return descriptor; // return the already cached value
+                }
+                { // generate new cache entry
+                    val result = new StringBuilder(
+                            STRING_DESCRIPTOR_LENGTH * (stringArgumentsCount + 1) /* all arguments + return */
+                                    + 2 /* parentheses */
+                    ).append('(');
+                    for (var i = 0; i < stringArgumentsCount; i++) result.append(STRING_DESCRIPTOR);
+
+                    descriptor = result.append(')').append(STRING_DESCRIPTOR).toString();
+                }
+                // cache the computed value
+                STRINGS_TO_STRING_METHOD_DESCRIPTOR_CACHE[stringArgumentsCount] = new SoftReference<>(descriptor);
+
+                return descriptor;
+            }
+        }
     }
 
     //<editor-fold desc="Configuration implementation" defaultstate="collapsed">
@@ -1117,7 +1213,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
     @Value
     @Builder
     @Accessors(fluent = true)
-    @FieldDefaults(level = AccessLevel.PROTECTED)
+    @FieldDefaults(level = AccessLevel.PRIVATE)
     private static class SimpleConfiguration implements Configuration {
 
         /**
@@ -1126,7 +1222,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * @implNote this may be replaced with {@link Lazy lazy wrapper} if configurations become stateful or involve
          * multiple inner objects
          */
-        protected static final @NotNull Configuration DEFAULT = builder().build();
+        private static final @NotNull Configuration DEFAULT = builder().build();
 
         /**
          * Gets a default configuration.
@@ -1134,7 +1230,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * @return default configuration
          */
         @Contract(pure = true)
-        protected static @NotNull Configuration getDefault() {
+        private static @NotNull Configuration getDefault() {
             return DEFAULT;
         }
 
@@ -1153,14 +1249,14 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
         /**
          * Simple implementation of {@link ConfigurationBuilder}.
          */
+        @SuppressWarnings("unused") // Lombok-generated builder class
         private static final class SimpleConfigurationBuilder implements ConfigurationBuilder {}
     }
     //</editor-fold>
 
-
-
     /**
-     * {@link AbstractGeneratingTextModelFactoryBuilder.Node Node} specific to {@link AsmTextModelFactory ASM-based text model factory}.
+     * {@link AbstractGeneratingTextModelFactoryBuilder.Node Node}
+     * specific to {@link AsmTextModelFactory ASM-based text model factory}.
      *
      * @param <T> type of object according to which the created text models are formatted
      */
@@ -1201,7 +1297,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
      */
     @Value
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     private static class SimpleStaticAsmNode<T> implements StaticAsmNode<T> {
 
         /**

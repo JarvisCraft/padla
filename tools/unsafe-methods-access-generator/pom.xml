@@ -6,7 +6,7 @@
     <parent>
         <artifactId>padla-tools</artifactId>
         <groupId>ru.progrm-jarvis</groupId>
-        <version>1.0.0-rc.3</version>
+        <version>1.0.0-rc.4</version>
     </parent>
     <artifactId>unsafe-methods-access-generator</artifactId>
 

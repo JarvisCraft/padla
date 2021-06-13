@@ -1,11 +1,14 @@
 package ru.progrm_jarvis.javacommons.classloading;
 
 import lombok.experimental.UtilityClass;
+import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Utility for class-related stuff.
@@ -122,13 +125,26 @@ public class ClassUtil {
      *
      * @throws IllegalArgumentException if the given class is not primitive
      */
-    public @NotNull Class<?> toPrimitiveWrapper(@NotNull /* hot spot */ final Class<?> primitiveClass) {
+    public @NotNull Class<?> toPrimitiveWrapper(final @NotNull /* hot spot */ Class<?> primitiveClass) {
         final int primitiveClassIndex;
         if ((primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_CLASSES, primitiveClass, CLASS_HASH_CODE_COMPARATOR
         )) < 0) throw new IllegalArgumentException("Given class is not primitive");
 
         return PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
+    }
+
+    /**
+     * Either returns a primitive-wrapper class for the given one if it is primitive or the provided class otherwise.
+     *
+     * @param originalClass class whose wrapper should be returned on demand
+     * @return primitive-wrapper class for the given class if it is primitive or the provided class otherwise
+     */
+    public @NotNull Class<?> toNonPrimitive(final @NotNull /* hot spot */ Class<?> originalClass) {
+        final int primitiveClassIndex;
+        return (primitiveClassIndex = Arrays.binarySearch(
+                SORTED_PRIMITIVE_CLASSES, originalClass, CLASS_HASH_CODE_COMPARATOR
+        )) < 0 ? originalClass : PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
     }
 
     /**
@@ -178,5 +194,57 @@ public class ClassUtil {
         );
 
         return wrapper;
+    }
+
+    /**
+     * Creates a class-digger for use with {@link ru.progrm_jarvis.javacommons.recursion.Recursions Recursions API}
+     * which digs the class hierarchy.
+     *
+     * @param interfaces whether interfaces should be considered
+     * @return digger which returns a {@link Stream stream} of super-classes and implemented interfaces (optionally)
+     * of the provided class
+     */
+    public @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classDigger(final boolean interfaces) {
+        return interfaces ? classDiggerWithInterfaces() : classDiggerWithoutInterfaces();
+    }
+
+    /**
+     * Creates a class-digger for use with {@link ru.progrm_jarvis.javacommons.recursion.Recursions Recursions API}
+     * which digs the class hierarchy only including super-classes.
+     *
+     * @return digger which returns a {@link Stream stream} of super-classes of the provided class
+     */
+    public @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classDiggerWithoutInterfaces() {
+        return clazz -> {
+            final Class<?> superClass;
+            return (superClass = clazz.getSuperclass()) == null ? Stream.empty() : Stream.of(superClass);
+        };
+    }
+
+    /**
+     * Creates a class-digger for use with {@link ru.progrm_jarvis.javacommons.recursion.Recursions Recursions API}
+     * which digs the class hierarchy including super-classes and parent interfaces.
+     *
+     * @return digger which returns a {@link Stream stream} of super-classes and implemented interfaces
+     * of the provided class
+     */
+    public @NotNull Function<
+            ? super @NotNull Class<?>, @NotNull Stream<? extends @NotNull Class<?>>
+            > classDiggerWithInterfaces() {
+        return clazz -> {
+            val interfaces = clazz.getInterfaces();
+
+            final Class<?> superClass;
+            if ((superClass = clazz.getSuperclass()) == null) return interfaces.length == 0
+                    ? Stream.empty() : Arrays.stream(interfaces);
+
+            val superClassStream = Stream.<Class<?>>of(superClass);
+            return interfaces.length == 0
+                    ? superClassStream : Stream.concat(superClassStream, Arrays.stream(interfaces));
+        };
     }
 }
