@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marker indicating that the annotated type parameter does not matter
- * thus any unchecked casts from this type to <b>any</b> other are safe and do not lead to unspecified behaviour.
+ * thus any unchecked casts from this type to <b>any</b> other are safe and never lead to unspecified behaviour.
  */
 @Inherited
 @Documented

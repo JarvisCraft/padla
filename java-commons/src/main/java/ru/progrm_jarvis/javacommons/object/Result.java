@@ -327,7 +327,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return mapped successful result if it was a {@link #isSuccess() successful result}
      * or an error result if it was an {@link #isError() error result}
      */
-    <R> @NotNull Result<? extends R, E> map(@NonNull Function<? super T, ? extends R> mappingFunction);
+    <R> @NotNull Result<R, E> map(@NonNull Function<? super T, ? extends R> mappingFunction);
 
     /**
      * Consumes the result if it is {@link #isSuccess() successful} returning the same result.
@@ -346,7 +346,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return mapped error result if it was an {@link #isError() an error result}
      * or a successful result if it was a {@link #isError() successful result}
      */
-    <R> @NotNull Result<T, ? extends R> mapError(@NonNull Function<? super E, ? extends R> mappingFunction);
+    <R> @NotNull Result<T, R> mapError(@NonNull Function<? super E, ? extends R> mappingFunction);
 
     /**
      * Consumes the result if it is an {@link #isError() error result} returning the same result.
@@ -366,7 +366,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @see #flatMap(Function) lazy analog
      */
-    <R> @NotNull Result<? extends R, ? extends E> and(@NonNull Result<? extends R, ? extends E> nextResult);
+    <R> @NotNull Result<R, E> and(@NonNull Result<R, E> nextResult);
 
     /**
      * Also known as {@code andThen}. Maps the result if this is a {@link #isSuccess() successful result}
@@ -379,9 +379,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @see #and(Result) non-lazy analog
      */
-    <R> @NotNull Result<? extends R, ? extends E> flatMap(
-            @NonNull Function<? super T, ? extends @NotNull Result<? extends R, ? extends E>> mapper
-    );
+    <R> @NotNull Result<R, E> flatMap(@NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper);
 
     /**
      * Returns this result if this is a {@link #isSuccess() successful result}
@@ -393,7 +391,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @see #orElse(Function) lazy analog
      */
-    <R> @NotNull Result<? extends T, ? extends R> or(@NonNull Result<? extends T, ? extends R> alternateResult);
+    <R> @NotNull Result<T, R> or(@NonNull Result<T, R> alternateResult);
 
     /**
      * Maps the result if this is an {@link #isError() error result}
@@ -406,9 +404,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @see #or(Result) non-lazy analog
      */
-    <R> @NotNull Result<? extends T, ? extends R> orElse(
-            @NonNull Function<? super E, ? extends @NotNull Result<? extends T, ? extends R>> mapper
-    );
+    <R> @NotNull Result<T, R> orElse(@NonNull Function<? super E, ? extends @NotNull Result<T, R>> mapper);
 
     /**
      * Swaps this result making an {@link #error(Object) error result} from a {@link #isSuccess() successful result}
@@ -561,9 +557,7 @@ public interface Result<T, E> extends Supplier<T> {
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
 
         @Override
-        public <R> @NotNull Result<? extends R, E> map(
-                final @NonNull Function<? super T, ? extends R> mappingFunction
-        ) {
+        public <R> @NotNull Result<R, E> map(final @NonNull Function<? super T, ? extends R> mappingFunction) {
             return success(mappingFunction.apply(value));
         }
 
@@ -575,7 +569,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public @NotNull <@Any R> Result<T, ? extends R> mapError(
+        public @NotNull <@Any R> Result<T, R> mapError(
                 final @NonNull Function<? super E, ? extends R> mappingFunction
         ) {
             return transmuteErrorType();
@@ -587,29 +581,25 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <R> @NotNull Result<? extends R, ? extends E> and(
-                final @NonNull Result<? extends R, ? extends E> nextResult
-        ) {
+        public <R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
             return nextResult;
         }
 
         @Override
-        public <R> @NotNull Result<? extends R, ? extends E> flatMap(
-                final @NonNull Function<? super T, ? extends @NotNull Result<? extends R, ? extends E>> mapper
+        public <R> @NotNull Result<R, E> flatMap(
+                final @NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper
         ) {
             return mapper.apply(value);
         }
 
         @Override
-        public @NotNull <@Any R> Result<? extends T, ? extends R> or(
-                final @NonNull Result<? extends T, ? extends R> alternateResult
-        ) {
+        public @NotNull <@Any R> Result<T, R> or(final @NonNull Result<T, R> alternateResult) {
             return transmuteErrorType();
         }
 
         @Override
-        public @NotNull <@Any R> Result<? extends T, ? extends R> orElse(
-                final @NonNull Function<? super E, ? extends @NotNull Result<? extends T, ? extends R>> mapper
+        public @NotNull <@Any R> Result<T, R> orElse(
+                final @NonNull Function<? super E, ? extends @NotNull Result<T, R>> mapper
         ) {
             return transmuteErrorType();
         }
@@ -751,9 +741,7 @@ public interface Result<T, E> extends Supplier<T> {
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
 
         @Override
-        public <@Any R> @NotNull Result<? extends R, E> map(
-                final @NonNull Function<? super T, ? extends R> mappingFunction
-        ) {
+        public <@Any R> @NotNull Result<R, E> map(final @NonNull Function<? super T, ? extends R> mappingFunction) {
             return transmuteResultType();
         }
 
@@ -763,9 +751,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public @NotNull <R> Result<T, ? extends R> mapError(
-                final @NonNull Function<? super E, ? extends R> mappingFunction
-        ) {
+        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<? super E, ? extends R> mappingFunction) {
             return error(mappingFunction.apply(error));
         }
 
@@ -777,29 +763,25 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <@Any R> @NotNull Result<? extends R, ? extends E> and(
-                final @NonNull Result<? extends R, ? extends E> nextResult
+        public <@Any R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
+            return transmuteResultType();
+        }
+
+        @Override
+        public <@Any R> @NotNull Result<R, E> flatMap(
+                final @NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper
         ) {
             return transmuteResultType();
         }
 
         @Override
-        public <@Any R> @NotNull Result<? extends R, ? extends E> flatMap(
-                final @NonNull Function<? super T, ? extends @NotNull Result<? extends R, ? extends E>> mapper
-        ) {
-            return transmuteResultType();
-        }
-
-        @Override
-        public @NotNull <R> Result<? extends T, ? extends R> or(
-                final @NonNull Result<? extends T, ? extends R> alternateResult
-        ) {
+        public @NotNull <R> Result<T, R> or(final @NonNull Result<T, R> alternateResult) {
             return alternateResult;
         }
 
         @Override
-        public @NotNull <R> Result<? extends T, ? extends R> orElse(
-                final @NonNull Function<? super E, ? extends @NotNull Result<? extends T, ? extends R>> mapper
+        public @NotNull <R> Result<T, R> orElse(
+                final @NonNull Function<? super E, ? extends @NotNull Result<T, R>> mapper
         ) {
             return mapper.apply(error);
         }
