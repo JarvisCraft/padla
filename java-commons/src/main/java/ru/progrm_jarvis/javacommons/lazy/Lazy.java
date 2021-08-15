@@ -148,7 +148,6 @@ public interface Lazy<T> extends Supplier<T> {
      *
      * @param <T> type of wrapped value
      */
-    @Data
     @FieldDefaults(level = AccessLevel.PRIVATE)
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     final class SimpleLazy<T> implements Lazy<T> {
