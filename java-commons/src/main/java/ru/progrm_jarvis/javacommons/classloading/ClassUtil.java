@@ -4,13 +4,12 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.unchecked.UncheckedCasts;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static ru.progrm_jarvis.javacommons.unchecked.UncheckedCasts.uncheckedClassCast;
 
 /**
  * Utility for class-related stuff.
@@ -134,7 +133,9 @@ public class ClassUtil {
                 SORTED_PRIMITIVE_CLASSES, primitiveClass, CLASS_HASH_CODE_COMPARATOR
         )) < 0) throw new IllegalArgumentException("Given class is not primitive");
 
-        return uncheckedClassCast(PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex]);
+        return UncheckedCasts.uncheckedClassCast(
+                PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex]
+        );
     }
 
     /**
@@ -146,7 +147,7 @@ public class ClassUtil {
      */
     public <T> @NotNull Class<? extends T> toNonPrimitive(final @NotNull Class<? super T> originalClass) {
         final int primitiveClassIndex;
-        return uncheckedClassCast(
+        return UncheckedCasts.uncheckedClassCast(
                 (primitiveClassIndex = Arrays.binarySearch(
                         SORTED_PRIMITIVE_CLASSES, originalClass, CLASS_HASH_CODE_COMPARATOR
                 )) < 0 ? originalClass : PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex]
@@ -168,7 +169,9 @@ public class ClassUtil {
                 SORTED_PRIMITIVE_WRAPPER_CLASSES, primitiveWrapperClass, CLASS_HASH_CODE_COMPARATOR
         )) < 0) throw new IllegalArgumentException("Given class is not a primitive-wrapper");
 
-        return uncheckedClassCast(PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex]);
+        return UncheckedCasts.uncheckedClassCast(
+                PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex]
+        );
     }
 
     /**
@@ -188,7 +191,7 @@ public class ClassUtil {
                                                 final @NotNull Class<? super T> target) {
         // As `Class#isAssignableFrom()` is an intrinsic candidate
         // there is no need for simple `==` check which is probably included in it
-        if (target.isAssignableFrom(original)) return uncheckedClassCast(original);
+        if (target.isAssignableFrom(original)) return UncheckedCasts.uncheckedClassCast(original);
 
         if(!original.isPrimitive()) throw new IllegalArgumentException(
                 "Original type " + original + " cannot be integrated with the target type " + target
@@ -201,7 +204,7 @@ public class ClassUtil {
                         + " cannot be integrated with target type " + target
         );
 
-        return uncheckedClassCast(wrapper);
+        return UncheckedCasts.uncheckedClassCast(wrapper);
     }
 
     /**

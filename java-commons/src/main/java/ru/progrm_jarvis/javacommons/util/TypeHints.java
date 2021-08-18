@@ -3,10 +3,9 @@ package ru.progrm_jarvis.javacommons.util;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.progrm_jarvis.javacommons.unchecked.UncheckedCasts;
 
 import java.lang.annotation.*;
-
-import static ru.progrm_jarvis.javacommons.unchecked.UncheckedCasts.uncheckedClassCast;
 
 /**
  * Utilities related to special hacks around Java's types, especially generics.
@@ -24,7 +23,7 @@ public class TypeHints {
      */
     @SuppressWarnings("unchecked")
     public <T> @NotNull Class<T> resolve(final @Nullable T... typeHint) {
-        return uncheckedClassCast(typeHint.getClass().getComponentType());
+        return UncheckedCasts.uncheckedClassCast(typeHint.getClass().getComponentType());
     }
 
     /**

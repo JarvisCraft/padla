@@ -33,7 +33,6 @@ import java.util.logging.Level;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
-import static ru.progrm_jarvis.javacommons.unchecked.UncheckedCasts.uncheckedClassCast;
 
 /**
  * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
@@ -555,7 +554,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
 
             final MethodHandle constructor;
             {
-                final Class<? extends TextModel<T>> definedClass = uncheckedClassCast(
+                final Class<? extends TextModel<T>> definedClass = UncheckedCasts.uncheckedClassCast(
                         GcClassDefiners.getDefault()
                                 .defineClass(LOOKUP, className, clazz.toByteArray())
                 );
