@@ -70,7 +70,7 @@ public class LegacyCollectorExtensions {
      *
      * @param raw raw-types list
      * @param <T> exact wanted type of list elements
-     * @return the provided list with its type case to the specific one
+     * @return the provided list with its type cast to the specific one
      *
      * @apiNote this is effectively no-op
      */

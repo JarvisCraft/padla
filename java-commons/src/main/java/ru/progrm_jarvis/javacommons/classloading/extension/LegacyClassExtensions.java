@@ -57,14 +57,13 @@ public class LegacyClassExtensions {
      *
      * @param type raw-typed array-class object
      * @param <T> exact wanted type of array-class object
-     * @return the provided array-class object with its type case to the specific one
+     * @return the provided array-class object with its type cast to the specific one
      *
      * @apiNote this is effectively no-op
      */
-    // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
     @Contract("_ -> param1")
     @SuppressWarnings("unchecked")
-    private <T> Class<T[]> uncheckedArrayClassCast(final Class<?> type) {
+    public <T> Class<T[]> uncheckedArrayClassCast(final Class<?> type) {
         return (Class<T[]>) type;
     }
 }
