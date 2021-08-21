@@ -1,13 +1,13 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.object.Pair;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
@@ -35,14 +35,14 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
      * Weak cache of allocated instance of this static method wrappers of static methods
      */
     protected static final @NotNull Cache<@NotNull Method, @NotNull StaticMethodWrapper<?, ?>> STATIC_WRAPPER_CACHE
-            = Caffeine.newBuilder().weakValues().build();
+            = Caches.weakValuesCache();
     /**
      * Weak cache of allocated instance of this static method wrappers of non-static bound methods
      */
     protected static final @NotNull Cache<
             @NotNull Pair<@NotNull Method, @NotNull ?>, @NotNull StaticMethodWrapper<?, ?>
             > BOUND_WRAPPER_CACHE
-            = Caffeine.newBuilder().weakValues().build();
+            = Caches.weakValuesCache();
     /**
      * Function performing the method invocation
      */
