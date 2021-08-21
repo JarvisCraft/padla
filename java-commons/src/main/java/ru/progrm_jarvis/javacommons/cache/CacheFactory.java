@@ -57,7 +57,7 @@ public interface CacheFactory {
         private static final @NotNull CacheFactory INSTANCE = new NeverCacheFactory();
 
         @Override
-        public @NotNull <K, V> Cache<K, V> weakKeysCache() {
+        public <K, V> @NotNull Cache<K, V> weakKeysCache() {
             return Cache.never();
         }
 
@@ -67,7 +67,7 @@ public interface CacheFactory {
         }
 
         @Override
-        public @NotNull <K, V> Cache<K, V> softValuesCache() {
+        public <K, V> @NotNull Cache<K, V> softValuesCache() {
             return Cache.never();
         }
     }
