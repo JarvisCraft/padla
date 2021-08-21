@@ -1,13 +1,13 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.object.Pair;
 import ru.progrm_jarvis.reflector.wrapper.AbstractFieldWrapper;
@@ -33,13 +33,13 @@ public class InvokeStaticFieldWrapper<@NotNull T, V>
      * Weak cache of allocated instance of this static field wrappers of static fields
      */
     protected static final @NotNull Cache<@NotNull Field, @NotNull StaticFieldWrapper<?, ?>> STATIC_WRAPPER_CACHE
-            = Caffeine.newBuilder().weakValues().build();
+            = Caches.weakValuesCache();
     /**
      * Weak cache of allocated instance of this static field wrappers of non-static bound fields
      */
     protected static final @NotNull Cache<
             @NotNull Pair<@NotNull Field, @NotNull ?>, @NotNull StaticFieldWrapper<?, ?>
-            > BOUND_WRAPPER_CACHE = Caffeine.newBuilder().weakValues().build();
+            > BOUND_WRAPPER_CACHE = Caches.weakValuesCache();
     /**
      * Supplier performing the field get operation
      */

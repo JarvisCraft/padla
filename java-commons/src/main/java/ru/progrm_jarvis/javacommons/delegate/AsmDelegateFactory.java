@@ -1,7 +1,5 @@
 package ru.progrm_jarvis.javacommons.delegate;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
@@ -13,6 +11,8 @@ import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 
@@ -261,9 +261,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
          * Instance of {@link AsmDelegateFactory ASM-based delegate factory}
          */
         private final @NotNull DelegateFactory INSTANCE = new AsmDelegateFactory(
-                Caffeine.newBuilder()
-                        .weakKeys() // classes are GC-friendly loaded so they may be effectively weakly-referenced
-                        .build()
+                Caches.weakKeysCache() // classes are GC-friendly loaded so they may be effectively weakly-referenced
         );
     }
 }
