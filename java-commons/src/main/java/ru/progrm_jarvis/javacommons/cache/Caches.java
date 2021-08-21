@@ -94,7 +94,7 @@ public class Caches {
         }
 
         @Override
-        public @NotNull <K, V> Cache<K, V> weakKeysCache() {
+        public <K, V> @NotNull Cache<K, V> weakKeysCache() {
             return wrap(Caffeine.newBuilder().weakKeys().build());
         }
 
@@ -104,7 +104,7 @@ public class Caches {
         }
 
         @Override
-        public @NotNull <K, V> Cache<K, V> softValuesCache() {
+        public <K, V> @NotNull Cache<K, V> softValuesCache() {
             return wrap(Caffeine.newBuilder().softValues().build());
         }
     }
