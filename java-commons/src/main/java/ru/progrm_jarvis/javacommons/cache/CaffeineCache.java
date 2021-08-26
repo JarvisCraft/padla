@@ -50,7 +50,7 @@ public class CaffeineCache {
      * @return created Caffeine Cache factory or {@code null} if it is unavailable
      */
     public static @Nullable CacheFactory tryCreateFactory() {
-        return AVAILABLE ? new CaffeineCacheFactory() : null;
+        return AVAILABLE ? CaffeineCacheFactory.INSTANCE : null;
     }
 
     /**
