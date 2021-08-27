@@ -129,28 +129,6 @@ public interface DataSerializer<T> {
      * Converts the given object into a byte-array.
      *
      * @param object object to be converted into a byte-array
-     * @param expectedSize expected size of the created byte-array
-     * @return byte-array representation of the object
-     *
-     * @apiNote {@code expectedSize} is not required to actually be exact, it is just used for possible optimizations
-     * @implNote default implementation simply creates a new {@link ByteArrayOutputStream}
-     * wrapped in {@link DataOutputStream} and passes it to {@link #write(DataOutputStream, Object)}
-     * @implNote delegates to {@link #toByteArray(Object, int)}
-     * @implSpec should not be overridden
-     * @see #write(DataOutputStream, Object) stream equivalent of this method
-     */
-    @SneakyThrows(IOException.class)
-    default byte @NotNull [] toByteArrayUnchecked(
-            final T object,
-            final @Range(from = 1, to = Integer.MAX_VALUE) int expectedSize
-    ) {
-        return toByteArray(object, expectedSize);
-    }
-
-    /**
-     * Converts the given object into a byte-array.
-     *
-     * @param object object to be converted into a byte-array
      * @return byte-array representation of the object
      *
      * @throws IOException if an error happens while writing
@@ -169,6 +147,28 @@ public interface DataSerializer<T> {
 
             return result.toByteArray();
         }
+    }
+
+    /**
+     * Converts the given object into a byte-array.
+     *
+     * @param object object to be converted into a byte-array
+     * @param expectedSize expected size of the created byte-array
+     * @return byte-array representation of the object
+     *
+     * @apiNote {@code expectedSize} is not required to actually be exact, it is just used for possible optimizations
+     * @implNote default implementation simply creates a new {@link ByteArrayOutputStream}
+     * wrapped in {@link DataOutputStream} and passes it to {@link #write(DataOutputStream, Object)}
+     * @implNote delegates to {@link #toByteArray(Object, int)}
+     * @implSpec should not be overridden
+     * @see #write(DataOutputStream, Object) stream equivalent of this method
+     */
+    @SneakyThrows(IOException.class)
+    default byte @NotNull [] toByteArrayUnchecked(
+            final T object,
+            final @Range(from = 1, to = Integer.MAX_VALUE) int expectedSize
+    ) {
+        return toByteArray(object, expectedSize);
     }
 
     /**
