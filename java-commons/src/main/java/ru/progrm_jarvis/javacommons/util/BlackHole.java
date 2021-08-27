@@ -11,8 +11,8 @@ public class BlackHole {
     /**
      * Consumes the provided value without any visible side effects.
      * This may be used for scenarios when an arbitrary expression has to be treated as a statement,
-     * for example{@code String.class}</pre> is an expression but not a statement
-     * but <pre>{@code BlackHole.consume(String.class)}</pre> is.
+     * for example{@code String.class} is an expression but not a statement
+     * but {@code BlackHole.consume(String.class)} is.
      *
      * @param value consumed value
      * @param <T> type of consumed value
