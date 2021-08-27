@@ -10,6 +10,8 @@ import java.util.function.UnaryOperator;
 
 /**
  * Wrapper of a reference.
+ *
+ * @param <T> type of reference
  */
 public interface ReferenceWrapper<T> {
 
@@ -17,6 +19,7 @@ public interface ReferenceWrapper<T> {
      * Creates new simple reference wrapper.
      *
      * @param value initial reference of int wrapper
+     * @param <T> type of reference
      * @return created reference wrapper
      */
     static <T> ReferenceWrapper<T> create(final T value) {
@@ -26,6 +29,7 @@ public interface ReferenceWrapper<T> {
     /**
      * Creates new simple reference wrapper with initial value set to {@code null}.
      *
+     * @param <T> type of reference
      * @return created reference wrapper
      */
     static <T> ReferenceWrapper<T> create() {
@@ -36,6 +40,7 @@ public interface ReferenceWrapper<T> {
      * Creates new atomic reference wrapper.
      *
      * @param value initial value of reference wrapper
+     * @param <T> type of reference
      * @return created reference wrapper
      */
     static <T> ReferenceWrapper<T> createAtomic(final T value) {
@@ -45,6 +50,7 @@ public interface ReferenceWrapper<T> {
     /**
      * Creates new atomic reference wrapper with initial value set to {@code null}.
      *
+     * @param <T> type of reference
      * @return created reference wrapper
      */
     static <T> ReferenceWrapper<T> createAtomic() {
@@ -109,6 +115,8 @@ public interface ReferenceWrapper<T> {
 
     /**
      * {@link ReferenceWrapper} implementation based on primitive reference.
+     *
+     * @param <T> type of reference
      */
     @ToString
     @EqualsAndHashCode
@@ -166,6 +174,8 @@ public interface ReferenceWrapper<T> {
 
     /**
      * {@link ReferenceWrapper} implementation based on {@link AtomicReference}.
+     *
+     * @param <T> type of reference
      */
     @ToString
     @EqualsAndHashCode
