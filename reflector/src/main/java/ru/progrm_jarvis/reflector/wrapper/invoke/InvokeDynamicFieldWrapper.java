@@ -1,12 +1,12 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.reflector.wrapper.AbstractFieldWrapper;
 import ru.progrm_jarvis.reflector.wrapper.DynamicFieldWrapper;
@@ -31,7 +31,7 @@ public class InvokeDynamicFieldWrapper<@NotNull T, V>
      * Weak cache of allocated instance of this dynamic field wrapper
      */
     protected static final @NotNull Cache<@NotNull Field, @NotNull DynamicFieldWrapper<?, ?>> CACHE
-            = Caffeine.newBuilder().weakValues().build();
+            = Caches.weakValuesCache();
 
     /**
      * Function performing the field get operation

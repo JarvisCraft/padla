@@ -1,10 +1,13 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.*;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.util.function.ThrowingFunction;
+import ru.progrm_jarvis.javacommons.annotation.Any;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -83,7 +86,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #from(Optional, Supplier) alternative with customizable error value
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
-    static <T, E> @NotNull Result<T, @Nullable E> from(final @NonNull Optional<T> optional) {
+    static <T, E> @NotNull Result<T, @Nullable E> from(final @NonNull Optional<? extends T> optional) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(Result::nullError);
     }
 
@@ -101,8 +104,8 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #from(Optional) alternative with default (i.e. null) error
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType") // convertion from optional itself
-    static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<T> optional,
-                                             final @NonNull Supplier<E> errorSupplier) {
+    static <T, E> @NotNull Result<T, E> from(final @NonNull Optional<? extends T> optional,
+                                             final @NonNull Supplier<? extends E> errorSupplier) {
         return optional.<Result<T, E>>map(Result::success).orElseGet(() -> error(errorSupplier.get()));
     }
 
@@ -114,7 +117,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return {@link #success(Object) successful result} if the callable ran unexceptionally
      * and {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      */
-    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<T> callable) {
+    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<? extends T> callable) {
         final T value;
         try {
             value = callable.call();
@@ -188,7 +191,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #unwrap() default message {@link NotSuccessException} analog
      * @see #orElseSneakyThrow(Function) unchecked equivalent
      */
-    <X extends Throwable> T orElseThrow(@NonNull Function<E, X> exceptionFactory) throws X;
+    <X extends Throwable> T orElseThrow(@NonNull Function<? super E, ? extends X> exceptionFactory) throws X;
 
     /**
      * Gets the value of this result throwing {@code X} got by using the specified supplier
@@ -204,7 +207,9 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #orElseThrow(Function) checked equivalent
      */
     @SneakyThrows
-    default <X extends Throwable> T orElseSneakyThrow(final @NonNull Function<E, X> exceptionFactory) {
+    default <X extends Throwable> T orElseSneakyThrow(
+            final @NonNull Function<? super E, ? extends X> exceptionFactory
+    ) {
         return orElseThrow(exceptionFactory);
     }
 
@@ -225,7 +230,7 @@ public interface Result<T, E> extends Supplier<T> {
      * to be returned if this is an {@link #isError()} error value}
      * @return successful value if this a {@link #isSuccess() successful result} or {@code defaultValue} otherwise
      */
-    T orGetDefault(@NonNull Supplier<T> defaultValueSupplier);
+    T orGetDefault(@NonNull Supplier<? extends T> defaultValueSupplier);
 
     /**
      * Gets the error of this result throwing a {@link NotErrorException}
@@ -267,7 +272,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #expectError(String) {@link NotErrorException} analog
      * @see #errorOrElseSneakyThrow(Function) unchecked equivalent
      */
-    <X extends Throwable> E errorOrElseThrow(@NonNull Function<T, X> exceptionFactory) throws X;
+    <X extends Throwable> E errorOrElseThrow(@NonNull Function<? super T, ? extends X> exceptionFactory) throws X;
 
     /**
      * Gets the error of this result throwing {@code X} got by using the specified supplier
@@ -283,7 +288,9 @@ public interface Result<T, E> extends Supplier<T> {
      * @see #errorOrElseThrow(Function) checked equivalent
      */
     @SneakyThrows
-    default <X extends Throwable> E errorOrElseSneakyThrow(final @NonNull Function<T, X> exceptionFactory) {
+    default <X extends Throwable> E errorOrElseSneakyThrow(
+            final @NonNull Function<? super T, ? extends X> exceptionFactory
+    ) {
         return errorOrElseThrow(exceptionFactory);
     }
 
@@ -292,14 +299,14 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @param successConsumer consumer accepting the {@link T successful value}
      */
-    void ifSuccess(@NonNull Consumer<T> successConsumer);
+    void ifSuccess(@NonNull Consumer<? super T> successConsumer);
 
     /**
      * Invokes the given function if this result is an {@link #isError() error result}.
      *
      * @param errorConsumer consumer accepting the {@link E error value}
      */
-    void ifError(@NonNull Consumer<E> errorConsumer);
+    void ifError(@NonNull Consumer<? super E> errorConsumer);
 
     /**
      * Invokes the corresponding function depending on this result's type.
@@ -307,7 +314,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param successConsumer consumer accepting the {@link T successful value}
      * @param errorConsumer consumer accepting the {@link E error value}
      */
-    void handle(@NonNull Consumer<T> successConsumer, @NonNull Consumer<E> errorConsumer);
+    void handle(@NonNull Consumer<? super T> successConsumer, @NonNull Consumer<? super E> errorConsumer);
 
     /* ********************************************** Mapping methods ********************************************** */
 
@@ -320,7 +327,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return mapped successful result if it was a {@link #isSuccess() successful result}
      * or an error result if it was an {@link #isError() error result}
      */
-    <R> @NotNull Result<R, E> map(@NonNull Function<T, R> mappingFunction);
+    <R> @NotNull Result<R, E> map(@NonNull Function<? super T, ? extends R> mappingFunction);
 
     /**
      * Consumes the result if it is {@link #isSuccess() successful} returning the same result.
@@ -328,7 +335,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param consumer consumer to accept the successful result
      * @return the same result
      */
-    @NotNull Result<T, E> peek(@NonNull Consumer<T> consumer);
+    @NotNull Result<T, E> peek(@NonNull Consumer<? super T> consumer);
 
     /**
      * Maps the result if it is an {@link #isError() error result} returning a new result with the result of mapping
@@ -339,7 +346,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @return mapped error result if it was an {@link #isError() an error result}
      * or a successful result if it was a {@link #isError() successful result}
      */
-    <R> @NotNull Result<T, R> mapError(@NonNull Function<E, R> mappingFunction);
+    <R> @NotNull Result<T, R> mapError(@NonNull Function<? super E, ? extends R> mappingFunction);
 
     /**
      * Consumes the result if it is an {@link #isError() error result} returning the same result.
@@ -347,7 +354,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param consumer consumer to accept the successful result
      * @return the same result
      */
-    @NotNull Result<T, E> peekError(@NonNull Consumer<E> consumer);
+    @NotNull Result<T, E> peekError(@NonNull Consumer<? super E> consumer);
 
     /**
      * Returns the given result if this is a {@link #isSuccess() successful result}
@@ -372,7 +379,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @see #and(Result) non-lazy analog
      */
-    <R> @NotNull Result<R, E> flatMap(@NonNull Function<T, @NotNull Result<R, E>> mapper);
+    <R> @NotNull Result<R, E> flatMap(@NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper);
 
     /**
      * Returns this result if this is a {@link #isSuccess() successful result}
@@ -397,7 +404,7 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @see #or(Result) non-lazy analog
      */
-    <R> @NotNull Result<T, R> orElse(@NonNull Function<E, @NotNull Result<T, R>> mapper);
+    <R> @NotNull Result<T, R> orElse(@NonNull Function<? super E, ? extends @NotNull Result<T, R>> mapper);
 
     /**
      * Swaps this result making an {@link #error(Object) error result} from a {@link #isSuccess() successful result}
@@ -453,7 +460,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
-    class Success<T, E> implements Result<T, E> {
+    class Success<T, @Any E> implements Result<T, E> {
 
         /**
          * Value wrapped by this result
@@ -467,7 +474,7 @@ public interface Result<T, E> extends Supplier<T> {
          * @return this result with changed error type
          */
         @SuppressWarnings("unchecked")
-        private <R> Result<T, R> changeErrorType() {
+        private <@Any R> Result<T, R> transmuteErrorType() {
             return (Result<T, R>) this;
         }
 
@@ -498,7 +505,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> T orElseThrow(final @NonNull Function<E, X> exceptionFactory) {
+        public <X extends Throwable> T orElseThrow(final @NonNull Function<? super E, ? extends X> exceptionFactory) {
             return value;
         }
 
@@ -508,7 +515,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public T orGetDefault(final @NonNull Supplier<T> defaultValueSupplier) {
+        public T orGetDefault(final @NonNull Supplier<? extends T> defaultValueSupplier) {
             return value;
         }
 
@@ -523,20 +530,25 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> E errorOrElseThrow(final @NonNull Function<T, X> exceptionSupplier) throws X {
+        public <X extends Throwable> E errorOrElseThrow(
+                final @NonNull Function<? super T, ? extends X> exceptionSupplier
+        ) throws X {
             throw exceptionSupplier.apply(value);
         }
 
         @Override
-        public void ifSuccess(final @NonNull Consumer<T> successConsumer) {
+        public void ifSuccess(final @NonNull Consumer<? super T> successConsumer) {
             successConsumer.accept(value);
         }
 
         @Override
-        public void ifError(final @NonNull Consumer<E> errorConsumer) {}
+        public void ifError(final @NonNull Consumer<? super E> errorConsumer) {}
 
         @Override
-        public void handle(final @NonNull Consumer<T> successConsumer, final @NonNull Consumer<E> errorConsumer) {
+        public void handle(
+                final @NonNull Consumer<? super T> successConsumer,
+                final @NonNull Consumer<? super E> errorConsumer
+        ) {
             successConsumer.accept(value);
         }
 
@@ -545,24 +557,26 @@ public interface Result<T, E> extends Supplier<T> {
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
 
         @Override
-        public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
+        public <R> @NotNull Result<R, E> map(final @NonNull Function<? super T, ? extends R> mappingFunction) {
             return success(mappingFunction.apply(value));
         }
 
         @Override
-        public @NotNull Result<T, E> peek(final @NonNull Consumer<T> consumer) {
+        public @NotNull Result<T, E> peek(final @NonNull Consumer<? super T> consumer) {
             consumer.accept(value);
 
             return this;
         }
 
         @Override
-        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<E, R> mappingFunction) {
-            return changeErrorType();
+        public @NotNull <@Any R> Result<T, R> mapError(
+                final @NonNull Function<? super E, ? extends R> mappingFunction
+        ) {
+            return transmuteErrorType();
         }
 
         @Override
-        public @NotNull Result<T, E> peekError(final @NonNull Consumer<E> consumer) {
+        public @NotNull Result<T, E> peekError(final @NonNull Consumer<? super E> consumer) {
             return this;
         }
 
@@ -572,18 +586,22 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <R> @NotNull Result<R, E> flatMap(final @NonNull Function<T, @NotNull Result<R, E>> mapper) {
+        public <R> @NotNull Result<R, E> flatMap(
+                final @NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper
+        ) {
             return mapper.apply(value);
         }
 
         @Override
-        public @NotNull <R> Result<T, R> or(final @NonNull Result<T, R> alternateResult) {
-            return changeErrorType();
+        public @NotNull <@Any R> Result<T, R> or(final @NonNull Result<T, R> alternateResult) {
+            return transmuteErrorType();
         }
 
         @Override
-        public @NotNull <R> Result<T, R> orElse(final @NonNull Function<E, @NotNull Result<T, R>> mapper) {
-            return changeErrorType();
+        public @NotNull <@Any R> Result<T, R> orElse(
+                final @NonNull Function<? super E, ? extends @NotNull Result<T, R>> mapper
+        ) {
+            return transmuteErrorType();
         }
 
         @Override
@@ -625,7 +643,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
-    class Error<T, E> implements Result<T, E> {
+    class Error<@Any T, E> implements Result<T, E> {
 
         /**
          * Error wrapped by this result
@@ -639,7 +657,7 @@ public interface Result<T, E> extends Supplier<T> {
          * @return this result with changed success type
          */
         @SuppressWarnings("unchecked")
-        private <R> Result<R, E> changeResultType() {
+        private <@Any R> Result<R, E> transmuteResultType() {
             return (Result<R, E>) this;
         }
 
@@ -670,7 +688,9 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> T orElseThrow(final @NonNull Function<E, X> exceptionFactory) throws X {
+        public <X extends Throwable> T orElseThrow(
+                final @NonNull Function<? super E, ? extends X> exceptionFactory
+        ) throws X {
             throw exceptionFactory.apply(error);
         }
 
@@ -680,7 +700,7 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public T orGetDefault(final @NonNull Supplier<T> defaultValueSupplier) {
+        public T orGetDefault(final @NonNull Supplier<? extends T> defaultValueSupplier) {
             return defaultValueSupplier.get();
         }
 
@@ -695,20 +715,25 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public <X extends Throwable> E errorOrElseThrow(final @NonNull Function<T, X> exceptionFactory) {
+        public <X extends Throwable> E errorOrElseThrow(
+                final @NonNull Function<? super T, ? extends X> exceptionFactory
+        ) {
             return error;
         }
 
         @Override
-        public void ifSuccess(final @NonNull Consumer<T> successConsumer) {}
+        public void ifSuccess(final @NonNull Consumer<? super T> successConsumer) {}
 
         @Override
-        public void ifError(final @NonNull Consumer<E> errorConsumer) {
+        public void ifError(final @NonNull Consumer<? super E> errorConsumer) {
             errorConsumer.accept(error);
         }
 
         @Override
-        public void handle(final @NonNull Consumer<T> successConsumer, final @NonNull Consumer<E> errorConsumer) {
+        public void handle(
+                final @NonNull Consumer<? super T> successConsumer,
+                final @NonNull Consumer<? super E> errorConsumer
+        ) {
             errorConsumer.accept(error);
         }
         //</editor-fold>
@@ -716,35 +741,37 @@ public interface Result<T, E> extends Supplier<T> {
         //<editor-fold desc="Mapping methods" defaultstate="collapsed">
 
         @Override
-        public <R> @NotNull Result<R, E> map(final @NonNull Function<T, R> mappingFunction) {
-            return changeResultType();
+        public <@Any R> @NotNull Result<R, E> map(final @NonNull Function<? super T, ? extends R> mappingFunction) {
+            return transmuteResultType();
         }
 
         @Override
-        public @NotNull Result<T, E> peek(final @NonNull Consumer<T> consumer) {
+        public @NotNull Result<T, E> peek(final @NonNull Consumer<? super T> consumer) {
             return this;
         }
 
         @Override
-        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<E, R> mappingFunction) {
+        public @NotNull <R> Result<T, R> mapError(final @NonNull Function<? super E, ? extends R> mappingFunction) {
             return error(mappingFunction.apply(error));
         }
 
         @Override
-        public @NotNull Result<T, E> peekError(final @NonNull Consumer<E> consumer) {
+        public @NotNull Result<T, E> peekError(final @NonNull Consumer<? super E> consumer) {
             consumer.accept(error);
 
             return this;
         }
 
         @Override
-        public <R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
-            return changeResultType();
+        public <@Any R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
+            return transmuteResultType();
         }
 
         @Override
-        public <R> @NotNull Result<R, E> flatMap(final @NonNull Function<T, @NotNull Result<R, E>> mapper) {
-            return changeResultType();
+        public <@Any R> @NotNull Result<R, E> flatMap(
+                final @NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper
+        ) {
+            return transmuteResultType();
         }
 
         @Override
@@ -753,7 +780,9 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
-        public @NotNull <R> Result<T, R> orElse(final @NonNull Function<E, @NotNull Result<T, R>> mapper) {
+        public @NotNull <R> Result<T, R> orElse(
+                final @NonNull Function<? super E, ? extends @NotNull Result<T, R>> mapper
+        ) {
             return mapper.apply(error);
         }
 
@@ -936,7 +965,9 @@ public interface Result<T, E> extends Supplier<T> {
          * @return successful result's value if it was a {@link #isSuccess() successful result}
          * @throws X if it was an {@link #isError() error result}
          */
-        public <T, X extends Throwable> T rethrow(final @NotNull Result<T, @NotNull X> result) throws X {
+        public <T, X extends Throwable> T rethrow(
+                final @NotNull Result<? extends T, ? extends @NotNull X> result
+        ) throws X {
             return result.orElseThrow(Function.identity());
         }
     }
