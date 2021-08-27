@@ -14,7 +14,7 @@ import java.util.stream.Collector;
 
 /**
  * {@link Collector Collectors} for use with enums with automatic type inference.
- * This delegates its logic to the corresponding methods of {@link AutoEnumCollectors}
+ * This delegates its logic to the corresponding methods of {@link EnumCollectors}
  * but infers enum types via {@link TypeHints#resolve(Object[]) type hints}
  * this leads to insignificant overhead due to empty-array allocation cost
  * thus it is recommended to provide types explicitly in critical sections.
@@ -29,7 +29,9 @@ public class AutoEnumCollectors {
      * @param valueMapper mapping function used to convert the elements into values
      * @param merger function used to handle duplicate values
      * @param typeHint array used for enum-type discovery
+     * @param <T> type of the input elements
      * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
@@ -49,6 +51,7 @@ public class AutoEnumCollectors {
      * @param merger function used to handle duplicate values
      * @param typeHint array used for enum-type discovery
      * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
