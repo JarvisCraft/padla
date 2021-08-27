@@ -5,7 +5,7 @@
 
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-rc.4</version>
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
@@ -21,7 +21,7 @@
         <!-- Testing -->
         <version.junit>5.7.2</version.junit>
         <version.junit.platform>1.7.2</version.junit.platform>
-        <version.mockito>3.12.4</version.mockito>
+        <version.mockito>3.11.0</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -163,17 +163,19 @@
             </dependency>
 
             <!-- Libraries -->
+            <!-- Caching -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.9.2</version>
+                <version>2.9.1</version>
+                <scope>provided</scope>
+                <optional>true</optional>
             </dependency>
-
             <!-- Bytecode generation -->
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm</artifactId>
-                <version>9.2</version>
+                <version>9.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
@@ -198,7 +200,7 @@
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>22.0.0</version>
+                <version>21.0.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
