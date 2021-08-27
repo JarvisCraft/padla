@@ -1,13 +1,13 @@
 package ru.progrm_jarvis.reflector.wrapper.invoke;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingBiFunction;
 import ru.progrm_jarvis.reflector.wrapper.AbstractMethodWrapper;
@@ -37,7 +37,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
      * Weak cache of allocated instance of this constructor wrapper
      */
     private static final @NotNull Cache<@NotNull Method, @NotNull DynamicMethodWrapper<?, ?>> CACHE
-            = Caffeine.newBuilder().weakValues().build();
+            = Caches.weakValuesCache();
 
     /**
      * Bi-function performing the method invocation
