@@ -1,7 +1,5 @@
 package ru.progrm_jarvis.javacommons.collection;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import javassist.*;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -13,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
@@ -52,8 +52,7 @@ public class CollectionFactory {
     /**
      * Cache of instances of generated enum sets using naturally sorted array of its elements as the key
      */
-    private final @NonNull Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS
-            = Caffeine.newBuilder().weakValues().build();
+    private final @NonNull Cache<Enum<?>[], Set<Enum<?>>> IMMUTABLE_ENUM_SETS = Caches.weakValuesCache();
 
     /**
      * {@link CtClass} representation of {@link AbstractImmutableSet} wrapped in {@link Lazy}

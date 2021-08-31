@@ -1,12 +1,12 @@
 package ru.progrm_jarvis.javacommons.invoke;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.cache.Cache;
+import ru.progrm_jarvis.javacommons.cache.Caches;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -72,10 +72,8 @@ public class InvokeUtil {
      */
     public final @NotNull MethodType SUPPLIER_OBJECT__METHOD_TYPE = methodType(Supplier.class, Object.class);
 
-    private final @NonNull Cache<@NotNull Class<?>, @NotNull Lookup> LOOKUPS
-            = Caffeine.newBuilder()
-            .softValues() // because there is no need to GC lookups which may be expansive to create
-            .build();
+    // because there is no need to GC lookups which may be expansive to create
+    private final @NonNull Cache<@NotNull Class<?>, @NotNull Lookup> LOOKUPS = Caches.softValuesCache();
 
     /**
      * Lookup factory which delegated its calls to {@link InvokeUtil#lookup(Class)}
