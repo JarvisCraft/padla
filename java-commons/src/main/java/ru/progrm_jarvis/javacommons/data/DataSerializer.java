@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.io.*;
+import java.util.Optional;
 
 /**
  * Serializer of arbitary data.
@@ -195,8 +196,17 @@ public interface DataSerializer<T> {
      *
      * @return null-friendly equivalent of this data serializer
      */
-    default @NotNull DataSerializer<T> nullable() {
+    default @NotNull DataSerializer<@Nullable T> nullable() {
         return new NullableDataSerializer<>(this);
+    }
+
+    /**
+     * Crates a data serializer based on this one which allows {@link Optional optional} values.
+     *
+     * @return {@link Optional}-friendly equivalent of this data serializer
+     */
+    default @NotNull DataSerializer<@NotNull Optional<T>> optional() {
+        return new OptionalDataSerializer<>(this);
     }
 
     /**
@@ -218,6 +228,29 @@ public interface DataSerializer<T> {
         @Override
         public @Nullable T read(final @NotNull DataInputStream input) throws IOException {
             return input.readBoolean() ? wrapped.read(input) : null;
+        }
+    }
+
+    /**
+     * Data serializer for {@link Optional optional} types.
+     */
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    final class OptionalDataSerializer<T> implements DataSerializer<@NotNull Optional<T>> {
+
+        @NotNull DataSerializer<T> wrapped;
+
+        @Override
+        public void write(final @NotNull DataOutputStream output,
+                          final @NotNull Optional<T> object) throws IOException {
+            final boolean present;
+            output.writeBoolean(present = object.isPresent());
+            if (present) wrapped.write(output, object.get());
+        }
+
+        @Override
+        public @NotNull Optional<T> read(final @NotNull DataInputStream input) throws IOException {
+            return input.readBoolean() ? Optional.of(wrapped.read(input)) : Optional.empty();
         }
     }
 }
