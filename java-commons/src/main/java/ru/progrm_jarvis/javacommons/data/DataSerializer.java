@@ -195,6 +195,8 @@ public interface DataSerializer<T> {
      * Crates a data serializer based on this one which allows null values.
      *
      * @return null-friendly equivalent of this data serializer
+     *
+     * @see #optional() equivalent using {@link Optional} instead
      */
     default @NotNull DataSerializer<@Nullable T> nullable() {
         return new NullableDataSerializer<>(this);
@@ -204,6 +206,8 @@ public interface DataSerializer<T> {
      * Crates a data serializer based on this one which allows {@link Optional optional} values.
      *
      * @return {@link Optional}-friendly equivalent of this data serializer
+     *
+     * @see #nullable() equivalent using nullable values instead
      */
     default @NotNull DataSerializer<@NotNull Optional<T>> optional() {
         return new OptionalDataSerializer<>(this);
