@@ -39,7 +39,7 @@ public class CaffeineCache {
      * @throws IllegalStateException if Caffeine is not available
      */
     public static @NotNull CacheFactory createFactory() {
-        if (AVAILABLE) return new CaffeineCacheFactory();
+        if (AVAILABLE) return CaffeineCacheFactory.INSTANCE;
 
         throw new IllegalStateException("Caffeine Cache is not available");
     }
