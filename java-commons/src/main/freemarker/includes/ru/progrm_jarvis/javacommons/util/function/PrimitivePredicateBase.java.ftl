@@ -143,7 +143,7 @@ public interface ${className} extends Predicate${'<@NotNull ${wrapperType}>'}<#i
     /**
      * Creates a predicate which is always {@code true}.
      *
-     * @return predicate which is always {@code true}.
+     * @return predicate which is always {@code true}
      */
     @Contract(value = "-> _", pure = true)
     static @NotNull DoublePredicate alwaysTrue() {
@@ -153,7 +153,7 @@ public interface ${className} extends Predicate${'<@NotNull ${wrapperType}>'}<#i
     /**
      * Creates a predicate which is always {@code false}.
      *
-     * @return predicate which is always {@code false}.
+     * @return predicate which is always {@code false}
      */
     @Contract(value = "-> _", pure = true)
     static @NotNull DoublePredicate alwaysFalse() {
