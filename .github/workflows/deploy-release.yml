@@ -9,20 +9,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.4
 
       - name: Set up JDK 8
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v2.3.0
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '8'
-
-      - name: Cache Maven local repository
-        uses: actions/cache@v2.1.6
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
+          cache: 'maven'
 
       - name: Import GPG signing key
         run: |
