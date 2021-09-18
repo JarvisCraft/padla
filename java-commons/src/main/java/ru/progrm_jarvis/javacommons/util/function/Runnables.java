@@ -2,6 +2,7 @@ package ru.progrm_jarvis.javacommons.util.function;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.experimental.UtilityClass;
@@ -32,9 +33,11 @@ public class Runnables {
      * @param handler handler invoked on each call to {@link Runnable#run()} with the state applied to it
      * @param <T> type of stored state
      * @return created stateful runnable
+     *
+     * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public <T> @NotNull Runnable stateful(final @NotNull T initialState,
-                                          final @NotNull Consumer<? super T> handler) {
+    public <T> @NotNull Runnable stateful(final T initialState,
+                                          final @NonNull Consumer<? super T> handler) {
         return new StatefulImmutableRunnable<>(handler, initialState);
     }
 
@@ -46,9 +49,11 @@ public class Runnables {
      * providing the new state
      * @param <T> type of stored state
      * @return created stateful runnable
+     *
+     * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public <T> @NotNull Runnable stateful(final @NotNull T initialState,
-                                          final @NotNull Function<? super T, ? extends T> handler) {
+    public <T> @NotNull Runnable stateful(final T initialState,
+                                          final @NonNull Function<? super T, ? extends T> handler) {
         return new StatefulMutableRunnable<>(handler, initialState);
     }
 
