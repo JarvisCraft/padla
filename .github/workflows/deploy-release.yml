@@ -18,10 +18,10 @@ jobs:
           java-version: '8'
           cache: 'maven'
           server-id: 'sonatype-ossrh'
-          server-username: ${{ secrets.SONATYPE_OSSRH_DEPLOYER }}
-          server-password: ${{ secrets.SONATYPE_OSSRH_TOKEN }}
+          server-username: SONATYPE_OSSRH_DEPLOYER
+          server-password: SONATYPE_OSSRH_TOKEN
           gpg-private-key: ${{ secrets.CODE_SIGNING_GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.CODE_SIGNING_GPG_KEY_PASSPHRASE }}
+          gpg-passphrase: CODE_SIGNING_GPG_KEY_PASSPHRASE
 
       - uses: jactions/maven-version@v1.0.0
         id: get_version
@@ -29,3 +29,7 @@ jobs:
       - name: Deploy snapshot
         if: ${{ !endsWith(steps.get_version.outputs.version, '-SNAPSHOT') }}
         run: mvn deploy -B -P build-extras,sign-artifacts,automatic-central-release
+        env:
+          SONATYPE_OSSRH_DEPLOYER: ${{ secrets.SONATYPE_OSSRH_DEPLOYER }}
+          SONATYPE_OSSRH_TOKEN: ${{ secrets.SONATYPE_OSSRH_TOKEN }}
+          CODE_SIGNING_GPG_KEY_PASSPHRASE: ${{ secrets.CODE_SIGNING_GPG_KEY_PASSPHRASE }}
