@@ -43,6 +43,18 @@
         <developerConnection>scm:git:git@github.com:JarvisCraft/padla.git</developerConnection>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <!-- This one is used for automatic sync with Maven Central -->
+            <id>sonatype-ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <developers>
         <developer>
             <id>progrm-jarvis</id>
@@ -241,7 +253,6 @@
     </dependencyManagement>
 
     <profiles>
-        <!-- Deployment-related profiles -->
         <profile>
             <id>build-extras</id>
             <build>
@@ -298,31 +309,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <!-- Repository profiles -->
-        <profile>
-            <id>sonatype-ossrh-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <!-- This one is used for automatic sync with Maven Central -->
-                    <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>github-package-registry-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <id>github-package-registry</id>
-                    <url>https://maven.pkg.github.com/JarvisCraft/padla</url>
-                </repository>
-            </distributionManagement>
         </profile>
         <profile>
             <id>automatic-central-release</id>
