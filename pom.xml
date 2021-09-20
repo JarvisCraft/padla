@@ -97,7 +97,6 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <!-- Minimal supported Java version -->
                         <release>${java.version.minimal}</release>
                     </configuration>
                 </plugin>
