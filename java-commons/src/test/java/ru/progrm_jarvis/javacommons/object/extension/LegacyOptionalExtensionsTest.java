@@ -42,9 +42,15 @@ class LegacyOptionalExtensionsTest {
     @Test
     void ifPresentOrElse_onNullLambdas() {
         assertThrows(NullPointerException.class, () -> Optional.of("something").ifPresentOrElse(null, () -> {}));
-        assertDoesNotThrow(() -> Optional.of("something").ifPresentOrElse(value -> {}, null));
-        assertThrows(NullPointerException.class, () -> Optional.empty().ifPresentOrElse(value -> {}, null));
-        assertDoesNotThrow(() -> Optional.empty().ifPresentOrElse(null, () -> {}));
+        assertDoesNotThrow(() -> LegacyOptionalExtensions.ifPresentOrElse(
+                Optional.of("something"),
+                value -> {}, null
+        ));
+        assertThrows(NullPointerException.class, () -> Optional.<String>empty().ifPresentOrElse(value -> {}, null));
+        assertDoesNotThrow(() -> LegacyOptionalExtensions.ifPresentOrElse(
+                Optional.empty(),
+                null, () -> {}
+        ));
     }
 
     @Test

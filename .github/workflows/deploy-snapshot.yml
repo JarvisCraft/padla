@@ -5,17 +5,18 @@ on:
     branches: [ development ]
 
 jobs:
-  deploy:
+  deploy-snapshot:
+    name: Deploy Snapshot
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2.3.4
 
-      - name: Set up Java 8 & Deployment credentials
+      - name: Set up Java 17 & Deployment credentials
         uses: actions/setup-java@v2.3.0
         with:
-          distribution: 'temurin'
-          java-version: '8'
+          distribution: 'zulu'
+          java-version: '17'
           cache: 'maven'
           server-id: 'sonatype-ossrh'
           server-username: SONATYPE_OSSRH_DEPLOYER
