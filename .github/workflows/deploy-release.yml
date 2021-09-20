@@ -5,7 +5,8 @@ on:
     tags: [ v* ]
 
 jobs:
-  deploy:
+  deploy-release:
+    name: Deploy release
     runs-on: ubuntu-latest
 
     steps:

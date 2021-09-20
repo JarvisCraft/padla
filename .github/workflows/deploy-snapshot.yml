@@ -5,7 +5,8 @@ on:
     branches: [ development ]
 
 jobs:
-  deploy:
+  deploy-snapshot:
+    name: Deploy Snapshot
     runs-on: ubuntu-latest
 
     steps:
