@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.progrm-jarvis</groupId>
@@ -40,6 +41,18 @@
         <connection>scm:git:git://github.com:JarvisCraft/padla.git</connection>
         <developerConnection>scm:git:git@github.com:JarvisCraft/padla.git</developerConnection>
     </scm>
+
+    <distributionManagement>
+        <repository>
+            <!-- This one is used for automatic sync with Maven Central -->
+            <id>sonatype-ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>sonatype-ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <developers>
         <developer>
@@ -146,7 +159,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.3.1</version>
                     <configuration>
                         <release>${java.version.minimal}</release>
                         <tags>
@@ -195,7 +208,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.8.0-RC1</version>
+                <version>5.8.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -266,7 +279,6 @@
     </dependencyManagement>
 
     <profiles>
-        <!-- Deployment-related profiles -->
         <profile>
             <id>build-extras</id>
             <build>
@@ -323,31 +335,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <!-- Repository profiles -->
-        <profile>
-            <id>sonatype-ossrh-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <!-- This one is used for automatic sync with Maven Central -->
-                    <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-                <snapshotRepository>
-                    <id>sonatype-ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-            </distributionManagement>
-        </profile>
-        <profile>
-            <id>github-package-registry-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <id>github-package-registry</id>
-                    <url>https://maven.pkg.github.com/JarvisCraft/padla</url>
-                </repository>
-            </distributionManagement>
         </profile>
         <profile>
             <id>automatic-central-release</id>
