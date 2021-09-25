@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "AbstractCoder",
+      "name": "Steve Johnson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/455414?v=4",
+      "profile": "http://abstractcoder.com",
+      "contributions": [
+        "ideas",
+        "review",
+        "business"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "padla",
+  "projectOwner": "JarvisCraft",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
