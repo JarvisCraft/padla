@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "abstractcoderx",
+      "name": "Areg Yazychyan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38766980?v=4",
+      "profile": "https://github.com/AbstractCoderX",
+      "contributions": [
+        "ideas",
+        "review",
+        "business"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "padla",
+  "projectOwner": "JarvisCraft",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
