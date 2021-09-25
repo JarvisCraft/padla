@@ -1,0 +1,32 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "JarvisCraft",
+      "name": "PROgrm_JARvis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7693005?v=4",
+      "profile": "https://progrm-jarvis.ru/",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas",
+        "maintenance",
+        "platform",
+        "projectManagement",
+        "infra",
+        "test",
+        "review"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "padla",
+  "projectOwner": "JarvisCraft",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": false
+}

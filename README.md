@@ -1,4 +1,7 @@
 # PADLA
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![License](https://img.shields.io/github/license/JarvisCraft/padla)](/LICENSE)
 [![Build Status](https://travis-ci.com/JarvisCraft/padla.svg?branch=development)](https://travis-ci.com/JarvisCraft/padla)
@@ -27,3 +30,23 @@ As its dependencies PADLA uses:
   - [Javassist](https://github.com/jboss-javassist/javassist) for runtime class generation (if using classes annotated with `@UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)`)
 - Optional (these are not required at all but allow some extra integrations and optimizations):
   - [Caffeine](https://github.com/ben-manes/caffeine) for caching of internal components
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://progrm-jarvis.ru/"><img src="https://avatars.githubusercontent.com/u/7693005?v=4?s=100" width="100px;" alt=""/><br /><sub><b>PROgrm_JARvis</b></sub></a><br /><a href="https://github.com/JarvisCraft/padla/commits?author=JarvisCraft" title="Code">💻</a> <a href="https://github.com/JarvisCraft/padla/commits?author=JarvisCraft" title="Documentation">📖</a> <a href="#ideas-JarvisCraft" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-JarvisCraft" title="Maintenance">🚧</a> <a href="#platform-JarvisCraft" title="Packaging/porting to new platform">📦</a> <a href="#projectManagement-JarvisCraft" title="Project Management">📆</a> <a href="#infra-JarvisCraft" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/JarvisCraft/padla/commits?author=JarvisCraft" title="Tests">⚠️</a> <a href="https://github.com/JarvisCraft/padla/pulls?q=is%3Apr+reviewed-by%3AJarvisCraft" title="Reviewed Pull Requests">👀</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
