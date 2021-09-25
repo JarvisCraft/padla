@@ -33,6 +33,16 @@
         "business",
         "code"
       ]
+    },
+    {
+      "login": "xxDark",
+      "name": "xxDark",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19853368?v=4",
+      "profile": "https://github.com/xxDark",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
