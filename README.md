@@ -1,6 +1,6 @@
 # PADLA
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![License](https://img.shields.io/github/license/JarvisCraft/padla)](/LICENSE)
@@ -41,6 +41,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://progrm-jarvis.ru/"><img src="https://avatars.githubusercontent.com/u/7693005?v=4?s=100" width="100px;" alt=""/><br /><sub><b>PROgrm_JARvis</b></sub></a><br /><a href="https://github.com/JarvisCraft/padla/commits?author=JarvisCraft" title="Code">💻</a> <a href="https://github.com/JarvisCraft/padla/commits?author=JarvisCraft" title="Documentation">📖</a> <a href="#ideas-JarvisCraft" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-JarvisCraft" title="Maintenance">🚧</a> <a href="#platform-JarvisCraft" title="Packaging/porting to new platform">📦</a> <a href="#projectManagement-JarvisCraft" title="Project Management">📆</a> <a href="#infra-JarvisCraft" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/JarvisCraft/padla/commits?author=JarvisCraft" title="Tests">⚠️</a> <a href="https://github.com/JarvisCraft/padla/pulls?q=is%3Apr+reviewed-by%3AJarvisCraft" title="Reviewed Pull Requests">👀</a></td>
+    <td align="center"><a href="https://github.com/AbstractCoderX"><img src="https://avatars.githubusercontent.com/u/38766980?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Areg Yazychyan</b></sub></a><br /><a href="#ideas-AbstractCoderX" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/JarvisCraft/padla/pulls?q=is%3Apr+reviewed-by%3AAbstractCoderX" title="Reviewed Pull Requests">👀</a> <a href="#business-AbstractCoderX" title="Business development">💼</a></td>
   </tr>
 </table>
 
