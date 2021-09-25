@@ -18,7 +18,8 @@
         "platform",
         "projectManagement",
         "infra",
-        "test"
+        "test",
+        "review"
       ]
     }
   ],
