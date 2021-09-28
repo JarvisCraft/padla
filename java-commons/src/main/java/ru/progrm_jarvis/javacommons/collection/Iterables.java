@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.*;
 
 /**
- * Utilities related to {@link Iterable} iterables.
+ * Utilities related to {@link Iterable iterables}.
  */
 @UtilityClass
 public class Iterables {

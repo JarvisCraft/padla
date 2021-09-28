@@ -2,9 +2,11 @@ package ru.progrm_jarvis.javacommons.util;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import lombok.val;
+import org.jetbrains.annotations.NotNull;
 
-import java.nio.ByteBuffer;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
 import java.util.UUID;
 
 /**
@@ -19,6 +21,12 @@ public class UuidUtil {
     private final int UUID_BYTES = Long.BYTES << 1;
 
     /**
+     * VarHandle representing a {@code long[]}-view to a {@code byte[]} using {@link ByteOrder#BIG_ENDIAN big-endian}.
+     */
+    private final @NotNull VarHandle BYTE_ARRAY_LONG_VIEW_BIG_ENDIAN
+            = MethodHandles.byteArrayViewVarHandle(long[].class, ByteOrder.BIG_ENDIAN);
+
+    /**
      * Converts {@link UUID} into an array of 16 {@code byte}s.
      *
      * @param uuid UUID to convert
@@ -27,11 +35,12 @@ public class UuidUtil {
      * @see #uuidFromBytes(byte[]) for backward conversion
      */
     public byte[] uuidToBytes(final @NonNull UUID uuid) {
-        val buffer = ByteBuffer.wrap(new byte[UUID_BYTES]);
-        buffer.putLong(uuid.getMostSignificantBits());
-        buffer.putLong(uuid.getLeastSignificantBits());
+        // note: there is an Unsafe method for allocating a non-zeroed array, but it is hard to access it
+        final byte[] bytes;
+        BYTE_ARRAY_LONG_VIEW_BIG_ENDIAN.set(bytes = new byte[UUID_BYTES], 0, uuid.getMostSignificantBits());
+        BYTE_ARRAY_LONG_VIEW_BIG_ENDIAN.set(bytes, Long.BYTES, uuid.getLeastSignificantBits());
 
-        return buffer.array();
+        return bytes;
     }
 
     /**
@@ -47,7 +56,9 @@ public class UuidUtil {
                 "Length of bytes length should be " + UUID_BYTES
         );
 
-        val buffer = ByteBuffer.wrap(bytes);
-        return new UUID(buffer.getLong(), buffer.getLong());
+        return new UUID(
+                (long) BYTE_ARRAY_LONG_VIEW_BIG_ENDIAN.get(bytes, 0),
+                (long) BYTE_ARRAY_LONG_VIEW_BIG_ENDIAN.get(bytes, Long.BYTES)
+        );
     }
 }
