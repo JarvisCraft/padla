@@ -1,0 +1,64 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "JarvisCraft",
+      "name": "PROgrm_JARvis",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7693005?v=4",
+      "profile": "https://progrm-jarvis.ru/",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas",
+        "maintenance",
+        "platform",
+        "projectManagement",
+        "infra",
+        "test",
+        "review"
+      ]
+    },
+    {
+      "login": "AbstractCoderX",
+      "name": "Areg Yazychyan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/38766980?v=4",
+      "profile": "https://github.com/AbstractCoderX",
+      "contributions": [
+        "ideas",
+        "review",
+        "business",
+        "code"
+      ]
+    },
+    {
+      "login": "xxDark",
+      "name": "xxDark",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19853368?v=4",
+      "profile": "https://github.com/xxDark",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    },
+    {
+      "login": "zabelovq",
+      "name": "Daniil Sudomoin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/45364639?v=4",
+      "profile": "http://vk.com/zabelovq",
+      "contributions": [
+        "code",
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "padla",
+  "projectOwner": "JarvisCraft",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": false
+}
