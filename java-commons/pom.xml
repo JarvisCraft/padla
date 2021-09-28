@@ -6,7 +6,7 @@
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
         <artifactId>padla</artifactId>
-        <version>1.0.0-rc.6</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>java-commons</artifactId>
 
