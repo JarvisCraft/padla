@@ -1,19 +1,19 @@
-name: Deploy snapshot
+name: Deploy release
 
 on:
   push:
-    branches: [ development ]
+    tags: [ v* ]
 
 jobs:
-  deploy-snapshot:
-    name: Deploy Snapshot
+  deploy-release:
+    name: Deploy release
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2.3.4
 
       - name: Set up Java 17 & Deployment credentials
-        uses: actions/setup-java@main
+        uses: actions/setup-java@v2.3.1
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -28,8 +28,8 @@ jobs:
         id: get_version
 
       - name: Deploy snapshot
-        if: ${{ endsWith(steps.get_version.outputs.version, '-SNAPSHOT') }}
-        run: mvn deploy -B -P build-extras,sign-artifacts
+        if: ${{ !endsWith(steps.get_version.outputs.version, '-SNAPSHOT') }}
+        run: mvn deploy -B -P build-extras,sign-artifacts,automatic-central-release
         env:
           SONATYPE_OSSRH_DEPLOYER: ${{ secrets.SONATYPE_OSSRH_DEPLOYER }}
           SONATYPE_OSSRH_TOKEN: ${{ secrets.SONATYPE_OSSRH_TOKEN }}
