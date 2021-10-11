@@ -62,32 +62,32 @@ public class DataSerializers {
 
     /* ************************************************ Collections ************************************************ */
 
-    public <C extends Collection<T>, T> @NotNull DataSerializer<C> collectionDataSerializer(
-            final @NonNull DataSerializers.SizeAwareFactory<@NotNull C> collectionFactory,
+    public <C extends Collection<T>, T> @NotNull DataSerializer<@NotNull C> collectionDataSerializer(
+            final DataSerializers.@NonNull SizeAwareFactory<C> collectionFactory,
             final @NonNull DataSerializer<T> elementSerializer
     ) {
         return new CollectionDataSerializer<>(collectionFactory, elementSerializer);
     }
 
-    public <T> @NotNull DataSerializer<Collection<T>> collectionDataSerializer(
+    public <T> @NotNull DataSerializer<@NotNull Collection<T>> collectionDataSerializer(
             final @NonNull DataSerializer<T> elementSerializer) {
         return collectionDataSerializer(ArrayList::new, elementSerializer);
     }
 
-    public <T> @NotNull DataSerializer<List<T>> listDataSerializer(
+    public <T> @NotNull DataSerializer<@NotNull List<T>> listDataSerializer(
             final @NonNull DataSerializer<T> elementSerializer
     ) {
         return collectionDataSerializer(ArrayList::new, elementSerializer);
     }
 
-    public <T> @NotNull DataSerializer<Set<T>> setDataSerializer(
+    public <T> @NotNull DataSerializer<@NotNull Set<T>> setDataSerializer(
             final @NonNull DataSerializer<T> elementSerializer
     ) {
         return collectionDataSerializer(HashSet::new, elementSerializer);
     }
 
-    public <M extends Map<K, V>, K, V> @NotNull DataSerializer<M> mapDataSerializer(
-            final @NonNull DataSerializers.SizeAwareFactory<@NotNull M> mapFactory,
+    public <M extends Map<K, V>, K, V> @NotNull DataSerializer<@NotNull M> mapDataSerializer(
+            final DataSerializers.@NonNull SizeAwareFactory<M> mapFactory,
             final @NonNull DataSerializer<K> keySerializer,
             final @NonNull DataSerializer<V> valueSerializer
     ) {
@@ -473,7 +473,7 @@ public class DataSerializers {
 
         @Override
         public @NotNull UUID fromByteArray(final byte @NotNull [] byteArray) throws IOException {
-            if (byteArray.length != 16) throw new IOException("Byte array should be of length 16");
+            if (byteArray.length != UuidUtil.UUID_BYTES) throw new IOException("Byte array should be of length 16");
 
             return UuidUtil.uuidFromBytes(byteArray);
         }
@@ -493,19 +493,20 @@ public class DataSerializers {
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class CollectionDataSerializer<C extends Collection<T>, T> implements DataSerializer<C> {
+    private static final class CollectionDataSerializer<C extends Collection<T>, T>
+            implements DataSerializer<@NotNull C> {
 
-        @NotNull DataSerializers.SizeAwareFactory<@NotNull C> collectionFactory;
+        DataSerializers.@NotNull SizeAwareFactory<C> collectionFactory;
         @NotNull DataSerializer<T> elementSerializer;
 
         @Override
-        public void write(final @NotNull DataOutputStream out, final C collection) throws IOException {
+        public void write(final @NotNull DataOutputStream out, final @NotNull C collection) throws IOException {
             out.writeInt(collection.size());
             for (val element : collection) elementSerializer.write(out, element);
         }
 
         @Override
-        public C read(final @NotNull DataInputStream in) throws IOException {
+        public @NotNull C read(final @NotNull DataInputStream in) throws IOException {
             final int size;
             val collection = collectionFactory.create(size = in.readInt());
             for (var i = 0; i < size; i++) collection.add(elementSerializer.read(in));
@@ -516,14 +517,14 @@ public class DataSerializers {
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class MapDataSerializer<M extends Map<K, V>, K, V> implements DataSerializer<M> {
+    private static final class MapDataSerializer<M extends Map<K, V>, K, V> implements DataSerializer<@NotNull M> {
 
-        @NotNull DataSerializers.SizeAwareFactory<@NotNull M> mapFactory;
+        DataSerializers.@NotNull SizeAwareFactory<M> mapFactory;
         @NotNull DataSerializer<K> keySerializer;
         @NotNull DataSerializer<V> valueSerializer;
 
         @Override
-        public void write(final @NotNull DataOutputStream out, final M map) throws IOException {
+        public void write(final @NotNull DataOutputStream out, final @NotNull M map) throws IOException {
             final Set<Map.Entry<K, V>> entries;
             out.writeInt((entries = map.entrySet()).size());
             for (val entry : entries) {
@@ -533,7 +534,7 @@ public class DataSerializers {
         }
 
         @Override
-        public M read(final @NotNull DataInputStream in) throws IOException {
+        public @NotNull M read(final @NotNull DataInputStream in) throws IOException {
             final int size;
             val map = mapFactory.create(size = in.readInt());
             for (var i = 0; i < size; i++) map.put(keySerializer.read(in), valueSerializer.read(in));
