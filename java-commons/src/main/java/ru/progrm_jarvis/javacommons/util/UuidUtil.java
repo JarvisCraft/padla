@@ -16,7 +16,7 @@ public class UuidUtil {
     /**
      * Amount of bytes from which the {@link UUID} consists.
      */
-    private final int UUID_BYTES = Long.BYTES << 1;
+    public final int UUID_BYTES = Long.BYTES << 1;
 
     /**
      * Converts {@link UUID} into an array of 16 {@code byte}s.

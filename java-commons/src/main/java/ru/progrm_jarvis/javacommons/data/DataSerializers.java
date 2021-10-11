@@ -473,7 +473,7 @@ public class DataSerializers {
 
         @Override
         public @NotNull UUID fromByteArray(final byte @NotNull [] byteArray) throws IOException {
-            if (byteArray.length != 16) throw new IOException("Byte array should be of length 16");
+            if (byteArray.length != UuidUtil.UUID_BYTES) throw new IOException("Byte array should be of length 16");
 
             return UuidUtil.uuidFromBytes(byteArray);
         }
