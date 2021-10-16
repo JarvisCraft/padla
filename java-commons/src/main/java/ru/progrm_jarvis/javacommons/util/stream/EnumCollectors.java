@@ -31,11 +31,13 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
-     * @param <E> type of the enum
      * @param type type object of the enum
      * @param keyMapper mapping function used to convert the elements into enum-keys
      * @param valueMapper mapping function used to convert the elements into values
      * @param merger function used to handle duplicate values
+     * @param <T> type of the input elements
+     * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
@@ -54,7 +56,9 @@ public class EnumCollectors {
      * @param valueMapper mapping function used to convert the elements into values
      * @param merger function used to handle duplicate values
      * @param typeHint array used for enum-type discovery
+     * @param <T> type of the input elements
      * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
@@ -70,10 +74,12 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
-     * @param <E> type of the enum
      * @param type type object of the enum
      * @param keyMapper mapping function used to convert the elements into enum-keys
      * @param valueMapper mapping function used to convert the elements into values
+     * @param <T> type of the input elements
+     * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
@@ -87,9 +93,10 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
-     * @param <E> type of the enum
      * @param type type object of the enum
      * @param valueMapper mapping function used to convert the elements into values
+     * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
@@ -102,10 +109,11 @@ public class EnumCollectors {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new enum-{@link Map}.
      *
-     * @param <E> type of the enum
      * @param type type object of the enum
      * @param valueMapper mapping function used to convert the elements into values
      * @param merger function used to handle duplicate values
+     * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
@@ -123,6 +131,7 @@ public class EnumCollectors {
      * @param merger function used to handle duplicate values
      * @param typeHint array used for enum-type discovery
      * @param <E> type of the enum
+     * @param <V> type of map values
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs

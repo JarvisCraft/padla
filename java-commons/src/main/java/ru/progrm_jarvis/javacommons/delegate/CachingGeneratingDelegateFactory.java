@@ -1,10 +1,10 @@
 package ru.progrm_jarvis.javacommons.delegate;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.cache.Cache;
 
 import java.util.function.Supplier;
 
