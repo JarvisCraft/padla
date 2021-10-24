@@ -229,9 +229,19 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @param defaultValueSupplier supplier of the default value
      * to be returned if this is an {@link #isError()} error value}
-     * @return successful value if this a {@link #isSuccess() successful result} or {@code defaultValue} otherwise
+     * @return successful value if this a {@link #isSuccess() successful result} or got default otherwise
      */
     T orGetDefault(@NonNull Supplier<? extends T> defaultValueSupplier);
+
+    /**
+     * Gets the value of this result if this is a {@link #isSuccess() successful}
+     * otherwise returning the value computed by applying the given function to the {@link #unwrapError() error value}.
+     *
+     * @param defaultValueFactory factory used for creation of the default value
+     * to be returned if this is an {@link #isError()} error value}
+     * @return successful value if this a {@link #isSuccess() successful result} or the computed default otherwise
+     */
+    T orComputeDefault(@NonNull Function<? super E, ? extends T> defaultValueFactory);
 
     /**
      * Gets the error of this result throwing a {@link NotErrorException}
@@ -539,6 +549,11 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         @Override
+        public T orComputeDefault(@NonNull final Function<? super E, ? extends T> defaultValueFactory) {
+            return value;
+        }
+
+        @Override
         public E unwrapError() {
             throw new NotErrorException("This is not an error result");
         }
@@ -731,6 +746,11 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public T orGetDefault(final @NonNull Supplier<? extends T> defaultValueSupplier) {
             return defaultValueSupplier.get();
+        }
+
+        @Override
+        public T orComputeDefault(final @NonNull Function<? super E, ? extends T> defaultValueFactory) {
+            return defaultValueFactory.apply(error);
         }
 
         @Override
