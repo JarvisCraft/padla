@@ -861,7 +861,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Holder of a {@code null}-success result.
      */
     @UtilityClass
-    final class NullSuccess {
+    class NullSuccess {
 
         /**
          * Instance of a {@code null}-error
@@ -873,7 +873,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Holder of a {@code null}-error result.
      */
     @UtilityClass
-    final class NullError {
+    class NullError {
 
         /**
          * Instance of a {@code null}-error
