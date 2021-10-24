@@ -14,6 +14,7 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A tagged union representing either a successful result or an error.
@@ -418,40 +419,58 @@ public interface Result<T, E> extends Supplier<T> {
     /* ********************************************* Conversion methods ********************************************* */
 
     /**
-     * Converts this result to an {@link Optional} of its successful value.
+     * Converts this result into an {@link Optional} of its successful value.
      *
-     * @return {@link Optional optional} containing the successful result's value
+     * @return {@link Optional optional} containing the value
      * if this is a {@link #isSuccess() successful result}
-     * and an {@link Optional#empty() empty optional} otherwise
+     * or an {@link Optional#empty() empty optional} otherwise
      */
     @NotNull Optional<T> asOptional();
 
     /**
-     * Converts this result to an {@link Optional} of its error.
+     * Converts this result into an {@link Optional} of its error.
      *
-     * @return {@link Optional optional} containing the error result's error
+     * @return {@link Optional optional} containing the error
      * if this is an {@link #isError() error result}
-     * and an {@link Optional#empty() empty optional} otherwise
+     * or an {@link Optional#empty() empty optional} otherwise
      */
     @NotNull Optional<E> asErrorOptional();
 
     /**
-     * Converts this result to a {@link ValueContainer} of its successful value.
+     * Converts this result into a {@link ValueContainer} of its successful value.
      *
-     * @return {@link ValueContainer value container} containing the successful result's value
+     * @return {@link ValueContainer value container} containing the value
      * if this is a {@link #isSuccess() successful result}
      * or an {@link ValueContainer#empty() empty value-container} otherwise
      */
     @NotNull ValueContainer<T> asValueContainer();
 
     /**
-     * Converts this result to a {@link ValueContainer} of its error value.
+     * Converts this result into a {@link ValueContainer} of its error value.
      *
-     * @return {@link ValueContainer value container} containing the error result's error
+     * @return {@link ValueContainer value container} containing the error
      * if this is an {@link #isError() error result}
      * or an {@link ValueContainer#empty() empty value-container} otherwise
      */
     @NotNull ValueContainer<E> asErrorValueContainer();
+
+    /**
+     * Converts this result into a {@link Stream} of its successful value.
+     *
+     * @return {@link Stream stream} of the value
+     * if this is a {@link #isSuccess() successful result}
+     * or an {@link Stream#empty() empty stream} otherwise
+     */
+    @NotNull Stream<T> asStream();
+
+    /**
+     * Converts this result into a {@link Stream} of its error value.
+     *
+     * @return {@link Stream stream} containing the error
+     * if this is an {@link #isError() error result}
+     * or an {@link Stream#empty() empty stream} otherwise
+     */
+    @NotNull Stream<E> asErrorStream();
 
     /**
      * Representation of a {@link #isSuccess() successful} {@link Result result}.
@@ -631,6 +650,16 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public @NotNull ValueContainer<E> asErrorValueContainer() {
             return ValueContainer.empty();
+        }
+
+        @Override
+        public @NotNull Stream<T> asStream() {
+            return Stream.of(value);
+        }
+
+        @Override
+        public @NotNull Stream<E> asErrorStream() {
+            return Stream.empty();
         }
 
         //</editor-fold>
@@ -813,6 +842,16 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public @NotNull ValueContainer<E> asErrorValueContainer() {
             return ValueContainer.of(error);
+        }
+
+        @Override
+        public @NotNull Stream<T> asStream() {
+            return Stream.empty();
+        }
+
+        @Override
+        public @NotNull Stream<E> asErrorStream() {
+            return Stream.of(error);
         }
 
         //</editor-fold>
