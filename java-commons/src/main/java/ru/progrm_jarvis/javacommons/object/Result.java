@@ -926,9 +926,9 @@ public interface Result<T, E> extends Supplier<T> {
          *
          * @param message message describing the exception cause
          * @param cause cause of this exception
-         * @param enableSuppression flag indicating whether or not suppression
+         * @param enableSuppression flag indicating whether suppression
          * is enabled or disabled for this exception
-         * @param writableStackTrace flag indicating whether or not not the stack trace
+         * @param writableStackTrace flag indicating whether not the stack trace
          * should be writable for this exception
          */
         public NotSuccessException(final String message, final Throwable cause, final boolean enableSuppression,
@@ -980,9 +980,9 @@ public interface Result<T, E> extends Supplier<T> {
          *
          * @param message message describing the exception cause
          * @param cause cause of this exception
-         * @param enableSuppression flag indicating whether or not suppression
+         * @param enableSuppression flag indicating whether suppression
          * is enabled or disabled for this exception
-         * @param writableStackTrace flag indicating whether or not not the stack trace
+         * @param writableStackTrace flag indicating whether not the stack trace
          * should be writable for this exception
          */
         public NotErrorException(final String message, final Throwable cause, final boolean enableSuppression,
