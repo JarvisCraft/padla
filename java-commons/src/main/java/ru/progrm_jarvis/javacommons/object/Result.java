@@ -48,11 +48,7 @@ public interface Result<T, E> extends Supplier<T> {
      */
     @SuppressWarnings("unchecked")
     static <T, E> @NotNull Result<@Nullable T, E> nullSuccess() {
-        final class Holder {
-            private static final @NotNull Result<@Nullable ?, ?> INSTANCE = new Success<>(null);
-        }
-
-        return (Result<T, E>) Holder.INSTANCE;
+        return (Result<T, E>) NullSuccess.INSTANCE;
     }
 
     /**
@@ -76,11 +72,7 @@ public interface Result<T, E> extends Supplier<T> {
      */
     @SuppressWarnings("unchecked")
     static <T, E> @NotNull Result<T, @Nullable E> nullError() {
-        final class Holder {
-            private static final @NotNull Result<?, @Nullable ?> INSTANCE = new Error<>(null);
-        }
-
-        return (Result<T, E>) Holder.INSTANCE;
+        return (Result<T, E>) NullError.INSTANCE;
     }
 
     /**
@@ -883,6 +875,30 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         //</editor-fold>
+    }
+
+    /**
+     * Holder of a {@code null}-success result.
+     */
+    @UtilityClass
+    class NullSuccess {
+
+        /**
+         * Instance of a {@code null}-error
+         */
+        private final Result<@Nullable ?, ?> INSTANCE = new Success<>(null);
+    }
+
+    /**
+     * Holder of a {@code null}-error result.
+     */
+    @UtilityClass
+    class NullError {
+
+        /**
+         * Instance of a {@code null}-error
+         */
+        private final Result<?, @Nullable ?> INSTANCE = new Error<>(null);
     }
 
     /**
