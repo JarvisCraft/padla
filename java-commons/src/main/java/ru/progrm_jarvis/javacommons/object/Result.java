@@ -1029,5 +1029,38 @@ public interface Result<T, E> extends Supplier<T> {
         ) throws X {
             return result.orElseThrow(Function.identity());
         }
+
+        /**
+         * <p>Converts the result to another result whose types are super-types of its current types.</p>
+         * <p>This is equivalent to the following:</p>
+         * <pre>{@code
+         * result
+         *         .map(Function.<RT>identity())
+         *         .mapError(Function.<RE>identity())
+         * }</pre>
+         *
+         * @param result result whose type should be <i>upcasted</i>
+         * @param <T> new (super-) type of the successful result
+         * @param <E> new (super-) type of the error result
+         * @return upcasted result
+         *
+         * @apiNote this method could have been an instance method but its type cannot be described due to the absence
+         * of the ability to specify {@code super}-bounds on generic parameters relative to the other ones
+         */
+        @SuppressWarnings("unchecked") // Results are immutable so they are always safe to upcast
+        public <T, E> Result<T, E> upcast(final @NotNull Result<? extends T, ? extends E> result) {
+            return (Result<T, E>) result;
+        }
+
+        /**
+         * Either returns the successful result's value ot the error result's value depending on what is present.
+         *
+         * @param result given result
+         * @param <T> type of the resulting value common for the success and error values
+         * @return either the success or the error value
+         */
+        public <T> T any(final @NotNull Result<? extends T, ? extends T> result) {
+            return Extensions.<T, T>upcast(result).orComputeDefault(Function.identity());
+        }
     }
 }
