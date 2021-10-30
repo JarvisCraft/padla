@@ -253,143 +253,171 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
         ///////////////////////////////////////////////////////////////////////////
         // Types
         ///////////////////////////////////////////////////////////////////////////
+
         /* ******************************************** ASM Type objects ******************************************** */
+
         /**
          * ASM type of {@link AsmTextModelBuilder}
          */
-        private static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(AsmTextModelBuilder.class),
+        private static final @NotNull Type TEXT_MODEL_BUILDER_TYPE = getType(AsmTextModelBuilder.class);
+
         /**
          * ASM type of {@link StringBuilder}
          */
-        STRING_BUILDER_TYPE = getType(StringBuilder.class),
+        private static final @NotNull Type STRING_BUILDER_TYPE = getType(StringBuilder.class);
+
         /**
          * ASM type of {@link TextModel}
          */
-        TEXT_MODEL_TYPE = getType(TextModel.class);
+        private static final @NotNull Type TEXT_MODEL_TYPE = getType(TextModel.class);
+
         ///////////////////////////////////////////////////////////////////////////
         // Strings
         ///////////////////////////////////////////////////////////////////////////
+
         /* ******************************************* Parts of this API ******************************************* */
+
         /**
          * Prefix of generated fields after which the index will go
          */
-        private static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D",
+        private static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D";
+
         /**
          * Name of parent generic in current context
          */
-        PARENT_T_GENERIC_DESCRIPTOR = "TT;",
+        private static final @NotNull String PARENT_T_GENERIC_DESCRIPTOR= "TT;";
+
         /* ********************************************** Method names ********************************************** */
+
         /**
          * Name of {@link TextModel#getText(Object)} method
          */
-        GET_TEXT_METHOD_NAME = "getText",
+        private static final @NotNull String GET_TEXT_METHOD_NAME
+                = "getText";
+
         /**
          * Name of {@link StringBuilder}{@code .append(}<i>?</i>{@code )} method
          */
-        APPEND_METHOD_NAME = "append",
+        private static final @NotNull String APPEND_METHOD_NAME
+                = "append";
+
         /**
          * Name of {@link AsmTextModelBuilder#internal$getDynamicTextModel(String)} method
          */
-        INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME = "internal$getDynamicTextModel",
+        private static final @NotNull String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_NAME
+                = "internal$getDynamicTextModel";
+
         /* ********************************************* Internal names ********************************************* */
+
         /**
          * Internal name of {@link TextModel}
          */
-        TEXT_MODEL_BUILDER_INTERNAL_NAME = TEXT_MODEL_BUILDER_TYPE.getInternalName(),
+        private static final @NotNull String TEXT_MODEL_BUILDER_INTERNAL_NAME
+                = TEXT_MODEL_BUILDER_TYPE.getInternalName();
+
         /**
          * Internal name of {@link StringBuilder}
          */
-        STRING_BUILDER_INTERNAL_NAME = STRING_BUILDER_TYPE.getInternalName(),
+        private static final @NotNull String STRING_BUILDER_INTERNAL_NAME
+                = STRING_BUILDER_TYPE.getInternalName();
+
         /**
          * Internal name of {@link TextModel}
          */
-        TEXT_MODEL_INTERNAL_NAME = TEXT_MODEL_TYPE.getInternalName(),
+        private static final @NotNull String TEXT_MODEL_INTERNAL_NAME
+                = TEXT_MODEL_TYPE.getInternalName();
+
         /* ********************************************** Descriptors ********************************************** */
+
         /**
          * Descriptor of {@link TextModel}
          */
-        TEXT_MODEL_BUILDER_DESCRIPTOR = TEXT_MODEL_BUILDER_TYPE.getDescriptor(),
-        /**
-         * Descriptor of {@link StringBuilder}
-         */
-        STRING_BUILDER_DESCRIPTOR = STRING_BUILDER_TYPE.getDescriptor(),
-        /**
-         * Descriptor of {@link TextModel}
-         */
-        TEXT_MODEL_DESCRIPTOR = TEXT_MODEL_TYPE.getDescriptor(),
+        private static final @NotNull String TEXT_MODEL_DESCRIPTOR
+                = TEXT_MODEL_TYPE.getDescriptor();
+
         /* ********************************** Method descriptors (aka signatures) ********************************** */
+
         /**
          * Signature of {@code TextModel(Object)} method
          */
-        STRING_OBJECT_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_TYPE, OBJECT_TYPE),
+        private static final @NotNull String STRING_OBJECT_METHOD_DESCRIPTOR
+                = getMethodDescriptor(STRING_TYPE, OBJECT_TYPE);
         /**
          * Signature of {@code void(int)} method
          */
-        VOID_INT_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, INT_TYPE),
+        private static final @NotNull String VOID_INT_METHOD_DESCRIPTOR
+                = getMethodDescriptor(VOID_TYPE, INT_TYPE);
+
         /**
          * Signature of {@code void(String)} method
          */
-        VOID_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, STRING_TYPE),
+        private static final @NotNull String VOID_STRING_METHOD_DESCRIPTOR
+                = getMethodDescriptor(VOID_TYPE, STRING_TYPE);
+
         /**
          * Signature of {@code String()} method
          */
-        STRING_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_TYPE),
+        private static final @NotNull String STRING_METHOD_DESCRIPTOR
+                = getMethodDescriptor(STRING_TYPE);
+
         /**
          * Signature of {@code StringBuilder(String)} method
          */
-        STRING_BUILDER_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_BUILDER_TYPE, STRING_TYPE),
+        private static final @NotNull String STRING_BUILDER_STRING_METHOD_DESCRIPTOR
+                = getMethodDescriptor(STRING_BUILDER_TYPE, STRING_TYPE);
+
         /**
          * Signature of {@code TextModel(String)} method
          */
-        TEXT_MODEL_STRING_METHOD_DESCRIPTOR = getMethodDescriptor(TEXT_MODEL_TYPE, STRING_TYPE),
+        private static final @NotNull String TEXT_MODEL_STRING_METHOD_DESCRIPTOR
+                = getMethodDescriptor(TEXT_MODEL_TYPE, STRING_TYPE);
+
         /**
          * Signature of {@code StringBuilder(char)} method
          */
-        STRING_BUILDER_CHAR_METHOD_DESCRIPTOR = getMethodDescriptor(STRING_BUILDER_TYPE, CHAR_TYPE),
+        private static final @NotNull String STRING_BUILDER_CHAR_METHOD_DESCRIPTOR
+                = getMethodDescriptor(STRING_BUILDER_TYPE, CHAR_TYPE);
+
         /**
          * Generic signature of {@link TextModel#getText(Object)} method
          */
-        STRING_GENERIC_T_METHOD_DESCRIPTOR = '(' + PARENT_T_GENERIC_DESCRIPTOR + ')' + STRING_DESCRIPTOR,
+        private static final @NotNull String STRING_GENERIC_T_METHOD_DESCRIPTOR
+                = '(' + PARENT_T_GENERIC_DESCRIPTOR + ')' + STRING_DESCRIPTOR;
+
         /* ******************************************* Generic signatures ******************************************* */
+
         /**
          * Generic descriptor of {@link TextModel}
          */
-        TEXT_MODEL_SIGNATURE = 'L' + TEXT_MODEL_INTERNAL_NAME + '<' + PARENT_T_GENERIC_DESCRIPTOR + ">;",
+        private static final @NotNull String TEXT_MODEL_SIGNATURE
+                = 'L' + TEXT_MODEL_INTERNAL_NAME + '<' + PARENT_T_GENERIC_DESCRIPTOR + ">;";
+
         /**
          * Generic signature of the generated class
          *
          * @see #PARENT_T_GENERIC_DESCRIPTOR name of the parent generic type
          */
-        GENERIC_CLASS_SIGNATURE = "<T:" + OBJECT_DESCRIPTOR + '>' + OBJECT_DESCRIPTOR + TEXT_MODEL_SIGNATURE;
+        private static final @NotNull String GENERIC_CLASS_SIGNATURE
+                = "<T:" + OBJECT_DESCRIPTOR + '>' + OBJECT_DESCRIPTOR + TEXT_MODEL_SIGNATURE;
 
         ///////////////////////////////////////////////////////////////////////////
         // Ints
         ///////////////////////////////////////////////////////////////////////////
+
         /* ******************************************* Specific constants ******************************************* */
+
         /**
          * Maximal amount of dynamic arguments passed to {@code java.lang.invoke.StringConcatFactory} concatenation
          * methods
          */
-        private static final int STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS = 200, // according to Javadocs
+        private static final int STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS = 200; // according to Javadocs
+
         /* *************************************** Precomputed string lengths *************************************** */
+
         /**
          * Length of {@link AsmUtil#STRING_DESCRIPTOR}
          */
-        STRING_DESCRIPTOR_LENGTH = STRING_DESCRIPTOR.length(),
-        /**
-         * Length of {@link #TEXT_MODEL_DESCRIPTOR}
-         */
-        TEXT_MODEL_DESCRIPTOR_LENGTH = TEXT_MODEL_DESCRIPTOR.length(),
-        /**
-         * Length of {@link #TEXT_MODEL_SIGNATURE}
-         */
-        TEXT_MODEL_SIGNATURE_LENGTH = TEXT_MODEL_SIGNATURE.length();
-
-        /**
-         * Natural logarithm of {@link #STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS}
-         */
-        private static final double STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS_LOGARITHM
-                = Math.log(STRING_CONCAT_FACTORY_MAX_DYNAMIC_ARGUMENTS);
+        private static final int STRING_DESCRIPTOR_LENGTH = STRING_DESCRIPTOR.length();
 
         /*  *******************************************************************************************************  */
         /* ************************** java.lang.invoke.StringConcatFactory specific stuff ************************** */
@@ -399,43 +427,35 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * ASM type of {@code java.lang.invoke.StringConcatFactory}
          */
         private static final @Nullable Type STRING_CONCAT_FACTORY_TYPE;
+
         /**
          * Name of {@code java.lang.invoke.StringConcatFactory.concat(Lookup, String, MethodType)}
          */
-        private static final @NotNull String MAKE_CONCAT_METHOD_NAME = "makeConcat",
+        private static final @NotNull String MAKE_CONCAT_METHOD_NAME = "makeConcat";
+
         /**
          * Name of {@code java.lang.invoke.StringConcatFactory .makeConcatWithConstants(Lookup, String, MethodType,
          * String, Object[])}
          */
-        MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME = "makeConcatWithConstants";
+        private static final @NotNull String MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME = "makeConcatWithConstants";
+
         /**
          * Handle of {@code java.lang.invoke.StringConcatFactory.concat(Lookup, String, MethodType)}
          */
-        private static final @Nullable Handle MAKE_CONCAT_HANDLE,
+        private static final @Nullable Handle MAKE_CONCAT_HANDLE;
+
         /**
          * Handle of {@code java.lang.invoke.StringConcatFactory .makeConcatWithConstants(Lookup, String, MethodType,
          * String, Object[])}
          */
-        MAKE_CONCAT_WITH_CONSTANTS_HANDLE;
-
-        /* ************************************************ Nullable ************************************************ */
-        /**
-         * Internal name of {@link TextModel}
-         */
-        private static final @Nullable String STRING_CONCAT_FACTORY_INTERNAL_NAME,
-        /**
-         * Descriptor of {@link TextModel}
-         */
-        STRING_CONCAT_FACTORY_DESCRIPTOR;
+        private static final @Nullable Handle MAKE_CONCAT_WITH_CONSTANTS_HANDLE;
 
         static {
             if (STRING_CONCAT_FACTORY_AVAILABLE) {
-                assert STRING_CONCAT_FACTORY_CLASS != null; // should never happen as there is direct relation
+                assert STRING_CONCAT_FACTORY_CLASS != null
+                        : "STRING_CONCAT_FACTORY_CLASS cannot be null if STRING_CONCAT_FACTORY_AVAILABLE is not null";
 
                 STRING_CONCAT_FACTORY_TYPE = getType(STRING_CONCAT_FACTORY_CLASS);
-                STRING_CONCAT_FACTORY_INTERNAL_NAME = STRING_CONCAT_FACTORY_TYPE.getInternalName();
-                STRING_CONCAT_FACTORY_DESCRIPTOR = STRING_CONCAT_FACTORY_TYPE.getDescriptor();
-
 
                 var methodType = new Class<?>[]{
                         MethodHandles.Lookup.class, String.class, MethodType.class
@@ -469,7 +489,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                 MAKE_CONCAT_WITH_CONSTANTS_HANDLE = getHandle(method);
             } else {
                 STRING_CONCAT_FACTORY_TYPE = null;
-                STRING_CONCAT_FACTORY_INTERNAL_NAME = STRING_CONCAT_FACTORY_DESCRIPTOR = null;
                 MAKE_CONCAT_HANDLE = MAKE_CONCAT_WITH_CONSTANTS_HANDLE = null;
             }
         }
@@ -497,14 +516,15 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          *
          * @see SimpleStaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
-        @NonFinal int staticNodeHandledAsDynamicCount,
+        @NonFinal int staticNodeHandledAsDynamicCount;
+
         /**
          * Length of texts of those {@link SimpleStaticAsmNode static nodes} whose text should be treated by {@code
          * java.lang.invoke.StringConcatFactory} as the one passed to bootstrap arguments
          *
          * @see SimpleStaticAsmNode#isTreatAsDynamicValueInStringConcatFactory()
          */
-        staticSpecialNodeLength;
+        @NonFinal int staticSpecialNodeLength;
 
         /**
          * JIT-friendly (folded static final constant allows the JIT to use the fast approach here) checks if {@code

@@ -268,7 +268,7 @@ public class AsmUtil {
         final int tag;
         {
             final int modifiers;
-            if (Modifier.isStatic(modifiers = method.getModifiers())) tag = H_GETSTATIC;
+            if (Modifier.isStatic(modifiers = method.getModifiers())) tag = H_INVOKESTATIC;
             else if (Modifier.isPrivate(modifiers)) tag = H_INVOKESPECIAL;
             else tag = isInterface ? H_INVOKEINTERFACE : H_INVOKEVIRTUAL;
         }
