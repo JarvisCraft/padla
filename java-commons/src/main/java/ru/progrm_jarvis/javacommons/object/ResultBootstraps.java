@@ -72,7 +72,7 @@ public class ResultBootstraps {
             final @NonNull Class<?> errorType
     ) {
         if (invokedType.parameterCount() != 1
-                || invokedType.parameterType(1) != Result.class
+                || invokedType.parameterType(0) != Result.class
                 || invokedType.returnType() != Result.class) throw new IllegalArgumentException(
                 "invokedType should have `(Result)Result` signature"
         );
