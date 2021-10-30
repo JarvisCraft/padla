@@ -7,11 +7,12 @@
     <artifactId>padla</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <modules>
+        <module>padla-annotation-processor</module>
         <module>java-commons</module>
         <module>reflector</module>
         <module>ultimate-messenger</module>
-        <module>tools</module>
         <module>padla-bom</module>
+        <module>tools</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -249,6 +250,13 @@
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
+            <!-- Annotation processing -->
+            <dependency>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service</artifactId>
+                <version>1.0</version>
+                <optional>true</optional>
+            </dependency>
 
             <!-- Code generation -->
             <dependency>
@@ -285,6 +293,12 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
                 <version>${version.mockito}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.testing.compile</groupId>
+                <artifactId>compile-testing</artifactId>
+                <version>0.19</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
