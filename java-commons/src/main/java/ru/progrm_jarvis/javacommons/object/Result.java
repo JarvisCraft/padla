@@ -426,6 +426,22 @@ public interface Result<T, E> extends Supplier<T> {
      */
     @NotNull Result<E, T> swap();
 
+    /**
+     * Attempts to transmute this result type to the required one if it is a {@link #isSuccess() successful result}.
+     *
+     * @param <R> the resulting error type
+     * @return the same result if it was a {@link #isSuccess() successful one} or {@code null} otherwise
+     */
+    <@Any R> @Nullable Result<T, R> nullifyOnError();
+
+    /**
+     * Attempts to transmute this result type to the required one if it is an {@link #isError() error result}.
+     *
+     * @param <R> the resulting success type
+     * @return the same result if it was a {@link #isSuccess() successful one} or {@code null} otherwise
+     */
+    <@Any R> @Nullable Result<R, E> nullifyOnSuccess();
+
     /* ********************************************* Conversion methods ********************************************* */
 
     /**
@@ -643,6 +659,16 @@ public interface Result<T, E> extends Supplier<T> {
             return error(value);
         }
 
+        @Override
+        public @NotNull <@Any R> Result<T, R> nullifyOnError() {
+            return transmuteErrorType();
+        }
+
+        @Override
+        public @Nullable <@Any R> Result<R, E> nullifyOnSuccess() {
+            return null;
+        }
+
         //</editor-fold>
 
         //<editor-fold desc="Conversion methods" defaultstate="collapsed">
@@ -701,7 +727,7 @@ public interface Result<T, E> extends Supplier<T> {
          * @return this result with changed success type
          */
         @SuppressWarnings("unchecked")
-        private <@Any R> Result<R, E> transmuteResultType() {
+        private <@Any R> Result<R, E> transmuteSuccessType() {
             return (Result<R, E>) this;
         }
 
@@ -791,7 +817,7 @@ public interface Result<T, E> extends Supplier<T> {
 
         @Override
         public <@Any R> @NotNull Result<R, E> map(final @NonNull Function<? super T, ? extends R> mappingFunction) {
-            return transmuteResultType();
+            return transmuteSuccessType();
         }
 
         @Override
@@ -813,14 +839,14 @@ public interface Result<T, E> extends Supplier<T> {
 
         @Override
         public <@Any R> @NotNull Result<R, E> and(final @NonNull Result<R, E> nextResult) {
-            return transmuteResultType();
+            return transmuteSuccessType();
         }
 
         @Override
         public <@Any R> @NotNull Result<R, E> flatMap(
                 final @NonNull Function<? super T, ? extends @NotNull Result<R, E>> mapper
         ) {
-            return transmuteResultType();
+            return transmuteSuccessType();
         }
 
         @Override
@@ -838,6 +864,16 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public @NotNull Result<E, T> swap() {
             return success(error);
+        }
+
+        @Override
+        public @Nullable <R> Result<T, R> nullifyOnError() {
+            return null;
+        }
+
+        @Override
+        public @NotNull <R> Result<R, E> nullifyOnSuccess() {
+            return transmuteSuccessType();
         }
 
         //</editor-fold>
