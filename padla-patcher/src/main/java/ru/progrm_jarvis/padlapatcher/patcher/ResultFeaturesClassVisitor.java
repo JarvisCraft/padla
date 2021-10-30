@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.getMethodDescriptor;
+import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.OBJECT_TYPE;
 import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.getHandle;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -178,10 +179,10 @@ public final class ResultFeaturesClassVisitor extends ClassVisitor {
                 visitJumpInsn(IFNE, continuationLabel = new Label()); // if (!<isSuccess>) <1>: { :: -> [..., <$result>]
                 // <1>
                 visitInvokeDynamicInsn(
-                        "", // does not matter but is required
+                        "try-operator", // does not matter but is required and should be non-empty
                         RESULT_RESULT__METHOD_DESCRIPTOR,
                         TRY_CONVERT_ERROR_TYPE__HANDLE,
-                        Object.class // FIXME: this requires complicated signature processing
+                        OBJECT_TYPE // FIXME: this requires complicated signature processing
                 ); // <$converted> = <error_converter>(<$result>);
                 visitInsn(ARETURN); // return <$converted>;
                 // </1>
