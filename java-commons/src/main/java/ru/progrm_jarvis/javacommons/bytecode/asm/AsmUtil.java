@@ -4,10 +4,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 
@@ -15,6 +12,9 @@ import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
@@ -250,20 +250,46 @@ public class AsmUtil {
      * @return internal name corresponding to the given class name
      *
      * @see Class#getName() as an appropriate source of this method's parameter
-     * @see #internalNameOf(Class) alias of this method accepting {@link Class} object
      */
     public @NotNull String classNameToInternalName(final @NonNull String className) {
         return className.replace('.', '/');
     }
 
     /**
-     * Gets the internal name (aka VM-name) of the given class.
+     * Creates a {@link Handle} corresponding to the provided method.
      *
-     * @param type class whose internal name should be resolved
-     * @return internal name of the given class
+     * @param method method whose handle should be created
+     * @return handle corresponding to the provided method
      */
-    public @NotNull String internalNameOf(final @NonNull Class<?> type) {
-        return classNameToInternalName(type.getName());
+    public @NotNull Handle getHandle(final @NonNull Method method) {
+        final Class<?> declaringClass;
+        val isInterface = (declaringClass = method.getDeclaringClass()).isInterface();
+
+        final int tag;
+        {
+            final int modifiers;
+            if (Modifier.isStatic(modifiers = method.getModifiers())) tag = H_GETSTATIC;
+            else if (Modifier.isPrivate(modifiers)) tag = H_INVOKESPECIAL;
+            else tag = isInterface ? H_INVOKEINTERFACE : H_INVOKEVIRTUAL;
+        }
+
+        return new Handle(
+                tag, getInternalName(declaringClass),
+                method.getName(), getMethodDescriptor(method), isInterface
+        );
+    }
+
+    /**
+     * Creates a {@link Handle} corresponding to the provided constructor.
+     *
+     * @param constructor constructor whose handle should be created
+     * @return handle corresponding to the provided constructor
+     */
+    public @NotNull Handle getHandle(final @NonNull Constructor<?> constructor) {
+        return new Handle(
+                H_NEWINVOKESPECIAL, getInternalName(constructor.getDeclaringClass()),
+                CONSTRUCTOR_METHOD_NAME, getConstructorDescriptor(constructor), false
+        );
     }
 
     /**
