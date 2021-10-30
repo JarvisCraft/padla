@@ -21,9 +21,13 @@ import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
 
+import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -431,17 +435,38 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                 STRING_CONCAT_FACTORY_TYPE = getType(STRING_CONCAT_FACTORY_CLASS);
                 STRING_CONCAT_FACTORY_INTERNAL_NAME = STRING_CONCAT_FACTORY_TYPE.getInternalName();
                 STRING_CONCAT_FACTORY_DESCRIPTOR = STRING_CONCAT_FACTORY_TYPE.getDescriptor();
-                MAKE_CONCAT_HANDLE = new Handle(
-                        H_INVOKESTATIC, STRING_CONCAT_FACTORY_INTERNAL_NAME, MAKE_CONCAT_METHOD_NAME,
-                        getMethodDescriptor(CALL_SITE_TYPE, LOOKUP_TYPE, STRING_TYPE, METHOD_TYPE_TYPE), false
+
+
+                var methodType = new Class<?>[]{
+                        MethodHandles.Lookup.class, String.class, MethodType.class
+                };
+                Method method;
+                try {
+                    method = STRING_CONCAT_FACTORY_CLASS
+                            .getDeclaredMethod(MAKE_CONCAT_METHOD_NAME, methodType);
+                } catch (final NoSuchMethodException e) {
+                    throw new AssertionError("Failed to find method", e);
+                }
+                if (!Modifier.isStatic(method.getModifiers())
+                        || !CallSite.class.isAssignableFrom(method.getReturnType())) throw new AssertionError(
+                        "Found method " + method + " is invalid"
                 );
-                MAKE_CONCAT_WITH_CONSTANTS_HANDLE = new Handle(
-                        H_INVOKESTATIC, STRING_CONCAT_FACTORY_INTERNAL_NAME, MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME,
-                        getMethodDescriptor(
-                                CALL_SITE_TYPE, LOOKUP_TYPE, STRING_TYPE,
-                                METHOD_TYPE_TYPE, STRING_TYPE, OBJECT_ARRAY_TYPE
-                        ), false
+                MAKE_CONCAT_HANDLE = getHandle(method);
+
+                methodType = new Class<?>[]{
+                        MethodHandles.Lookup.class, String.class, MethodType.class, String.class, Object[].class
+                };
+                try {
+                    method = STRING_CONCAT_FACTORY_CLASS
+                            .getDeclaredMethod(MAKE_CONCAT_WITH_CONSTANTS_METHOD_NAME, methodType);
+                } catch (final NoSuchMethodException e) {
+                    throw new AssertionError("Failed to find method", e);
+                }
+                if (!Modifier.isStatic(method.getModifiers())
+                        || !CallSite.class.isAssignableFrom(method.getReturnType())) throw new AssertionError(
+                        "Found method " + method + " is invalid"
                 );
+                MAKE_CONCAT_WITH_CONSTANTS_HANDLE = getHandle(method);
             } else {
                 STRING_CONCAT_FACTORY_TYPE = null;
                 STRING_CONCAT_FACTORY_INTERNAL_NAME = STRING_CONCAT_FACTORY_DESCRIPTOR = null;
