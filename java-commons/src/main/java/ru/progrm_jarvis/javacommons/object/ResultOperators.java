@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.object;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.JavaCommons;
+import ru.progrm_jarvis.javacommons.annotation.RequiresClassPatching;
 
 /**
  * Operator extensions for Result.
@@ -31,6 +32,7 @@ public class ResultOperators {
      *
      * @return the successful result
      */
+    @RequiresClassPatching
     public @NotNull <T, E> T _try(@SuppressWarnings("unused") final @NotNull Result<? extends T, ? extends E> result) {
         return JavaCommons.requireBytecodePatching();
     }
