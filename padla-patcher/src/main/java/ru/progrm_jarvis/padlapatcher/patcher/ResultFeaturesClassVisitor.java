@@ -124,7 +124,7 @@ public final class ResultFeaturesClassVisitor extends ClassVisitor {
 
             {
                 @SuppressWarnings("TooBroadScope" /* try-block minimization*/) val type = new Class<?>[]{
-                        MethodHandles.Lookup.class, String.class, MethodType.class
+                        MethodHandles.Lookup.class, String.class, MethodType.class, Class.class
                 };
                 try {
                     method = ResultBootstraps.class.getDeclaredMethod(TRY_CONVERT_ERROR_TYPE__METHOD_NAME, type);
