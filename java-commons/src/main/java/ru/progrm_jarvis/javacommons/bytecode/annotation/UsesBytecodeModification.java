@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * Marker indicating that the annotated element uses (or attempts to use) bytecode-modification library(ies).
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME) // to allow special handling of those classes
 public @interface UsesBytecodeModification {
 
