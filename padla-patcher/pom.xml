@@ -10,26 +10,14 @@
     </parent>
 
     <artifactId>padla-patcher</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>core</module>
+    </modules>
 
-    <dependencies>
-        <dependency>
-            <groupId>ru.progrm-jarvis</groupId>
-            <artifactId>java-commons</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-    </dependencies>
+    <name>PADLA Patcher</name>
+    <description>
+        Components of PADLA providing support for class patching
+        which is required by members annotated with @RequiresClassPatching
+    </description>
 </project>
