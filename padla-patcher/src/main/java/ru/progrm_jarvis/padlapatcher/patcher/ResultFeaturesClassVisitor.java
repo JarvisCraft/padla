@@ -22,25 +22,20 @@ import static org.objectweb.asm.Type.getMethodDescriptor;
 import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.OBJECT_TYPE;
 import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.getHandle;
 
+/**
+ * {@link ClassVisitor} which implements features on {@link Result}.
+ */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class ResultFeaturesClassVisitor extends ClassVisitor {
 
+    /**
+     * Used version of ASM.
+     */
     private static final int ASM_API_VERSION = ASM9;
 
     /**
-     * Type of {@link Result} class
+     * Error reporter used for handling errors
      */
-    private static final @NotNull Type RESULT__TYPE = Type.getType(Result.class);
-
-    private static final @NotNull String RESULT__INTERNAL_NAME = RESULT__TYPE.getInternalName();
-
-    /**
-     * Type of {@link ResultOperators} class
-     */
-    private static final @NotNull Type RESULT_OPERATORS__TYPE = Type.getType(ResultOperators.class);
-
-    private static final @NotNull String RESULT_OPERATORS__INTERNAL_NAME = RESULT_OPERATORS__TYPE.getInternalName();
-
     @NotNull SourcedErrorReporter<@NotNull String> errorReporter;
 
     private ResultFeaturesClassVisitor(final ClassVisitor classVisitor,
@@ -50,6 +45,13 @@ public final class ResultFeaturesClassVisitor extends ClassVisitor {
         this.errorReporter = errorReporter;
     }
 
+    /**
+     * Creates a {@link ClassVisitor} which implements {@link Result} features.
+     *
+     * @param classVisitor original class visitor
+     * @param errorReporter error reporter used for handling errors
+     * @return created class  visitor
+     */
     public static @NotNull ClassVisitor create(final @NonNull ClassVisitor classVisitor,
                                                final @NonNull SourcedErrorReporter<@NotNull String> errorReporter) {
         return new ResultFeaturesClassVisitor(classVisitor, errorReporter);
@@ -70,27 +72,92 @@ public final class ResultFeaturesClassVisitor extends ClassVisitor {
         );
     }
 
+    /**
+     * {@link MethodVisitor} which implements features on {@link Result}.
+     */
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     private static final class ResultFeaturesMethodVisitor extends MethodVisitor {
 
+        /**
+         * Type of {@link Result} class
+         */
+        private static final @NotNull Type RESULT__TYPE = Type.getType(Result.class);
+
+        /**
+         * Internal name of {@link Result} class
+         */
+        private static final @NotNull String RESULT__INTERNAL_NAME = RESULT__TYPE.getInternalName();
+
+        /**
+         * Type of {@link ResultOperators} class
+         */
+        private static final @NotNull Type RESULT_OPERATORS__TYPE = Type.getType(ResultOperators.class);
+
+        /**
+         * Internal name of {@link ResultOperators} class
+         */
+        private static final @NotNull String RESULT_OPERATORS__INTERNAL_NAME = RESULT_OPERATORS__TYPE.getInternalName();
+
+        /**
+         * Name of {@link ResultOperators#_try(Result)} method
+         */
         private static final @NotNull String TRY__METHOD_NAME = "_try";
+
+        /**
+         * Descriptor of {@link ResultOperators#_try(Result)} method
+         */
         private static final @NotNull String TRY__METHOD_DESCRIPTOR;
 
+        /**
+         * Name of {@link Result#isSuccess()} method
+         */
         private static final @NotNull String IS_SUCCESS__METHOD_NAME = "isSuccess";
+
+        /**
+         * Descriptor of {@link Result#isSuccess()} method
+         */
         private static final @NotNull String IS_SUCCESS__METHOD_DESCRIPTOR;
 
+        /**
+         * Name of {@link Result#unwrap()} method
+         */
         private static final @NotNull String UNWRAP__METHOD_NAME = "unwrap";
+
+        /**
+         * Descriptor of {@link Result#unwrap()} method
+         */
         private static final @NotNull String UNWRAP__METHOD_DESCRIPTOR;
 
+        /**
+         * Name of {@link ResultBootstraps#tryConvertErrorType(MethodHandles.Lookup, String, MethodType, Class)} method
+         */
         private static final @NotNull String TRY_CONVERT_ERROR_TYPE__METHOD_NAME = "tryConvertErrorType";
+
+        /**
+         * Handle of
+         * {@link ResultBootstraps#tryConvertErrorType(MethodHandles.Lookup, String, MethodType, Class)} method
+         */
         private static final @NotNull Handle TRY_CONVERT_ERROR_TYPE__HANDLE;
 
+        /**
+         * Method type {@link Result} {@code (}{@link Result}{@code )}
+         */
         private static final @NotNull String RESULT_RESULT__METHOD_DESCRIPTOR
                 = getMethodDescriptor(RESULT__TYPE, RESULT__TYPE);
 
+        /**
+         * Error reporter used for handling errors
+         */
         @NotNull SourcedErrorReporter<@NotNull String> errorReporter;
 
+        /**
+         * Lazily evaluated return type of the visited method
+         */
         @NotNull Lazy<@NotNull Type> returnType;
+
+        /**
+         * Lazily evaluated result error type, on;y valid if {@code returnType} evaluates to {@link Result}
+         */
         @Nullable Lazy<@Nullable String> resultErrorTypeAsDescriptor;
 
         static {
@@ -150,6 +217,12 @@ public final class ResultFeaturesClassVisitor extends ClassVisitor {
             this.resultErrorTypeAsDescriptor = resultErrorTypeAsDescriptor;
         }
 
+        /**
+         * Verifies that the return type of the method is {@link Result} reporting an error otherwise.
+         *
+         * @return {@code true} if the return type of the method is {@link Result} and {@code false} otherwise,
+         * also reporting an error
+         */
         private boolean verifyResultConvertible() { // TODO generic checks
             if (returnType.get().equals(RESULT__TYPE)) return true;
 
