@@ -78,6 +78,32 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a new {@link #success(Object) successful result} if the value is not {@code null}.
+     *
+     * @param value value which should be non-{@code null} to be considered a successful value
+     * @param <T> type of the successful value
+     * @param <E> any formal type of the error value
+     * @return a {@link #success(Object) successful result} if the {@code value} is not {@code null}
+     * or a {@link #nullError() null error} otherwise
+     */
+    static <T, @Any E> @NotNull Result<@NotNull T, @Nullable E> nonNullSuccess(final @Nullable T value) {
+        return value == null ? nullError() : success(value);
+    }
+
+    /**
+     * Creates a new {@link #error(Object) error result} if the value is not {@code null}.
+     *
+     * @param error value which should be non-{@code null} to be considered an error value
+     * @param <T> any formal type of the successful value
+     * @param <E> type of the error value
+     * @return a {@link #error(Object) error result} if the {@code value} is not {@code null}
+     * or a {@link #nullSuccess() null success} otherwise
+     */
+    static <T, @Any E> @NotNull Result<@Nullable T, @NotNull E> nonNullError(final @Nullable E error) {
+        return error == null ? nullSuccess() : error(error);
+    }
+
+    /**
      * Converts the given {@link Optional} into a {@link #nullError() null-error result}.
      *
      * @param optional optional to be converted into the result
