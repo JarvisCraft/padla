@@ -12,6 +12,7 @@ import java.util.function.Supplier;
  *
  * @param <X> the type of the exception thrown by the function
  */
+@FunctionalInterface
 public interface ThrowingRunnable<X extends Throwable> extends Runnable{
 
     /**
@@ -38,12 +39,11 @@ public interface ThrowingRunnable<X extends Throwable> extends Runnable{
     }
 
     /**
-     * Creates an empty (no-op) throwing runnable which always thrown an exception produced by using the factory.
+     * Creates a throwing runnable which always throws an exception produced by using the factory.
      *
      * @param exceptionFactory factory used for creation of the exception
-     * @param <X> any formal type of the (never thrown) exception
+     * @param <X> the type of the exception thrown by the function
      * @return throwing runnable which always throws {@code X} by creating it via the provided factory
-     *
      * @throws NullPointerException if {@code exceptionFactory} is {@code null}
      *
      * @apiNote if the {@code exceptionFactory} produces {@code null}
