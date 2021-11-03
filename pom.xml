@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
@@ -38,7 +38,7 @@
         <url>https://github.com/JarvisCraft/padla</url>
         <connection>scm:git:git://github.com:JarvisCraft/padla.git</connection>
         <developerConnection>scm:git:git@github.com:JarvisCraft/padla.git</developerConnection>
-      <tag>padla-1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
