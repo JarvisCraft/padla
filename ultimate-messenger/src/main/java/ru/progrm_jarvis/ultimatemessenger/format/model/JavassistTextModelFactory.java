@@ -69,7 +69,7 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
     protected static final class JavassistTextModelBuilder<T>
             extends AbstractGeneratingTextModelFactoryBuilder<
-            T, Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T>, DynamicNode<T>
+            T, Node<T, StaticNode, DynamicNode<T>>, StaticNode, DynamicNode<T>
             > {
 
         /**
@@ -78,12 +78,12 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
         @Override
-        protected @NotNull Node<T, StaticNode<T>, DynamicNode<T>> newStaticNode(final @NotNull String text) {
+        protected @NotNull Node<T, StaticNode, DynamicNode<T>> newStaticNode(final @NotNull String text) {
             return new SimpleStaticNode<>(text);
         }
 
         @Override
-        protected @NotNull Node<T, StaticNode<T>, DynamicNode<T>> newDynamicNode(final @NotNull TextModel<T> content) {
+        protected @NotNull Node<T, StaticNode, DynamicNode<T>> newDynamicNode(final @NotNull TextModel<T> content) {
             return new SimpleDynamicNode<>(content);
         }
 

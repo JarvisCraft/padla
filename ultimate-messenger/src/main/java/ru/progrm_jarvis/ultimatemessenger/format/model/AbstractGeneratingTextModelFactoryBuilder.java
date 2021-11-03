@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         N extends AbstractGeneratingTextModelFactoryBuilder.Node<T, SN, DN>,
-        SN extends AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>,
+        SN extends AbstractGeneratingTextModelFactoryBuilder.StaticNode,
         DN extends AbstractGeneratingTextModelFactoryBuilder.DynamicNode<T>>
         extends AbstractCachingTextModelFactoryBuilder<T> {
 
@@ -169,8 +170,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Attempts to create a fast implementation if there is no dynamic content in this text model builder.
+     * <p>Attempts to create a fast implementation if there is no dynamic content in this text model builder.</p>
      *
      * @param release {@inheritDoc}
      * @return {@inheritDoc}
@@ -208,7 +208,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * @param <S> type of static node wrapped
      * @param <D> type of dynamic node wrapped
      */
-    protected interface Node<T, S extends StaticNode<T>, D extends DynamicNode<T>> {
+    protected interface Node<T, S extends StaticNode, D extends DynamicNode<T>> {
 
         /**
          * Marker indicating whether this element is dynamic.
@@ -241,12 +241,10 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     /**
      * Static {@link Node node}.
      *
-     * @param <T> type of object according to which the created text models are formatted
-     *
      * @apiNote this interface does not extend {@link Node} but it is a common practice to have a class implement both
      * in order to decrease the amount of allocated objects
      */
-    protected interface StaticNode<T> {
+    protected interface StaticNode {
 
         /**
          * Gets this element's static content.
@@ -257,7 +255,12 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
          */
         @NotNull String getText();
 
-        int getTextLength();
+        /**
+         * Gets the length of the static text's content.
+         *
+         * @return length of the static text's content
+         */
+        @Range(from = 0, to = Integer.MAX_VALUE) int getTextLength();
 
         /**
          * Appends a static element to this element's content.
@@ -298,7 +301,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     @Value
     @RequiredArgsConstructor
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    protected static class SimpleStaticNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, StaticNode<T> {
+    protected static class SimpleStaticNode<T> implements Node<T, StaticNode, DynamicNode<T>>, StaticNode {
 
         /**
          * Text of this node
@@ -315,7 +318,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public @NotNull StaticNode<T> asStatic() {
+        public @NotNull StaticNode asStatic() {
             return this;
         }
 
@@ -325,7 +328,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public int getTextLength() {
+        public @Range(from = 0, to = Integer.MAX_VALUE) int getTextLength() {
             return text.length();
         }
 
@@ -347,7 +350,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      */
     @Value
     @FieldDefaults(level = AccessLevel.PRIVATE)
-    protected static class SimpleDynamicNode<T> implements Node<T, StaticNode<T>, DynamicNode<T>>, DynamicNode<T> {
+    protected static class SimpleDynamicNode<T> implements Node<T, StaticNode, DynamicNode<T>>, DynamicNode<T> {
 
         /**
          * Dynamic content of this node
@@ -365,7 +368,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         }
 
         @Override
-        public @NotNull StaticNode<T> asStatic() {
+        public @NotNull StaticNode asStatic() {
             throw new UnsupportedOperationException("This is not a static node");
         }
     }

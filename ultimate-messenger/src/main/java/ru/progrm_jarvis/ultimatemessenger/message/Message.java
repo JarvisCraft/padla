@@ -34,7 +34,7 @@ public interface Message<C, R> {
      * @param receivers receivers of the message
      */
     @SuppressWarnings("unchecked") // generic vararg
-    default void send(@NotNull C context, @NotNull R... receivers) {
+    default void send(final @NotNull C context, final @NotNull R... receivers) {
         for (val receiver : receivers) send(context, receiver);
     }
 
@@ -44,11 +44,17 @@ public interface Message<C, R> {
      * @param context context of the message
      * @param receivers receivers of the message
      */
-    default void send(@NotNull C context, @NotNull Iterator<@NotNull R> receivers) {
+    default void send(final @NotNull C context, final @NotNull Iterator<@NotNull R> receivers) {
         while (receivers.hasNext()) send(context, receivers.next());
     }
 
-    default void send(@NotNull C context, @NotNull Spliterator<@NotNull R> receivers) {
+    /**
+     * Sends a message in the given context to each of the receivers.
+     *
+     * @param context context of the message
+     * @param receivers receivers of the message
+     */
+    default void send(final @NotNull C context, final @NotNull Spliterator<@NotNull R> receivers) {
         receivers.forEachRemaining(receiver -> send(context, receiver));
     }
 
@@ -58,7 +64,7 @@ public interface Message<C, R> {
      * @param context context of the message
      * @param receivers receivers of the message
      */
-    default void send(@NotNull C context, @NotNull Iterable<@NotNull R> receivers) {
+    default void send(final @NotNull C context, final @NotNull Iterable<@NotNull R> receivers) {
         for (val receiver : receivers) send(context, receiver);
     }
 
@@ -68,7 +74,7 @@ public interface Message<C, R> {
      * @param context context of the message
      * @param receivers receivers of the message
      */
-    default void send(@NotNull C context, @NotNull Collection<@NotNull R> receivers) {
+    default void send(final @NotNull C context, final @NotNull Collection<@NotNull R> receivers) {
         for (val receiver : receivers) send(context, receiver);
     }
 
@@ -78,7 +84,7 @@ public interface Message<C, R> {
      * @param context context of the message
      * @param receivers receivers of the message
      */
-    default void send(@NotNull C context, @NotNull List<@NotNull R> receivers) {
+    default void send(final @NotNull C context, final @NotNull List<@NotNull R> receivers) {
         for (val receiver : receivers) send(context, receiver);
     }
 }
