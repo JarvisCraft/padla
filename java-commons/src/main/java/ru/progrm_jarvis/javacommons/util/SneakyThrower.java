@@ -13,16 +13,15 @@ public class SneakyThrower {
 
     /**
      * Rethrows the provided throwable without the need to handle it.
+     * This <i>always throws</i> {@code X} <i>never returning</i> any value.
      *
      * @param exception rethrown exception
      * @param <X> type of the returned exception
      * @param <R> any formal return type of this expression
      *
      * @return <i>never</i>
-     * @throws X <i>always</i>
      */
     @SneakyThrows
-    @SuppressWarnings("JavaDoc") // although the method is not declared to throw `X`, it always does
     public <X extends Throwable, @Any R> R sneakyThrow(final @NonNull X exception) {
         throw exception;
     }
