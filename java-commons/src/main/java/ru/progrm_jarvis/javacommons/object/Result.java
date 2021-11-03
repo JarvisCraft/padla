@@ -8,6 +8,8 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.annotation.Any;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingRunnable;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingSupplier;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -76,6 +78,32 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a new {@link #success(Object) successful result} if the value is not {@code null}.
+     *
+     * @param value value which should be non-{@code null} to be considered a successful value
+     * @param <T> type of the successful value
+     * @param <E> any formal type of the error value
+     * @return a {@link #success(Object) successful result} if the {@code value} is not {@code null}
+     * or a {@link #nullError() null error} otherwise
+     */
+    static <T, @Any E> @NotNull Result<@NotNull T, @Nullable E> nonNullSuccess(final @Nullable T value) {
+        return value == null ? nullError() : success(value);
+    }
+
+    /**
+     * Creates a new {@link #error(Object) error result} if the value is not {@code null}.
+     *
+     * @param error value which should be non-{@code null} to be considered an error value
+     * @param <T> any formal type of the successful value
+     * @param <E> type of the error value
+     * @return a {@link #error(Object) error result} if the {@code value} is not {@code null}
+     * or a {@link #nullSuccess() null success} otherwise
+     */
+    static <T, @Any E> @NotNull Result<@Nullable T, @NotNull E> nonNullError(final @Nullable E error) {
+        return error == null ? nullSuccess() : error(error);
+    }
+
+    /**
      * Converts the given {@link Optional} into a {@link #nullError() null-error result}.
      *
      * @param optional optional to be converted into the result
@@ -111,14 +139,53 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     */
+    static @NotNull Result<@Nullable Void, ? extends @NotNull Throwable> tryRun(
+            final @NonNull ThrowingRunnable<? extends Throwable> runnable
+    ) {
+        try {
+            runnable.runChecked();
+        } catch (final Throwable x) {
+            return error(x);
+        }
+
+        return nullSuccess();
+    }
+
+    /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     */
+    static <T> Result<T, @NotNull Exception> tryGet(
+            final @NonNull ThrowingSupplier<? extends T, ? extends Throwable> supplier
+    ) {
+        final T value;
+        try {
+            value = supplier.get();
+        } catch (final Exception x) {
+            return error(x);
+        }
+
+        return success(value);
+    }
+
+    /**
      * Creates a result by calling the specified callable.
      *
-     * @param callable provider of the result
+     * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
      * @param <T> type of the result provided by the given callable
-     * @return {@link #success(Object) successful result} if the callable ran unexceptionally
-     * and {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     * @return {@link #success(Object) successful result} if the callable completes unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      */
-    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<? extends T> callable) {
+    static <T> @NotNull Result<T, @NotNull Exception> tryCall(final @NonNull Callable<? extends T> callable) {
         final T value;
         try {
             value = callable.call();
@@ -127,6 +194,20 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         return success(value);
+    }
+
+    /**
+     * Creates a result by calling the specified callable.
+     *
+     * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @param <T> type of the result provided by the given callable
+     * @return {@link #success(Object) successful result} if the callable completes unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     * @deprecated in favor of {@link #tryCall(Callable)}
+     */
+    @Deprecated
+    static <T> @NotNull Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<? extends T> callable) {
+        return tryCall(callable);
     }
 
     /* ********************************************** Checking methods ********************************************** */
