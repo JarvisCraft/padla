@@ -10,7 +10,6 @@
         <module>java-commons</module>
         <module>reflector</module>
         <module>ultimate-messenger</module>
-        <module>tools</module>
         <module>padla-bom</module>
     </modules>
     <packaging>pom</packaging>
