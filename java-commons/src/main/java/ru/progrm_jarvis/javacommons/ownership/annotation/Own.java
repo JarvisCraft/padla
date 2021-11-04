@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * <p>Marker indicating the owner of a mutable object.
  * It is intended only for use with mutable types
- * for which it will indicate whether or not the operated object should be cloned for modification</p>
+ * for which it will indicate whether the operated object should be cloned for modification</p>
  * <p>Owner depends on the target:</p>
  * <dl>
  *     <dt>parameter</dt>

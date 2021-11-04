@@ -1,0 +1,41 @@
+name: Test
+
+on: [ pull_request ]
+
+jobs:
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2.4.0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v2.3.1
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Run tests
+        run: mvn -B test
+
+  check-javadocs:
+    name: Check Javadocs
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2.4.0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v2.3.1
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Install artifacts
+        run: mvn -B install -Dmaven.test.skip=true
+
+      - name: Try to generate Javadocs
+        run: mvn -B javadoc:javadoc
