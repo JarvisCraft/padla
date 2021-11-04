@@ -53,7 +53,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
     }
 
     /**
-     * Checks whether or not the wrapped iterator contains the specified element.
+     * Checks whether the wrapped iterator contains the specified element.
      *
      * @param element element to check for containment
      * @return {@code true} if the element is contained in the wrapped iterator and {@code false} otherwise

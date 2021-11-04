@@ -184,11 +184,11 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         STARTED(false, false);
 
         /**
-         * Flag indicating whether or not new {@link #request(Object) own-requests} can happen
+         * Flag indicating whether new {@link #request(Object) own-requests} can happen
          */
         boolean canRequest,
         /**
-         * Flag indicating whether or not owned services can still be {@link OwnedService#close() closed}
+         * Flag indicating whether owned services can still be {@link OwnedService#close() closed}
          */
         canClose;
     }
@@ -210,7 +210,7 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         S service;
 
         /**
-         * Flag indicating whether or not this service can no longer be used.
+         * Flag indicating whether this service can no longer be used.
          */
         @NotNull AtomicBoolean closed;
 
