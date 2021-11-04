@@ -34,5 +34,8 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
+      - name: Install artifacts
+        run: mvn -B install -Dmaven.test.skip=true
+
       - name: Try to generate Javadocs
         run: mvn -B javadoc:javadoc
