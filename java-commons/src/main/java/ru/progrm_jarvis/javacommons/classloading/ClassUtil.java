@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.unchecked.UncheckedCasts;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -121,47 +122,56 @@ public class ClassUtil {
      * Gets a primitive-wrapper class for the given primitive class.
      *
      * @param primitiveClass primitive class whose wrapper is needed
+     * @param <T> specific class type
      * @return primitive-wrapper class for the given primitive class
      *
      * @throws IllegalArgumentException if the given class is not primitive
      */
-    public @NotNull Class<?> toPrimitiveWrapper(final @NotNull /* hot spot */ Class<?> primitiveClass) {
+    public <T> @NotNull Class<? extends T> toPrimitiveWrapper(final @NotNull Class<? super T> primitiveClass) {
         final int primitiveClassIndex;
         if ((primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_CLASSES, primitiveClass, CLASS_HASH_CODE_COMPARATOR
         )) < 0) throw new IllegalArgumentException("Given class is not primitive");
 
-        return PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
+        return UncheckedCasts.uncheckedClassCast(
+                PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex]
+        );
     }
 
     /**
      * Either returns a primitive-wrapper class for the given one if it is primitive or the provided class otherwise.
      *
      * @param originalClass class whose wrapper should be returned on demand
+     * @param <T> specific class type
      * @return primitive-wrapper class for the given class if it is primitive or the provided class otherwise
      */
-    public @NotNull Class<?> toNonPrimitive(final @NotNull /* hot spot */ Class<?> originalClass) {
+    public <T> @NotNull Class<? extends T> toNonPrimitive(final @NotNull Class<? super T> originalClass) {
         final int primitiveClassIndex;
-        return (primitiveClassIndex = Arrays.binarySearch(
-                SORTED_PRIMITIVE_CLASSES, originalClass, CLASS_HASH_CODE_COMPARATOR
-        )) < 0 ? originalClass : PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex];
+        return UncheckedCasts.uncheckedClassCast(
+                (primitiveClassIndex = Arrays.binarySearch(
+                        SORTED_PRIMITIVE_CLASSES, originalClass, CLASS_HASH_CODE_COMPARATOR
+                )) < 0 ? originalClass : PRIMITIVE_WRAPPER_CLASSES_SORTED_BY_PRIMITIVE_CLASSES[primitiveClassIndex]
+        );
     }
 
     /**
      * Gets a primitive class for the given primitive-wrapper class.
      *
      * @param primitiveWrapperClass primitive-wrapper class whose wrapper is needed
+     * @param <T> specific class type
      * @return primitive class for the given primitive-wrapper class
      *
      * @throws IllegalArgumentException if the given class is not a primitive-wrapper
      */
-    public Class<?> toPrimitive(@NotNull /* hot spot */ final Class<?> primitiveWrapperClass) {
+    public <T> @NotNull Class<? extends T> toPrimitive(final @NotNull Class<? super T> primitiveWrapperClass) {
         final int primitiveClassIndex;
         if ((primitiveClassIndex = Arrays.binarySearch(
                 SORTED_PRIMITIVE_WRAPPER_CLASSES, primitiveWrapperClass, CLASS_HASH_CODE_COMPARATOR
         )) < 0) throw new IllegalArgumentException("Given class is not a primitive-wrapper");
 
-        return PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex];
+        return UncheckedCasts.uncheckedClassCast(
+                PRIMITIVE_CLASSES_SORTED_BY_PRIMITIVE_WRAPPER_CLASSES[primitiveClassIndex]
+        );
     }
 
     /**
@@ -172,15 +182,16 @@ public class ClassUtil {
      *
      * @param original original type which should be integrated to the target type
      * @param target target type to which the original type should be integrated
+     * @param <T> specific class type
      * @return result of type integration, my be the same as original type
      *
      * @throws IllegalArgumentException if original type cannot be integrated to the target type
      */
-    public Class<?> integrateType(final @NotNull /* hot spot */ Class<?> original,
-                                  final @NotNull /* hot spot */ Class<?> target) {
+    public <T> Class<? extends T> integrateType(final @NotNull Class<? super T> original,
+                                                final @NotNull Class<? super T> target) {
         // As `Class#isAssignableFrom()` is an intrinsic candidate
         // there is no need for simple `==` check which is probably included in it
-        if (target.isAssignableFrom(original)) return original;
+        if (target.isAssignableFrom(original)) return UncheckedCasts.uncheckedClassCast(original);
 
         if(!original.isPrimitive()) throw new IllegalArgumentException(
                 "Original type " + original + " cannot be integrated with the target type " + target
@@ -193,7 +204,7 @@ public class ClassUtil {
                         + " cannot be integrated with target type " + target
         );
 
-        return wrapper;
+        return UncheckedCasts.uncheckedClassCast(wrapper);
     }
 
     /**

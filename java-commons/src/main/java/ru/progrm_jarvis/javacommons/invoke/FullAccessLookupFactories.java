@@ -144,7 +144,7 @@ public class FullAccessLookupFactories {
      *
      * @param type raw-typed constructor array
      * @param <T> exact wanted type of constructor array
-     * @return the provided constructor array with its type case to the specific one
+     * @return the provided constructor array with its type cast to the specific one
      *
      * @apiNote this is effectively no-op
      */

@@ -64,7 +64,7 @@ public abstract class CachingGeneratingDelegateFactory implements DelegateFactor
      *
      * @param type raw-typed delegate wrapper factory
      * @param <T> exact wanted type of delegate wrapper factory
-     * @return the provided delegate wrapper factory with its type case to the specific one
+     * @return the provided delegate wrapper factory with its type cast to the specific one
      *
      * @apiNote this is effectively no-op
      */

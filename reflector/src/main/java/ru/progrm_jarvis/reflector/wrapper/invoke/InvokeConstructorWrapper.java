@@ -159,7 +159,7 @@ public class InvokeConstructorWrapper<@NotNull T>
      *
      * @param type raw-typed constructor
      * @param <T> exact wanted type of constructor
-     * @return the provided constructor with its type case to the specific one
+     * @return the provided constructor with its type cast to the specific one
      *
      * @apiNote this is effectively no-op
      */
