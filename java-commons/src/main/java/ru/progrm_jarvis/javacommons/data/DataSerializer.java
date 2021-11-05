@@ -36,8 +36,9 @@ public interface DataSerializer<T> {
      * @implNote delegates to {@link #write(DataOutputStream, Object)}
      * @implSpec should not be overridden
      */
+    @SneakyThrows(IOException.class)
     default void writeUnchecked(final @NotNull DataOutputStream output, final T object) {
-        writeUnchecked(output, object);
+        write(output, object);
     }
 
     /**

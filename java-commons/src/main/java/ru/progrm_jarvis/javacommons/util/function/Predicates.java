@@ -15,6 +15,7 @@ public class Predicates {
     /**
      * Creates a predicate which is always {@code true}.
      *
+     * @param <T> any formal type of the input parameter
      * @return predicate which is always {@code true}
      */
     public <@Any T> @NotNull Predicate<T> alwaysTrue() {
@@ -24,6 +25,7 @@ public class Predicates {
     /**
      * Creates a predicate which is always {@code false}.
      *
+     * @param <T> any formal type of the input parameter
      * @return predicate which is always {@code false}
      */
     public <@Any T> @NotNull Predicate<T> alwaysFalse() {

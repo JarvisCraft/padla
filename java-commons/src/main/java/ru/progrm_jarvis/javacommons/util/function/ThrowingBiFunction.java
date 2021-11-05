@@ -21,13 +21,27 @@ public interface ThrowingBiFunction<T, U, R, X extends Throwable> extends BiFunc
      * @param u the second function argument
      * @return the function result
      * @throws X if an exception happens
-     *
      */
-    R invoke(T t, U u) throws X;
+    R applyChecked(T t, U u) throws X;
+
+    /**
+     * Applies this function to the given arguments.
+     *
+     * @param t the first function argument
+     * @param u the second function argument
+     * @return the function result
+     * @throws X if an exception happens
+     *
+     * @deprecated in favor of {@link #applyChecked(Object, Object)}
+     */
+    @Deprecated
+    default R invoke(final T t, final U u) throws X {
+        return applyChecked(t, u);
+    }
 
     @Override
     @SneakyThrows
     default R apply(final T t, final U u) {
-        return invoke(t, u);
+        return applyChecked(t, u);
     }
 }

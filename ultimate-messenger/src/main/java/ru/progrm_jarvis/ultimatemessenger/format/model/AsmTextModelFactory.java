@@ -5,10 +5,7 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.java.Log;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.*;
 import org.objectweb.asm.*;
 import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
@@ -1254,7 +1251,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
      *
      * @param <T> type of object according to which the created text models are formatted
      */
-    private interface StaticAsmNode<T> extends AbstractGeneratingTextModelFactoryBuilder.StaticNode<T>, AsmNode<T> {
+    private interface StaticAsmNode<T> extends AbstractGeneratingTextModelFactoryBuilder.StaticNode, AsmNode<T> {
 
         /**
          * Checks if this node's text cannot be passed as a raw part
@@ -1331,7 +1328,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
         }
 
         @Override
-        public int getTextLength() {
+        public @Range(from = 0, to = Integer.MAX_VALUE) int getTextLength() {
             return text.length();
         }
 

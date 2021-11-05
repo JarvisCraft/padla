@@ -8,12 +8,15 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.annotation.Any;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingRunnable;
+import ru.progrm_jarvis.javacommons.util.function.ThrowingSupplier;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A tagged union representing either a successful result or an error.
@@ -75,6 +78,32 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a new {@link #success(Object) successful result} if the value is not {@code null}.
+     *
+     * @param value value which should be non-{@code null} to be considered a successful value
+     * @param <T> type of the successful value
+     * @param <E> any formal type of the error value
+     * @return a {@link #success(Object) successful result} if the {@code value} is not {@code null}
+     * or a {@link #nullError() null error} otherwise
+     */
+    static <T, @Any E> @NotNull Result<@NotNull T, @Nullable E> nonNullSuccess(final @Nullable T value) {
+        return value == null ? nullError() : success(value);
+    }
+
+    /**
+     * Creates a new {@link #error(Object) error result} if the value is not {@code null}.
+     *
+     * @param error value which should be non-{@code null} to be considered an error value
+     * @param <T> any formal type of the successful value
+     * @param <E> type of the error value
+     * @return a {@link #error(Object) error result} if the {@code value} is not {@code null}
+     * or a {@link #nullSuccess() null success} otherwise
+     */
+    static <T, @Any E> @NotNull Result<@Nullable T, @NotNull E> nonNullError(final @Nullable E error) {
+        return error == null ? nullSuccess() : error(error);
+    }
+
+    /**
      * Converts the given {@link Optional} into a {@link #nullError() null-error result}.
      *
      * @param optional optional to be converted into the result
@@ -110,14 +139,53 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     */
+    static @NotNull Result<@Nullable Void, ? extends @NotNull Throwable> tryRun(
+            final @NonNull ThrowingRunnable<? extends Throwable> runnable
+    ) {
+        try {
+            runnable.runChecked();
+        } catch (final Throwable x) {
+            return error(x);
+        }
+
+        return nullSuccess();
+    }
+
+    /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     */
+    static <T> Result<T, @NotNull Exception> tryGet(
+            final @NonNull ThrowingSupplier<? extends T, ? extends Throwable> supplier
+    ) {
+        final T value;
+        try {
+            value = supplier.get();
+        } catch (final Exception x) {
+            return error(x);
+        }
+
+        return success(value);
+    }
+
+    /**
      * Creates a result by calling the specified callable.
      *
-     * @param callable provider of the result
+     * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
      * @param <T> type of the result provided by the given callable
-     * @return {@link #success(Object) successful result} if the callable ran unexceptionally
-     * and {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     * @return {@link #success(Object) successful result} if the callable completes unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      */
-    static <T> Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<? extends T> callable) {
+    static <T> @NotNull Result<T, @NotNull Exception> tryCall(final @NonNull Callable<? extends T> callable) {
         final T value;
         try {
             value = callable.call();
@@ -126,6 +194,20 @@ public interface Result<T, E> extends Supplier<T> {
         }
 
         return success(value);
+    }
+
+    /**
+     * Creates a result by calling the specified callable.
+     *
+     * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @param <T> type of the result provided by the given callable
+     * @return {@link #success(Object) successful result} if the callable completes unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
+     * @deprecated in favor of {@link #tryCall(Callable)}
+     */
+    @Deprecated
+    static <T> @NotNull Result<T, @NotNull Exception> tryFrom(final @NonNull Callable<? extends T> callable) {
+        return tryCall(callable);
     }
 
     /* ********************************************** Checking methods ********************************************** */
@@ -228,9 +310,19 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @param defaultValueSupplier supplier of the default value
      * to be returned if this is an {@link #isError()} error value}
-     * @return successful value if this a {@link #isSuccess() successful result} or {@code defaultValue} otherwise
+     * @return successful value if this a {@link #isSuccess() successful result} or got default otherwise
      */
     T orGetDefault(@NonNull Supplier<? extends T> defaultValueSupplier);
+
+    /**
+     * Gets the value of this result if this is a {@link #isSuccess() successful}
+     * otherwise returning the value computed by applying the given function to the {@link #unwrapError() error value}.
+     *
+     * @param defaultValueFactory factory used for creation of the default value
+     * to be returned if this is an {@link #isError()} error value}
+     * @return successful value if this a {@link #isSuccess() successful result} or the computed default otherwise
+     */
+    T orComputeDefault(@NonNull Function<? super E, ? extends T> defaultValueFactory);
 
     /**
      * Gets the error of this result throwing a {@link NotErrorException}
@@ -418,40 +510,58 @@ public interface Result<T, E> extends Supplier<T> {
     /* ********************************************* Conversion methods ********************************************* */
 
     /**
-     * Converts this result to an {@link Optional} of its successful value.
+     * Converts this result into an {@link Optional} of its successful value.
      *
-     * @return {@link Optional optional} containing the successful result's value
+     * @return {@link Optional optional} containing the value
      * if this is a {@link #isSuccess() successful result}
-     * and an {@link Optional#empty() empty optional} otherwise
+     * or an {@link Optional#empty() empty optional} otherwise
      */
     @NotNull Optional<T> asOptional();
 
     /**
-     * Converts this result to an {@link Optional} of its error.
+     * Converts this result into an {@link Optional} of its error.
      *
-     * @return {@link Optional optional} containing the error result's error
+     * @return {@link Optional optional} containing the error
      * if this is an {@link #isError() error result}
-     * and an {@link Optional#empty() empty optional} otherwise
+     * or an {@link Optional#empty() empty optional} otherwise
      */
     @NotNull Optional<E> asErrorOptional();
 
     /**
-     * Converts this result to a {@link ValueContainer} of its successful value.
+     * Converts this result into a {@link ValueContainer} of its successful value.
      *
-     * @return {@link ValueContainer value container} containing the successful result's value
+     * @return {@link ValueContainer value container} containing the value
      * if this is a {@link #isSuccess() successful result}
      * or an {@link ValueContainer#empty() empty value-container} otherwise
      */
     @NotNull ValueContainer<T> asValueContainer();
 
     /**
-     * Converts this result to a {@link ValueContainer} of its error value.
+     * Converts this result into a {@link ValueContainer} of its error value.
      *
-     * @return {@link ValueContainer value container} containing the error result's error
+     * @return {@link ValueContainer value container} containing the error
      * if this is an {@link #isError() error result}
      * or an {@link ValueContainer#empty() empty value-container} otherwise
      */
     @NotNull ValueContainer<E> asErrorValueContainer();
+
+    /**
+     * Converts this result into a {@link Stream} of its successful value.
+     *
+     * @return {@link Stream stream} of the value
+     * if this is a {@link #isSuccess() successful result}
+     * or an {@link Stream#empty() empty stream} otherwise
+     */
+    @NotNull Stream<T> asStream();
+
+    /**
+     * Converts this result into a {@link Stream} of its error value.
+     *
+     * @return {@link Stream stream} containing the error
+     * if this is an {@link #isError() error result}
+     * or an {@link Stream#empty() empty stream} otherwise
+     */
+    @NotNull Stream<E> asErrorStream();
 
     /**
      * Representation of a {@link #isSuccess() successful} {@link Result result}.
@@ -516,6 +626,11 @@ public interface Result<T, E> extends Supplier<T> {
 
         @Override
         public T orGetDefault(final @NonNull Supplier<? extends T> defaultValueSupplier) {
+            return value;
+        }
+
+        @Override
+        public T orComputeDefault(@NonNull final Function<? super E, ? extends T> defaultValueFactory) {
             return value;
         }
 
@@ -633,6 +748,16 @@ public interface Result<T, E> extends Supplier<T> {
             return ValueContainer.empty();
         }
 
+        @Override
+        public @NotNull Stream<T> asStream() {
+            return Stream.of(value);
+        }
+
+        @Override
+        public @NotNull Stream<E> asErrorStream() {
+            return Stream.empty();
+        }
+
         //</editor-fold>
     }
 
@@ -702,6 +827,11 @@ public interface Result<T, E> extends Supplier<T> {
         @Override
         public T orGetDefault(final @NonNull Supplier<? extends T> defaultValueSupplier) {
             return defaultValueSupplier.get();
+        }
+
+        @Override
+        public T orComputeDefault(final @NonNull Function<? super E, ? extends T> defaultValueFactory) {
+            return defaultValueFactory.apply(error);
         }
 
         @Override
@@ -815,6 +945,16 @@ public interface Result<T, E> extends Supplier<T> {
             return ValueContainer.of(error);
         }
 
+        @Override
+        public @NotNull Stream<T> asStream() {
+            return Stream.empty();
+        }
+
+        @Override
+        public @NotNull Stream<E> asErrorStream() {
+            return Stream.of(error);
+        }
+
         //</editor-fold>
     }
 
@@ -822,7 +962,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Holder of a {@code null}-success result.
      */
     @UtilityClass
-    final class NullSuccess {
+    class NullSuccess {
 
         /**
          * Instance of a {@code null}-error
@@ -834,7 +974,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Holder of a {@code null}-error result.
      */
     @UtilityClass
-    final class NullError {
+    class NullError {
 
         /**
          * Instance of a {@code null}-error
@@ -883,9 +1023,9 @@ public interface Result<T, E> extends Supplier<T> {
          *
          * @param message message describing the exception cause
          * @param cause cause of this exception
-         * @param enableSuppression flag indicating whether or not suppression
+         * @param enableSuppression flag indicating whether suppression
          * is enabled or disabled for this exception
-         * @param writableStackTrace flag indicating whether or not not the stack trace
+         * @param writableStackTrace flag indicating whether not the stack trace
          * should be writable for this exception
          */
         public NotSuccessException(final String message, final Throwable cause, final boolean enableSuppression,
@@ -937,9 +1077,9 @@ public interface Result<T, E> extends Supplier<T> {
          *
          * @param message message describing the exception cause
          * @param cause cause of this exception
-         * @param enableSuppression flag indicating whether or not suppression
+         * @param enableSuppression flag indicating whether suppression
          * is enabled or disabled for this exception
-         * @param writableStackTrace flag indicating whether or not not the stack trace
+         * @param writableStackTrace flag indicating whether not the stack trace
          * should be writable for this exception
          */
         public NotErrorException(final String message, final Throwable cause, final boolean enableSuppression,
@@ -969,6 +1109,39 @@ public interface Result<T, E> extends Supplier<T> {
                 final @NotNull Result<? extends T, ? extends @NotNull X> result
         ) throws X {
             return result.orElseThrow(Function.identity());
+        }
+
+        /**
+         * <p>Converts the result to another result whose types are super-types of its current types.</p>
+         * <p>This is equivalent to the following:</p>
+         * <pre>{@code
+         * result
+         *         .map(Function.<RT>identity())
+         *         .mapError(Function.<RE>identity())
+         * }</pre>
+         *
+         * @param result result whose type should be <i>upcasted</i>
+         * @param <T> new (super-) type of the successful result
+         * @param <E> new (super-) type of the error result
+         * @return upcasted result
+         *
+         * @apiNote this method could have been an instance method but its type cannot be described due to the absence
+         * of the ability to specify {@code super}-bounds on generic parameters relative to the other ones
+         */
+        @SuppressWarnings("unchecked") // Results are immutable so they are always safe to upcast
+        public <T, E> Result<T, E> upcast(final @NotNull Result<? extends T, ? extends E> result) {
+            return (Result<T, E>) result;
+        }
+
+        /**
+         * Either returns the successful result's value ot the error result's value depending on what is present.
+         *
+         * @param result given result
+         * @param <T> type of the resulting value common for the success and error values
+         * @return either the success or the error value
+         */
+        public <T> T any(final @NotNull Result<? extends T, ? extends T> result) {
+            return Extensions.<T, T>upcast(result).orComputeDefault(Function.identity());
         }
     }
 }
