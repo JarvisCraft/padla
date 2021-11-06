@@ -164,13 +164,13 @@ public interface Result<T, E> extends Supplier<T> {
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
      */
-    static <T> Result<T, @NotNull Exception> tryGet(
+    static <T> Result<T, @NotNull Throwable> tryGet(
             final @NonNull ThrowingSupplier<? extends T, ? extends Throwable> supplier
     ) {
         final T value;
         try {
-            value = supplier.get();
-        } catch (final Exception x) {
+            value = supplier.getChecked();
+        } catch (final Throwable x) {
             return error(x);
         }
 
