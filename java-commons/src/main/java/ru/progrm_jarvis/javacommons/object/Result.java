@@ -8,6 +8,9 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.annotation.Any;
+import ru.progrm_jarvis.javacommons.util.SneakyThrower;
+import ru.progrm_jarvis.javacommons.util.TypeHints;
+import ru.progrm_jarvis.javacommons.util.TypeHints.TypeHint;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingRunnable;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingSupplier;
 
@@ -158,14 +161,64 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @param throwableType class instance representing the type of the thrown exception
+     * @param <X> type of the thrown throwable
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SuppressWarnings("unchecked")
+    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRunChecked(
+            final @NonNull ThrowingRunnable<? extends X> runnable,
+            final @NonNull Class<? super X> throwableType
+    ) {
+        //noinspection OverlyBroadCatchBlock: cannot catch generic exception type
+        try {
+            runnable.runChecked();
+        } catch (final Throwable x) {
+            if (throwableType.isAssignableFrom(x.getClass())) return error((X) x);
+
+            return SneakyThrower.sneakyThrow(x);
+        }
+
+        return nullSuccess();
+    }
+
+    /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @param throwableTypeHint array used for throwable type discovery
+     * @param <X> type of the thrown throwable
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SafeVarargs
+    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRunChecked(
+            final @NonNull ThrowingRunnable<? extends X> runnable,
+            @TypeHint final @Nullable X @NonNull ... throwableTypeHint
+    ) {
+        return tryRunChecked(runnable, TypeHints.resolve(throwableTypeHint));
+    }
+
+    /**
      * Creates a result by getting the value of the specified supplier.
      *
+     * @param <T> type of the successful result value
      * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
-     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     static <T> Result<T, @NotNull Throwable> tryGet(
-            final @NonNull ThrowingSupplier<? extends T, ? extends Throwable> supplier
+            final @NonNull ThrowingSupplier<? extends T, Throwable> supplier
     ) {
         final T value;
         try {
@@ -178,10 +231,57 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @param throwableType class instance representing the type of the thrown exception
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SuppressWarnings("unchecked")
+    static <T, X extends Throwable> Result<T, @NotNull X> tryGetChecked(
+            final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
+            final @NonNull Class<? super X> throwableType
+    ) {
+        final T value;
+        //noinspection OverlyBroadCatchBlock: cannot catch generic exception type
+        try {
+            value = supplier.getChecked();
+        } catch (final Throwable x) {
+            if (throwableType.isAssignableFrom(x.getClass())) return error((X) x);
+
+            return SneakyThrower.sneakyThrow(x);
+        }
+
+        return success(value);
+    }
+
+    /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @param throwableTypeHint array used for throwable type discovery
+     * @param <X> type of the thrown throwable
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     */
+    @SafeVarargs
+    static <T, X extends Throwable> Result<T, @NotNull X> tryGetChecked(
+            final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
+            @TypeHint final @Nullable X @NonNull ... throwableTypeHint
+    ) {
+        return tryGetChecked(supplier, TypeHints.resolve(throwableTypeHint));
+    }
+
+    /**
      * Creates a result by calling the specified callable.
      *
      * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
-     * @param <T> type of the result provided by the given callable
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
      * @return {@link #success(Object) successful result} if the callable completes unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      */
@@ -200,7 +300,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Creates a result by calling the specified callable.
      *
      * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
-     * @param <T> type of the result provided by the given callable
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
      * @return {@link #success(Object) successful result} if the callable completes unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      * @deprecated in favor of {@link #tryCall(Callable)}
