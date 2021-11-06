@@ -13,72 +13,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class ResultTest {
 
     @Test
-    void test_tryRunChecked_withInferredType_success() {
+    void test_tryRun_withInferredType_success() {
         assertTrue(
-                Result.tryRunChecked(TestMethods::voidMethodNotThrowingDeclaredIOException).isSuccess()
+                Result.tryRun(TestMethods::voidMethodNotThrowingDeclaredIOException).isSuccess()
         );
     }
 
     @Test
-    void test_tryRunChecked_withInferredType_error() {
+    void test_tryRun_withInferredType_error() {
         val thrown = new IOException("Expected exception");
         assertSame(thrown,
-                Result.tryRunChecked(() -> TestMethods.voidMethodThrowingDeclaredIOException(thrown)).unwrapError()
+                Result.tryRun(() -> TestMethods.voidMethodThrowingDeclaredIOException(thrown)).unwrapError()
         );
     }
 
     @Test
-    void test_tryRunChecked_withInferredType_rethrow() {
+    void test_tryRun_withInferredType_rethrow() {
         val thrown = new RuntimeException("You didn't expect it, did you?");
         assertSame(thrown,
-                assertThrows(RuntimeException.class, () -> Result.tryRunChecked(
+                assertThrows(RuntimeException.class, () -> Result.tryRun(
                         () -> TestMethods.voidMethodNotThrowingDeclaredIOExceptionButRuntimeException(thrown)
                 ))
         );
     }
 
     @Test
-    void test_tryRunChecked_withInferredType_typeInference() {
+    void test_tryRun_withInferredType_typeInference() {
         assertTrue(
-                Result.tryRunChecked(() -> TestMethods.voidMethodThrowingCustomException(new CustomException()))
+                Result.tryRun(() -> TestMethods.voidMethodThrowingCustomException(new CustomException()))
                         .peek(aVoid -> fail("Result should be an error result"))
-                        .peekError(customError -> customError.thisIsACustomError())
+                        .peekError(CustomException::thisIsACustomError)
                         .isError()
         );
     }
 
     @Test
-    void test_tryGetChecked_withInferredType_success() {
+    void test_tryGet_withInferredType_success() {
         val returned = "Hello world";
         assertSame(returned,
-                Result.tryGetChecked(() -> TestMethods.stringMethodNotThrowingDeclaredIOException(returned)).unwrap()
+                Result.tryGet(() -> TestMethods.stringMethodNotThrowingDeclaredIOException(returned)).unwrap()
         );
     }
 
     @Test
-    void test_tryGetChecked_withInferredType_error() {
+    void test_tryGet_withInferredType_error() {
         val thrown = new IOException("Expected exception");
         assertSame(thrown,
-                Result.tryGetChecked(() -> TestMethods.stringMethodThrowingDeclaredIOException(thrown)).unwrapError()
+                Result.tryGet(() -> TestMethods.stringMethodThrowingDeclaredIOException(thrown)).unwrapError()
         );
     }
 
     @Test
-    void test_tryGetChecked_withInferredType_rethrow() {
+    void test_tryGet_withInferredType_rethrow() {
         val thrown = new RuntimeException("You didn't expect it, did you?");
         assertSame(thrown,
-                assertThrows(RuntimeException.class, () -> Result.tryGetChecked(
+                assertThrows(RuntimeException.class, () -> Result.tryGet(
                         () -> TestMethods.stringMethodNotThrowingDeclaredIOExceptionButRuntimeException(thrown)
                 ))
         );
     }
 
     @Test
-    void test_tryGetChecked_withInferredType_typeInference() {
+    void test_tryGet_withInferredType_typeInference() {
         assertTrue(
-                Result.tryGetChecked(() -> TestMethods.stringMethodThrowingCustomException(new CustomException()))
+                Result.tryGet(() -> TestMethods.stringMethodThrowingCustomException(new CustomException()))
                         .peek(string -> fail("Result should be an error result"))
-                        .peekError(customError -> customError.thisIsACustomError())
+                        .peekError(CustomException::thisIsACustomError)
                         .isError()
         );
     }

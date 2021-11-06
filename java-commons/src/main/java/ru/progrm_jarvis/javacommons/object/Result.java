@@ -145,10 +145,57 @@ public interface Result<T, E> extends Supplier<T> {
      * Creates a result by running the specified runnable.
      *
      * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @param throwableType class instance representing the type of the thrown exception
+     * @param <X> type of the thrown throwable
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SuppressWarnings("unchecked")
+    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRun(
+            final @NonNull ThrowingRunnable<? extends X> runnable,
+            final @NonNull Class<? super X> throwableType
+    ) {
+        //noinspection OverlyBroadCatchBlock: cannot catch generic exception type
+        try {
+            runnable.runChecked();
+        } catch (final Throwable x) {
+            if (throwableType.isInstance(x)) return error((X) x);
+
+            return SneakyThrower.sneakyThrow(x);
+        }
+
+        return nullSuccess();
+    }
+
+    /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @param throwableTypeHint array used for throwable type discovery
+     * @param <X> type of the thrown throwable
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SafeVarargs
+    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRun(
+            final @NonNull ThrowingRunnable<? extends X> runnable,
+            @TypeHint final @Nullable X @NonNull ... throwableTypeHint
+    ) {
+        return tryRun(runnable, TypeHints.resolve(throwableTypeHint));
+    }
+
+    /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
      * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
      */
-    static @NotNull Result<@Nullable Void, ? extends @NotNull Throwable> tryRun(
+    static @NotNull Result<@Nullable Void, ? extends @NotNull Throwable> tryRunCatchAny(
             final @NonNull ThrowingRunnable<? extends Throwable> runnable
     ) {
         try {
@@ -161,74 +208,6 @@ public interface Result<T, E> extends Supplier<T> {
     }
 
     /**
-     * Creates a result by running the specified runnable.
-     *
-     * @param runnable function whose failure indicates the {@link #error(Object) error result}
-     * @param throwableType class instance representing the type of the thrown exception
-     * @param <X> type of the thrown throwable
-     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
-     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     * if {@link Class#isInstance(Object) it is of} the expected type
-     * @apiNote if an unexpected exception is thrown then it will be rethrown
-     */
-    @SuppressWarnings("unchecked")
-    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRunChecked(
-            final @NonNull ThrowingRunnable<? extends X> runnable,
-            final @NonNull Class<? super X> throwableType
-    ) {
-        //noinspection OverlyBroadCatchBlock: cannot catch generic exception type
-        try {
-            runnable.runChecked();
-        } catch (final Throwable x) {
-            if (throwableType.isInstance(x)) return error((X) x);
-
-            return SneakyThrower.sneakyThrow(x);
-        }
-
-        return nullSuccess();
-    }
-
-    /**
-     * Creates a result by running the specified runnable.
-     *
-     * @param runnable function whose failure indicates the {@link #error(Object) error result}
-     * @param throwableTypeHint array used for throwable type discovery
-     * @param <X> type of the thrown throwable
-     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
-     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     * if {@link Class#isInstance(Object) it is of} the expected type
-     * @apiNote if an unexpected exception is thrown then it will be rethrown
-     */
-    @SafeVarargs
-    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRunChecked(
-            final @NonNull ThrowingRunnable<? extends X> runnable,
-            @TypeHint final @Nullable X @NonNull ... throwableTypeHint
-    ) {
-        return tryRunChecked(runnable, TypeHints.resolve(throwableTypeHint));
-    }
-
-    /**
-     * Creates a result by getting the value of the specified supplier.
-     *
-     * @param <T> type of the successful result value
-     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
-     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
-     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     */
-    static <T> Result<T, @NotNull Throwable> tryGet(
-            final @NonNull ThrowingSupplier<? extends T, Throwable> supplier
-    ) {
-        final T value;
-        try {
-            value = supplier.getChecked();
-        } catch (final Throwable x) {
-            return error(x);
-        }
-
-        return success(value);
-    }
-
-    /**
      * Creates a result by getting the value of the specified supplier.
      *
      * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
@@ -241,7 +220,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SuppressWarnings("unchecked")
-    static <T, X extends Throwable> Result<T, @NotNull X> tryGetChecked(
+    static <T, X extends Throwable> Result<T, @NotNull X> tryGet(
             final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
             final @NonNull Class<? super X> throwableType
     ) {
@@ -271,11 +250,32 @@ public interface Result<T, E> extends Supplier<T> {
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
-    static <T, X extends Throwable> Result<T, @NotNull X> tryGetChecked(
+    static <T, X extends Throwable> Result<T, @NotNull X> tryGet(
             final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
             @TypeHint final @Nullable X @NonNull ... throwableTypeHint
     ) {
-        return tryGetChecked(supplier, TypeHints.resolve(throwableTypeHint));
+        return tryGet(supplier, TypeHints.resolve(throwableTypeHint));
+    }
+
+    /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param <T> type of the successful result value
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     */
+    static <T> Result<T, @NotNull Throwable> tryGetCatchAny(
+            final @NonNull ThrowingSupplier<? extends T, Throwable> supplier
+    ) {
+        final T value;
+        try {
+            value = supplier.getChecked();
+        } catch (final Throwable x) {
+            return error(x);
+        }
+
+        return success(value);
     }
 
     /**
