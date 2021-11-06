@@ -168,7 +168,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <X> type of the thrown throwable
      * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * if {@link Class#isInstance(Object) it is of} the expected type
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SuppressWarnings("unchecked")
@@ -180,7 +180,7 @@ public interface Result<T, E> extends Supplier<T> {
         try {
             runnable.runChecked();
         } catch (final Throwable x) {
-            if (throwableType.isAssignableFrom(x.getClass())) return error((X) x);
+            if (throwableType.isInstance(x)) return error((X) x);
 
             return SneakyThrower.sneakyThrow(x);
         }
@@ -196,7 +196,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <X> type of the thrown throwable
      * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * if {@link Class#isInstance(Object) it is of} the expected type
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
@@ -214,8 +214,6 @@ public interface Result<T, E> extends Supplier<T> {
      * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
-     * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     static <T> Result<T, @NotNull Throwable> tryGet(
             final @NonNull ThrowingSupplier<? extends T, Throwable> supplier
@@ -238,7 +236,8 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
-     * if {@link Class#isAssignableFrom(Class) it is of} the expected type
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * if {@link Class#isInstance(Object) it is of} the expected type
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SuppressWarnings("unchecked")
@@ -251,7 +250,7 @@ public interface Result<T, E> extends Supplier<T> {
         try {
             value = supplier.getChecked();
         } catch (final Throwable x) {
-            if (throwableType.isAssignableFrom(x.getClass())) return error((X) x);
+            if (throwableType.isInstance(x)) return error((X) x);
 
             return SneakyThrower.sneakyThrow(x);
         }
@@ -268,6 +267,8 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
     static <T, X extends Throwable> Result<T, @NotNull X> tryGetChecked(
