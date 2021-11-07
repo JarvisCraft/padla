@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -1230,7 +1231,7 @@ public interface Result<T, E> extends Supplier<T> {
          * of the ability to specify {@code super}-bounds on generic parameters relative to the other ones
          */
         @SuppressWarnings("unchecked") // Results are immutable so they are always safe to upcast
-        public <T, E> Result<T, E> upcast(final @NotNull Result<? extends T, ? extends E> result) {
+        public <@Any T, @Any E> Result<T, E> upcast(final @NotNull Result<? extends T, ? extends E> result) {
             return (Result<T, E>) result;
         }
 
@@ -1242,7 +1243,97 @@ public interface Result<T, E> extends Supplier<T> {
          * @return either the success or the error value
          */
         public <T> T any(final @NotNull Result<? extends T, ? extends T> result) {
-            return Extensions.<T, T>upcast(result).orComputeDefault(Function.identity());
+            return Extensions
+                    .<T, T>upcast(result)
+                    .orComputeDefault(Function.identity());
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrap() successful value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to apply the mapping to the {@link #unwrap() successful value}
+         * @param mappingFunction function used to map the {@link #unwrap() successful value}
+         * if it matches the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting successful value, super-type of {@code <T>}
+         * @return the result whose {@link #unwrap() successful value} is mapped if it matches the predicate
+         */
+        public <T extends R, E, R> @NotNull Result<R, E> mapIf(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super T> predicate,
+                final @NonNull Function<? super T, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .map(value -> predicate.test(value) ? mappingFunction.apply(value) : value);
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrap() successful value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to not apply the mapping to the {@link #unwrap() successful value}
+         * @param mappingFunction function used to map the {@link #unwrap() successful value}
+         * if it does not match the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting successful value, super-type of {@code <T>}
+         * @return the result whose {@link #unwrap() successful value} is mapped if it does not match the predicate
+         */
+        public <T extends R, E, R> @NotNull Result<R, E> mapIfNot(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super T> predicate,
+                final @NonNull Function<? super T, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .map(value -> predicate.test(value) ? value : mappingFunction.apply(value));
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrapError() error value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to apply the mapping to the {@link #unwrapError() error value}
+         * @param mappingFunction function used to map the {@link #unwrapError() error value}
+         * if it matches the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting error value, super-type of {@code <E>}
+         * @return the result whose {@link #unwrapError() error value} is mapped if it matches the predicate
+         */
+        public <T, E extends R, R> @NotNull Result<T, R> mapErrorIf(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super E> predicate,
+                final @NonNull Function<? super E, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .mapError(error -> predicate.test(error) ? mappingFunction.apply(error) : error);
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrapError() error value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to not apply the mapping to the {@link #unwrapError() error value}
+         * @param mappingFunction function used to map the {@link #unwrapError() error value}
+         * if it does not match the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting error value, super-type of {@code <E>}
+         * @return the result whose {@link #unwrapError() error value} is mapped if it does not match the predicate
+         */
+        public <T, E extends R, R> @NotNull Result<T, R> mapErrorIfNot(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super E> predicate,
+                final @NonNull Function<? super E, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .mapError(error -> predicate.test(error) ? error : mappingFunction.apply(error));
         }
     }
 }
