@@ -163,6 +163,6 @@ class NullSafetyExtensionsTest {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     private static final class SuccessException extends Exception {
 
-        private static final long serialVersionUID = 0l;
+        private static final long serialVersionUID = 0L;
     }
 }

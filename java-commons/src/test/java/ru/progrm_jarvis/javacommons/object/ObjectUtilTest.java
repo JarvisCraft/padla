@@ -68,7 +68,7 @@ class ObjectUtilTest {
         }));
 
         final class CustomException extends RuntimeException {
-            private static final long serialVersionUID = 0l;
+            private static final long serialVersionUID = 0L;
         }
         assertThrows(CustomException.class, () -> ObjectUtil.map(null, t -> {
             throw new CustomException();
@@ -129,7 +129,7 @@ class ObjectUtilTest {
 
     private static final class ExpectedRuntimeException extends RuntimeException {
 
-        private static final long serialVersionUID = 0l;
+        private static final long serialVersionUID = 0L;
 
         @SuppressWarnings("PublicConstructor")
         public ExpectedRuntimeException() {

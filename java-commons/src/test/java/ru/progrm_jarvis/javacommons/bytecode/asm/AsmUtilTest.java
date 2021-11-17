@@ -122,7 +122,7 @@ class AsmUtilTest {
     @SuppressWarnings("PublicConstructor")
     private static class ExpectedException extends Exception {
 
-        private static final long serialVersionUID = 0l;
+        private static final long serialVersionUID = 0L;
 
         public ExpectedException() {
             super(null, null, true, false);
