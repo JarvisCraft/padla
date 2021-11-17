@@ -1,9 +1,6 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
+import lombok.*;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -674,6 +671,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
+    @Getter(AccessLevel.NONE)
     class Success<T, @Any E> implements Result<T, E> {
 
         /**
@@ -872,6 +870,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
+    @Getter(AccessLevel.NONE)
     class Error<@Any T, E> implements Result<T, E> {
 
         /**
