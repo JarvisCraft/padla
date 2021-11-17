@@ -30,7 +30,7 @@ import java.util.function.Function;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeDynamicMethodWrapper<@NotNull T, R>
+public final class InvokeDynamicMethodWrapper<T, R>
         extends AbstractMethodWrapper<T, R> implements DynamicMethodWrapper<T, R> {
 
     /**
@@ -51,9 +51,9 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
      * @param wrapped wrapped object
      * @param invoker bi-function performing the method invocation
      */
-    protected InvokeDynamicMethodWrapper(final @NotNull Class<? extends T> containingClass,
-                                         final @NotNull Method wrapped,
-                                         final @NotNull BiFunction<@NotNull T, Object @NotNull [], R> invoker) {
+    private InvokeDynamicMethodWrapper(final @NotNull Class<? extends T> containingClass,
+                                       final @NotNull Method wrapped,
+                                       final @NotNull BiFunction<@NotNull T, Object @NotNull [], R> invoker) {
         super(containingClass, wrapped);
         this.invoker = invoker;
     }
@@ -67,7 +67,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
      * @return cached dynamic method wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    public static <@NotNull T, R> DynamicMethodWrapper<T, R> from(
+    public static <T, R> DynamicMethodWrapper<T, R> from(
             final @NonNull Method method
     ) {
         if (Modifier.isStatic(method.getModifiers())) throw new IllegalArgumentException("Method should be non-static");
@@ -76,12 +76,11 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
             val noReturn = checkedMethod.getReturnType() == void.class;
             switch (checkedMethod.getParameterCount()) {
                 case 0: return noReturn
-                        ? from(checkedMethod, generateImplementation(Consumer.class, checkedMethod))
-                        : from(checkedMethod, generateImplementation(Function.class, checkedMethod));
+                        ? from(checkedMethod, implementFunctionalInterface(Consumer.class, checkedMethod))
+                        : from(checkedMethod, implementFunctionalInterface(Function.class, checkedMethod));
                 case 1: return noReturn
-                        ? from(checkedMethod, generateImplementation(BiConsumer.class, checkedMethod))
-                        : from(checkedMethod, generateImplementation(BiFunction.class, checkedMethod)
-                );
+                        ? from(checkedMethod, implementFunctionalInterface(BiConsumer.class, checkedMethod))
+                        : from(checkedMethod, implementFunctionalInterface(BiFunction.class, checkedMethod));
                 default: {
                     final MethodHandle methodHandle;
                     {
@@ -100,8 +99,8 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         });
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull DynamicMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull Consumer<Object> generatedConsumer
     ) {
@@ -117,8 +116,8 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull DynamicMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull BiConsumer<Object, Object> generatedBiConsumer
     ) {
@@ -134,8 +133,8 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull DynamicMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull Function<Object, R> generatedFunction
     ) {
@@ -149,8 +148,8 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull DynamicMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull BiFunction<Object, Object, R> generatedBiFunction
     ) {
@@ -165,7 +164,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
     }
 
     @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull DynamicMethodWrapper<T, R> from(
+    private static <T, R> @NotNull DynamicMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull MethodHandle methodHandle
     ) {
@@ -192,7 +191,7 @@ public class InvokeDynamicMethodWrapper<@NotNull T, R>
         return invoker.apply(target, parameters);
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateImplementation(
+    private static <F, T> @NotNull F implementFunctionalInterface(
             final @NotNull Class<F> functionalType,
             final @NotNull Method method
     ) {

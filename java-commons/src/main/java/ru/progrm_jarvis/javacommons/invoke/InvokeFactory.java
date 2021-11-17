@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
+import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -59,10 +60,10 @@ public interface InvokeFactory<F, T> {
      * @param functionalMethodParameterTypes parameter types of the functional method
      * @return <b>this</b> invoke factory
      */
-    default InvokeFactory<F, T> implementing(@NonNull Class<? super F> functionalInterface,
-                                             @NonNull String functionalMethodName,
-                                             @NonNull Class<?> functionalMethodReturnType,
-                                             @NonNull Class<?>... functionalMethodParameterTypes) {
+    default InvokeFactory<F, T> implementing(final @NonNull Class<? super F> functionalInterface,
+                                             final @NonNull String functionalMethodName,
+                                             final @NonNull Class<?> functionalMethodReturnType,
+                                             final @NonNull Class<?>... functionalMethodParameterTypes) {
         return implementing(
                 methodType(functionalInterface), functionalMethodName,
                 methodType(functionalMethodReturnType, functionalMethodParameterTypes)
@@ -77,7 +78,7 @@ public interface InvokeFactory<F, T> {
      * @return <b>this</b> invoke factory
      * @throws IllegalArgumentException if the given class contains not 1 abstract (aka functional) method
      */
-    default InvokeFactory<F, T> implementing(@NonNull Class<? super F> functionalInterface) {
+    default InvokeFactory<F, T> implementing(final @NonNull Class<? super F> functionalInterface) {
         if (!functionalInterface.isInterface()) throw new IllegalArgumentException(
                 "Expected interface but got " + functionalInterface
         );
@@ -120,8 +121,7 @@ public interface InvokeFactory<F, T> {
      * @see #via(Constructor)
      */
     default InvokeFactory<F, T> via(final @NonNull Method method) {
-        //noinspection unchecked
-        return via((Class<? extends T>) method.getDeclaringClass(), lookup -> {
+        return via(UncheckedCasts.uncheckedClassCast(method.getDeclaringClass()), lookup -> {
             try {
                 return lookup.unreflect(method);
             } catch (final IllegalAccessException e) {

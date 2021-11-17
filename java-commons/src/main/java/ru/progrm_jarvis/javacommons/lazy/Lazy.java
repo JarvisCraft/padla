@@ -429,11 +429,12 @@ public interface Lazy<T> extends Supplier<T> {
         @NotNull ThreadLocal<Object> threadLocalValue;
 
         @Override
+        @SuppressWarnings("unchecked")
         public T get() {
             Object value;
             if ((value = threadLocalValue.get()) == UNSET_VALUE) threadLocalValue.set(value = valueSupplier.get());
 
-            //noinspection unchecked: value is weakly typed
+            // value is now known to be of type `T`
             return (T) value;
         }
 
@@ -443,16 +444,18 @@ public interface Lazy<T> extends Supplier<T> {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public @Nullable T getInitializedOrNull() {
             final Object value;
-            //noinspection unchecked: value is weakly typed
+            // value is either `UNSET_VALUE` or of type `T`
             return (value = threadLocalValue.get()) == UNSET_VALUE ? null : (T) value;
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public @NotNull Result<T, Void> getAsResult() {
             final Object value;
-            //noinspection unchecked: value is weakly typed
+            // value is either `UNSET_VALUE` or of type `T`
             return (value = threadLocalValue.get()) == UNSET_VALUE ? Result.nullError() : Result.success((T) value);
         }
     }

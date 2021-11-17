@@ -80,6 +80,18 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
+                    <configuration>
+                        <fork>true</fork>
+                        <release>${java.version.minimal}</release>
+                        <showWarnings>true</showWarnings>
+                        <showDeprecation>true</showDeprecation>
+                        <compilerArgs>
+                            <!-- Enable all lints except for:
+                            - `processing`: gets triggered by documenting annotations
+                            -->
+                            <compilerArg>-Xlint:all,-processing</compilerArg>
+                        </compilerArgs>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>java-11</id>
@@ -88,10 +100,10 @@
                             </goals>
                             <configuration>
                                 <release>11</release>
+                                <multiReleaseOutput>true</multiReleaseOutput>
                                 <compileSourceRoots>
                                     <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>
                                 </compileSourceRoots>
-                                <multiReleaseOutput>true</multiReleaseOutput>
                             </configuration>
                         </execution>
                         <execution>
@@ -101,16 +113,13 @@
                             </goals>
                             <configuration>
                                 <release>17</release>
+                                <multiReleaseOutput>true</multiReleaseOutput>
                                 <compileSourceRoots>
                                     <compileSourceRoot>${project.basedir}/src/main/java17</compileSourceRoot>
                                 </compileSourceRoots>
-                                <multiReleaseOutput>true</multiReleaseOutput>
                             </configuration>
                         </execution>
                     </executions>
-                    <configuration>
-                        <release>${java.version.minimal}</release>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

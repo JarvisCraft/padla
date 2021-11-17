@@ -15,6 +15,7 @@ import ru.progrm_jarvis.javacommons.cache.Cache;
 import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
+import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -248,9 +249,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
         }
         //</editor-fold>
 
-        //noinspection unchecked
-        return (Class<? extends T>) GcClassDefiners.getDefault()
-                .defineClass(LOOKUP, className, clazz.toByteArray());
+        return UncheckedCasts.uncheckedClassCast(GcClassDefiners.getDefault().defineClass(LOOKUP, className, clazz.toByteArray()));
     }
 
     @UtilityClass

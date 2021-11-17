@@ -19,6 +19,7 @@ import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUti
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
@@ -214,11 +215,12 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
             }
 
             try {
-                val constructor = GcClassDefiners.getDefault()
+                @SuppressWarnings("unchecked") val constructor = (Constructor<? extends TextModel<T>>) GcClassDefiners
+                        .getDefault()
                         .defineClass(LOOKUP, clazz.getName(), clazz.toBytecode()).getDeclaredConstructor();
                 constructor.setAccessible(true);
-                // noinspection unchecked
-                return (TextModel<T>) constructor.newInstance();
+
+                return constructor.newInstance();
             } catch (final IOException | CannotCompileException | NoSuchMethodException
                     | InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 throw new IllegalStateException(

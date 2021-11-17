@@ -182,6 +182,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRun(
             final @NonNull ThrowingRunnable<? extends X> runnable,
             @TypeHint final @Nullable X @NonNull ... throwableTypeHint
@@ -251,6 +252,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T, X extends Throwable> Result<T, @NotNull X> tryGet(
             final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
             @TypeHint final @Nullable X @NonNull ... throwableTypeHint
@@ -1090,6 +1092,12 @@ public interface Result<T, E> extends Supplier<T> {
     @NoArgsConstructor
     @SuppressWarnings("PublicConstructor")
     class NotSuccessException extends RuntimeException {
+
+        /**
+         * Version ID of this {@link java.io.Serializable} class
+         */
+        private static final long serialVersionUID = 2021_11_17__0L;
+
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
         /**
@@ -1144,6 +1152,12 @@ public interface Result<T, E> extends Supplier<T> {
     @NoArgsConstructor
     @SuppressWarnings("PublicConstructor")
     class NotErrorException extends RuntimeException {
+
+        /**
+         * Version ID of this {@link java.io.Serializable} class
+         */
+        private static final long serialVersionUID = 2021_11_17__0L;
+
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
         /**
