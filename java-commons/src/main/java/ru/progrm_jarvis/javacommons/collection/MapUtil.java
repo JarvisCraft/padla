@@ -25,8 +25,10 @@ public class MapUtil {
      * @param keyValuePairs key-value pairs to put to the map ordered as <i>key1, value1, key2, value2...</i>
      */
     @SuppressWarnings("unchecked")
-    private void fillMapNoChecks(@SuppressWarnings("rawtypes") final @NonNull Map map,
-                                 final @NonNull Object... keyValuePairs) {
+    private void fillMapNoChecks(
+            @SuppressWarnings("rawtypes") final @NonNull Map map,
+            final @NonNull Object... keyValuePairs
+    ) {
         @SuppressWarnings("BooleanVariableAlwaysNegated") var value = true; // will get reverted for the first value
 
         Object key = null; // requires to be initialized for some reason :)
@@ -40,9 +42,9 @@ public class MapUtil {
      * @param map map to fill with the values
      * @param keyValuePairs pairs of keys and values in order <i>key1, value1, key2, value2, key3, value3...</i>
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      * @throws IllegalArgumentException if {@code keyValuePairs}'s length is odd
-     *
      * @see #fillMap(Map, Object, Object, Object...)
      */
     public <M extends Map<?, ?>> M fillMap(final @NonNull M map, final @NonNull Object... keyValuePairs) {
@@ -67,15 +69,17 @@ public class MapUtil {
      * @param <K> type of keys
      * @param <V> type of values
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      * @throws IllegalArgumentException if {@code keyValuePairs}'s length is odd
-     *
      * @see #fillMap(Map, Object...)
      */
-    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map, final K firstValueKey, final V firstValue,
-                                                 final @NonNull Object... keyValuePairs) {
+    public <K, V, M extends Map<K, V>> M fillMap(
+            final @NonNull M map, final K firstValueKey, final V firstValue,
+            final @NonNull Object... keyValuePairs
+    ) {
         val length = keyValuePairs.length;
-        if(length % 2 != 0) throw new IllegalArgumentException(
+        if (length % 2 != 0) throw new IllegalArgumentException(
                 "Key-Value pairs array should have an even number of elements"
         );
 
@@ -93,6 +97,7 @@ public class MapUtil {
      * @param <K> type of keys
      * @param <V> type of values
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      */
     @SafeVarargs
@@ -110,10 +115,13 @@ public class MapUtil {
      * @param <K> type of keys
      * @param <V> type of values
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map,
-                                                 final @NonNull Iterator<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(
+            final @NonNull M map,
+            final @NonNull Iterator<? extends Pair<K, V>> entries
+    ) {
         while (entries.hasNext()) {
             val entry = entries.next();
             map.put(entry.getFirst(), entry.getSecond());
@@ -130,10 +138,13 @@ public class MapUtil {
      * @param <K> type of keys
      * @param <V> type of values
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map,
-                                                 final @NonNull Iterable<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(
+            final @NonNull M map,
+            final @NonNull Iterable<? extends Pair<K, V>> entries
+    ) {
         return fillMap(map, entries.iterator());
     }
 
@@ -145,10 +156,13 @@ public class MapUtil {
      * @param <K> type of keys
      * @param <V> type of values
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMap(final @NonNull M map,
-                                                 final @NonNull Stream<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMap(
+            final @NonNull M map,
+            final @NonNull Stream<? extends Pair<K, V>> entries
+    ) {
         entries.forEach(entry -> map.put(entry.getFirst(), entry.getSecond()));
 
         return map;
@@ -162,23 +176,60 @@ public class MapUtil {
      * @param <K> type of keys
      * @param <V> type of values
      * @param <M> map type
+     *
      * @return the map passed filled with key-value pairs specified
      */
-    public <K, V, M extends Map<K, V>> M fillMapOrdered(final @NonNull M map,
-                                                        final @NonNull Stream<? extends Pair<K, V>> entries) {
+    public <K, V, M extends Map<K, V>> M fillMapOrdered(
+            final @NonNull M map,
+            final @NonNull Stream<? extends Pair<K, V>> entries
+    ) {
         entries.forEachOrdered(entry -> map.put(entry.getFirst(), entry.getSecond()));
 
         return map;
     }
 
-    public <K, V> V getOrDefault(final @NonNull Map<K, V> map, final K key, final Supplier<V> defaultValueSupplier) {
+    /**
+     * Gets the value from the map otherwise returning the value created by using the provided supplier.
+     * Unlike {@link Map#computeIfAbsent(Object, Function)} this does not store the newly computed value in the map.
+     *
+     * @param map map from which to try to get the value
+     * @param key key of the searched value
+     * @param defaultValueSupplier supplier of the default value
+     * @param <K> the type of map's keys
+     * @param <V> the type of map's values
+     *
+     * @return the value associated with the key in the map or the one produced by the supplier otherwise
+     */
+    public <K, V> V getOrDefault(
+            final @NonNull Map<K, V> map, final K key,
+            final @NonNull Supplier<V> defaultValueSupplier
+    ) {
         // the value is got from map, non-null value is surely a present one, but null may have different meanings
-        val value = map.get(key);
-        return value == null ? map.containsKey(key) ? null : defaultValueSupplier.get() : value;
+        final V value;
+        return (value = map.get(key)) == null
+                ? map.containsKey(key) ? null : defaultValueSupplier.get()
+                : value;
     }
 
-    public <K, V, R> R getOrDefault(final @NonNull Map<K, V> map, final K key, final Function<V, R> valueTransformer,
-                                    final R defaultValue) {
+    /**
+     * Gets the value from the map applying the provided function to it
+     * otherwise returning the value created by using the provided supplier.
+     * Unlike {@link Map#computeIfAbsent(Object, Function)} this does not store the newly computed value in the map.
+     *
+     * @param map map from which to try to get the value
+     * @param key key of the searched value
+     * @param valueTransformer function used to transform map value
+     * @param defaultValue default value
+     * @param <K> the type of map's keys
+     * @param <V> the type of map's values
+     * @param <R> the type of the resulting value
+     *
+     * @return the value associated with the key in the map or the one produced by the supplier otherwise
+     */
+    public <K, V, R> R getOrDefault(
+            final @NonNull Map<K, V> map, final K key, final Function<V, R> valueTransformer,
+            final R defaultValue
+    ) {
         // the value is got from map, non-null value is surely a present one, but null may have different meanings
         val value = map.get(key);
         return value == null
@@ -186,8 +237,25 @@ public class MapUtil {
                 : valueTransformer.apply(value);
     }
 
-    public <K, V, R> R getOrDefault(final @NonNull Map<K, V> map, final K key, final Function<V, R> valueTransformer,
-                                    final Supplier<R> defaultValueSupplier) {
+    /**
+     * Gets the value from the map applying the provided function to it
+     * otherwise returning the value created by using the provided supplier.
+     * Unlike {@link Map#computeIfAbsent(Object, Function)} this does not store the newly computed value in the map.
+     *
+     * @param map map from which to try to get the value
+     * @param key key of the searched value
+     * @param valueTransformer function used to transform map value
+     * @param defaultValueSupplier supplier of the default value
+     * @param <K> the type of map's keys
+     * @param <V> the type of map's values
+     * @param <R> the type of the resulting value
+     *
+     * @return the value associated with the key in the map or the one produced by the supplier otherwise
+     */
+    public <K, V, R> R getOrDefault(
+            final @NonNull Map<K, V> map, final K key, final Function<V, R> valueTransformer,
+            final Supplier<R> defaultValueSupplier
+    ) {
         // the value is got from map, non-null value is surely a present one, but null may have different meanings
         val value = map.get(key);
         return value == null

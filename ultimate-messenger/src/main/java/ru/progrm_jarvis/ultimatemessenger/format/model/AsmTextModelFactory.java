@@ -32,7 +32,8 @@ import static org.objectweb.asm.Type.*;
 import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
 
 /**
- * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
+ * Implementation of {@link TextModelFactory text model factory}
+ *  * which uses runtime class generation via <b>ASM</b>.
  *
  * @param <T> type of object according to which the created text models are formatted
  * @param <C> type of configuration used by this text model factory

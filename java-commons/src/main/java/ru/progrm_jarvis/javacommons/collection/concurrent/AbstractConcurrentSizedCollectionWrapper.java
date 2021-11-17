@@ -1,6 +1,5 @@
 package ru.progrm_jarvis.javacommons.collection.concurrent;
 
-
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.collection.SizedCollection;
 
