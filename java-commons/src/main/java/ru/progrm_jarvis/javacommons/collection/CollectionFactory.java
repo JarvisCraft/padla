@@ -36,12 +36,12 @@ public class CollectionFactory {
     /**
      * {@link Lookup lookup} of this class.
      */
-    private static final Lookup LOOKUP = MethodHandles.lookup();
+    private final Lookup LOOKUP = MethodHandles.lookup();
 
     /**
      * Class naming strategy used to allocate names for generated immutable enum set classes
      */
-    private static final @NonNull ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
+    private final @NonNull ClassNamingStrategy IMMUTABLE_ENUM_SET_CLASS_NAMING_STRATEGY = ClassNamingStrategy
             .createPaginated(CollectionFactory.class.getName() + "$$Generated$$ImmutableEnumSet$$");
 
     /**
@@ -57,18 +57,18 @@ public class CollectionFactory {
     /**
      * {@link CtClass} representation of {@link AbstractImmutableSet} wrapped in {@link Lazy}
      */
-    private static final @NonNull Lazy<CtClass> ABSTRACT_IMMUTABLE_SET_CT_CLASS = Lazy
+    private final @NonNull Lazy<CtClass> ABSTRACT_IMMUTABLE_SET_CT_CLASS = Lazy
             .createThreadSafe(() -> toCtClass(AbstractImmutableSet.class));
     /**
      * Array storing single reference to {@link CtClass} representation of {@link Iterator} wrapped in {@link Lazy}
      */
-    private static final @NonNull Lazy<CtClass[]> ITERATOR_CT_CLASS_ARRAY = Lazy
+    private final @NonNull Lazy<CtClass[]> ITERATOR_CT_CLASS_ARRAY = Lazy
             .createThreadSafe(() -> new CtClass[]{toCtClass(Iterator.class)});
 
     /**
      * Empty array of {@link CtClass}es.
      */
-    public static final @NotNull CtClass @NotNull @Unmodifiable [] EMPTY_CT_CLASS_ARRAY = new CtClass[0];
+    public final @NotNull CtClass @NotNull @Unmodifiable [] EMPTY_CT_CLASS_ARRAY = new CtClass[0];
 
     /**
      * Creates an immutable enum {@link Set set} from the given array of stored enum constants.
@@ -83,7 +83,7 @@ public class CollectionFactory {
      * instanceof} and {@code switch} by {@link Enum#ordinal()} are used for containment-related checks and {@link}
      */
     @SafeVarargs
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "varargs"})
     @Deprecated // should be remade via ASM or totally removed due to specific behaviour of anonymous class referencing
     @UsesBytecodeModification(value = CommonBytecodeLibrary.JAVASSIST, optional = true)
     public <E extends Enum<E>> Set<E> createImmutableEnumSet(final @NonNull E... values) {

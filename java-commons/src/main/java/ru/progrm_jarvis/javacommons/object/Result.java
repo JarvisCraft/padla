@@ -182,6 +182,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRun(
             final @NonNull ThrowingRunnable<? extends X> runnable,
             @TypeHint final @Nullable X @NonNull ... throwableTypeHint
@@ -251,6 +252,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T, X extends Throwable> Result<T, @NotNull X> tryGet(
             final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
             @TypeHint final @Nullable X @NonNull ... throwableTypeHint
