@@ -35,6 +35,7 @@ public class AutoEnumCollectors {
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
             final @NonNull Function<T, E> keyMapper,
             final @NonNull Function<T, V> valueMapper,
@@ -55,6 +56,7 @@ public class AutoEnumCollectors {
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
             final @NonNull Function<E, V> valueMapper,
             final @NonNull BinaryOperator<V> merger,
@@ -71,6 +73,7 @@ public class AutoEnumCollectors {
      * @return a collector collecting al its elements into an enum-set
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public <E extends Enum<E>> Collector<E, ?, Set<E>> toEnumSet(final @Nullable E @NonNull ... typeHint) {
         return EnumCollectors.toEnumSet(TypeHints.resolve(typeHint));
     }

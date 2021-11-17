@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.annotation.DontOverrideEqualsAndHashCode;
 import ru.progrm_jarvis.ultimatemessenger.format.util.StringMicroOptimizationUtil;
 
 import java.util.function.Consumer;
@@ -18,7 +17,6 @@ import java.util.function.Consumer;
  *
  * @param <T> type of object according to which the created text models are formatted
  */
-@DontOverrideEqualsAndHashCode
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
@@ -61,7 +59,6 @@ public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @RequiredArgsConstructor
-    @DontOverrideEqualsAndHashCode
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     private final class DebuggingTextModelBuilder implements TextModelFactory.TextModelBuilder<T> {
 

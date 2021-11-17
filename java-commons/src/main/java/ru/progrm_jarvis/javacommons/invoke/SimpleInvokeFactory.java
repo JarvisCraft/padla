@@ -108,6 +108,7 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // cast of the value to `F`
     public F create() throws Throwable {
         val lookupFactory = checkSet(this.lookupFactory, "Lookup factory");
         val functionalInterface = checkSet(this.functionalInterface, "Functional interface");
@@ -128,7 +129,6 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
                     MethodTypeUtil.integrateTypes(methodHandle.type(), functionalMethodSignature)
             ).getTarget();
 
-            //noinspection unchecked
             return (F) targetMethodHandle.invoke();
         }
 
@@ -141,7 +141,6 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
                 MethodTypeUtil.integrateTypes(methodHandle.type().dropParameterTypes(0, 1), functionalMethodSignature)
         ).getTarget();
 
-        //noinspection unchecked
         return (F) targetMethodHandle.invoke(target);
     }
 

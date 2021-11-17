@@ -82,7 +82,7 @@ class EnumCollectorsTest {
     @ParameterizedTest
     @MethodSource("enumNameMaps")
     void toEnumMap_full_viaHint(final @NonNull Stream<@NotNull String> enumNames,
-                        final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
+                                final @NonNull Map<@NotNull MyEnum, @NotNull Integer> result) {
         assertThat(
                 enumNames.collect(EnumCollectors.toEnumMap(
                         MyEnum::valueOf,
