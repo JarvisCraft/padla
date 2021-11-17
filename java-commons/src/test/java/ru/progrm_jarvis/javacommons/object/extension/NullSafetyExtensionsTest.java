@@ -161,5 +161,8 @@ class NullSafetyExtensionsTest {
 
     // this class cannot be local
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    private static final class SuccessException extends Exception {}
+    private static final class SuccessException extends Exception {
+
+        private static final long serialVersionUID = 0l;
+    }
 }

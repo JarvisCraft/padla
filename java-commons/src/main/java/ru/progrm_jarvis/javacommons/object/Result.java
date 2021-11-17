@@ -1090,6 +1090,12 @@ public interface Result<T, E> extends Supplier<T> {
     @NoArgsConstructor
     @SuppressWarnings("PublicConstructor")
     class NotSuccessException extends RuntimeException {
+
+        /**
+         * Version ID of this {@link java.io.Serializable} class
+         */
+        private static final long serialVersionUID = 2021_11_17__0L;
+
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
         /**
@@ -1144,6 +1150,12 @@ public interface Result<T, E> extends Supplier<T> {
     @NoArgsConstructor
     @SuppressWarnings("PublicConstructor")
     class NotErrorException extends RuntimeException {
+
+        /**
+         * Version ID of this {@link java.io.Serializable} class
+         */
+        private static final long serialVersionUID = 2021_11_17__0L;
+
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
         /**

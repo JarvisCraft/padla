@@ -137,6 +137,9 @@ class ResultTest {
 
     @StandardException
     private final class CustomException extends Exception {
+
+        private static final long serialVersionUID = 0l;
+
         public void thisIsACustomError() {}
     }
 }
