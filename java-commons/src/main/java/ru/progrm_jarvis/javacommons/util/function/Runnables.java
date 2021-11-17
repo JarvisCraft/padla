@@ -66,8 +66,8 @@ public class Runnables {
      *
      * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public @NotNull Runnable stateful(final int initialState,
-                                      final @NonNull IntUnaryOperator handler) {
+    public @NotNull Runnable intStateful(final int initialState,
+                                         final @NonNull IntUnaryOperator handler) {
         return new StatefulMutableIntRunnable(handler, initialState);
     }
 
@@ -81,8 +81,8 @@ public class Runnables {
      *
      * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public @NotNull Runnable stateful(final long initialState,
-                                      final @NonNull LongUnaryOperator handler) {
+    public @NotNull Runnable longStateful(final long initialState,
+                                          final @NonNull LongUnaryOperator handler) {
         return new StatefulMutableLongRunnable(handler, initialState);
     }
 
@@ -96,8 +96,8 @@ public class Runnables {
      *
      * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public @NotNull Runnable stateful(final double initialState,
-                                      final @NonNull DoubleUnaryOperator handler) {
+    public @NotNull Runnable doubleStateful(final double initialState,
+                                            final @NonNull DoubleUnaryOperator handler) {
         return new StatefulMutableDoubleRunnable(handler, initialState);
     }
 
