@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.object.ReferenceUtil;
 import ru.progrm_jarvis.javacommons.object.Result;
-import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
@@ -430,12 +429,13 @@ public interface Lazy<T> extends Supplier<T> {
         @NotNull ThreadLocal<Object> threadLocalValue;
 
         @Override
+        @SuppressWarnings("unchecked")
         public T get() {
             Object value;
             if ((value = threadLocalValue.get()) == UNSET_VALUE) threadLocalValue.set(value = valueSupplier.get());
 
             // value is now known to be of type `T`
-            return UncheckedCasts.uncheckedObjectCast(value);
+            return (T) value;
         }
 
         @Override
@@ -444,21 +444,19 @@ public interface Lazy<T> extends Supplier<T> {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public @Nullable T getInitializedOrNull() {
             final Object value;
             // value is either `UNSET_VALUE` or of type `T`
-            return (value = threadLocalValue.get()) == UNSET_VALUE
-                    ? null
-                    : UncheckedCasts.uncheckedObjectCast(value);
+            return (value = threadLocalValue.get()) == UNSET_VALUE ? null : (T) value;
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public @NotNull Result<T, Void> getAsResult() {
             final Object value;
             // value is either `UNSET_VALUE` or of type `T`
-            return (value = threadLocalValue.get()) == UNSET_VALUE
-                    ? Result.nullError()
-                    : Result.success(UncheckedCasts.uncheckedObjectCast(value));
+            return (value = threadLocalValue.get()) == UNSET_VALUE ? Result.nullError() : Result.success((T) value);
         }
     }
 }

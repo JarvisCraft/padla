@@ -4,7 +4,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
@@ -109,6 +108,7 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked") // cast of the value to `F`
     public F create() throws Throwable {
         val lookupFactory = checkSet(this.lookupFactory, "Lookup factory");
         val functionalInterface = checkSet(this.functionalInterface, "Functional interface");
@@ -129,7 +129,7 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
                     MethodTypeUtil.integrateTypes(methodHandle.type(), functionalMethodSignature)
             ).getTarget();
 
-            return UncheckedCasts.uncheckedObjectCast(targetMethodHandle.invoke());
+            return (F) targetMethodHandle.invoke();
         }
 
         /* Bound */
@@ -141,7 +141,7 @@ public final class SimpleInvokeFactory<F, T> implements InvokeFactory<F, T> {
                 MethodTypeUtil.integrateTypes(methodHandle.type().dropParameterTypes(0, 1), functionalMethodSignature)
         ).getTarget();
 
-        return UncheckedCasts.uncheckedObjectCast(targetMethodHandle.invoke(target));
+        return (F) targetMethodHandle.invoke(target);
     }
 
     private static <T> @NotNull T checkSet(final @Nullable T value, final @NotNull String identifier) {

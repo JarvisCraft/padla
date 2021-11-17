@@ -13,20 +13,6 @@ import org.jetbrains.annotations.Contract;
 public class UncheckedCasts {
 
     /**
-     * Casts the given object into the specific generic type.
-     *
-     * @param object raw-typed object
-     * @param <T> exact wanted type of the object
-     * @return the provided object with its type cast to the specific one
-     *
-     * @apiNote this is effectively no-op
-     */
-    @Contract("_ -> param1")
-    public <T> T uncheckedObjectCast(final Object object) {
-        return (T) object;
-    }
-
-    /**
      * Casts the given class object into the specific one.
      *
      * @param type raw-typed class object
