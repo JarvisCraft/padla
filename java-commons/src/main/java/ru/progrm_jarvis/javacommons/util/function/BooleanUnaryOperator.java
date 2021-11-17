@@ -42,7 +42,7 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      * @return a composed operator that first applies the provided operator and then this one
      * @throws NullPointerException if {@code before} is {@code null}
      *
-     * @see #andThen(BooleanUnaryOperator) behaving in opposite manner
+     * @see #andThenPrimitive(BooleanUnaryOperator) behaving in opposite manner
      */
     @Contract(value = "null -> fail; _ -> _", pure = true)
     default @NotNull BooleanUnaryOperator composePrimitive(final @NonNull BooleanUnaryOperator before) {
@@ -65,7 +65,7 @@ public interface BooleanUnaryOperator extends BooleanFunction<Boolean>, UnaryOpe
      * @see #composePrimitive(BooleanUnaryOperator) behaving in opposite manner
      */
     @Contract(value = "null -> fail; _ -> _", pure = true)
-    default @NotNull BooleanUnaryOperator andThen(final @NonNull BooleanUnaryOperator after) {
+    default @NotNull BooleanUnaryOperator andThenPrimitive(final @NonNull BooleanUnaryOperator after) {
         return operand -> after.applyAsBoolean(applyAsBoolean(operand));
     }
 
