@@ -86,7 +86,10 @@
                         <showWarnings>true</showWarnings>
                         <showDeprecation>true</showDeprecation>
                         <compilerArgs>
-                            <compilerArg>-Xlint:all</compilerArg>
+                            <!-- Enable all lints except for:
+                            - `processing`: gets triggered by documenting annotations
+                            -->
+                            <compilerArg>-Xlint:all,-processing</compilerArg>
                         </compilerArgs>
                     </configuration>
                     <executions>
