@@ -96,7 +96,6 @@ public class InvokeUtil {
      * @return created cached lookup for the given class
      */
     public @NotNull Lookup lookup(final @NonNull Class<?> clazz) {
-        //noinspection ConstantConditions: the result cannot be null as `create(Class<?>)` is non-null
         return LOOKUPS.get(clazz, LOOKUP_FACTORY::create);
     }
 

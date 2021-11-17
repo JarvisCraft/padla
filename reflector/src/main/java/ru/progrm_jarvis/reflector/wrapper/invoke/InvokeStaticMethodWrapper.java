@@ -28,18 +28,18 @@ import java.util.function.*;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeStaticMethodWrapper<@NotNull T, R>
+public final class InvokeStaticMethodWrapper<T, R>
         extends AbstractMethodWrapper<T, R> implements StaticMethodWrapper<T, R> {
 
     /**
      * Weak cache of allocated instance of this static method wrappers of static methods
      */
-    protected static final @NotNull Cache<@NotNull Method, @NotNull StaticMethodWrapper<?, ?>> STATIC_WRAPPER_CACHE
+    private static final @NotNull Cache<@NotNull Method, @NotNull StaticMethodWrapper<?, ?>> STATIC_WRAPPER_CACHE
             = Caches.weakValuesCache();
     /**
      * Weak cache of allocated instance of this static method wrappers of non-static bound methods
      */
-    protected static final @NotNull Cache<
+    private static final @NotNull Cache<
             @NotNull Pair<@NotNull Method, @NotNull ?>, @NotNull StaticMethodWrapper<?, ?>
             > BOUND_WRAPPER_CACHE
             = Caches.weakValuesCache();
@@ -55,9 +55,9 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
      * @param wrapped wrapped object
      * @param invoker function performing the method invocation
      */
-    protected InvokeStaticMethodWrapper(final @NotNull Class<? extends T> containingClass,
-                                        final @NotNull Method wrapped,
-                                        final @NotNull Function<Object @NotNull [], R> invoker) {
+    private InvokeStaticMethodWrapper(final @NotNull Class<? extends T> containingClass,
+                                      final @NotNull Method wrapped,
+                                      final @NotNull Function<Object @NotNull [], R> invoker) {
         super(containingClass, wrapped);
         this.invoker = invoker;
     }
@@ -78,19 +78,19 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
             val noReturn = checkedMethod.getReturnType() == void.class;
             switch (checkedMethod.getParameterCount()) {
                 case 0: return noReturn ? from(
-                        checkedMethod, generateFrom(Runnable.class, checkedMethod)
+                        checkedMethod, implementFunctionalInterface(Runnable.class, checkedMethod)
                 ) : from(
-                        checkedMethod, (Supplier<T>) generateFrom(Supplier.class, checkedMethod)
+                        checkedMethod, (Supplier<T>) implementFunctionalInterface(Supplier.class, checkedMethod)
                 );
                 case 1: return noReturn ? from(
-                        checkedMethod, (Consumer<Object>) generateFrom(Consumer.class, checkedMethod)
+                        checkedMethod, (Consumer<Object>) implementFunctionalInterface(Consumer.class, checkedMethod)
                 ) : from(
-                        checkedMethod, (Function<Object, R>) generateFrom(Function.class, checkedMethod)
+                        checkedMethod, (Function<Object, R>) implementFunctionalInterface(Function.class, checkedMethod)
                 );
                 case 2: return noReturn ? from(
-                        checkedMethod, (BiConsumer<Object, Object>) generateFrom(BiConsumer.class, checkedMethod)
+                        checkedMethod, (BiConsumer<Object, Object>) implementFunctionalInterface(BiConsumer.class, checkedMethod)
                 ) : from(
-                        checkedMethod, (BiFunction<Object, Object, R>) generateFrom(BiFunction.class, checkedMethod)
+                        checkedMethod, (BiFunction<Object, Object, R>) implementFunctionalInterface(BiFunction.class, checkedMethod)
                 );
                 default: {
                     final MethodHandle methodHandle;
@@ -131,14 +131,14 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
             val noReturn = checkedMethod.getReturnType() == void.class;
             switch (checkedMethod.getParameterCount()) {
                 case 0: return noReturn
-                        ? from(checkedMethod, generateFrom(Runnable.class, checkedMethod, target))
-                        : from(checkedMethod, generateFrom(Supplier.class, checkedMethod, target));
+                        ? from(checkedMethod, implementFunctionalInterface(Runnable.class, checkedMethod, target))
+                        : from(checkedMethod, implementFunctionalInterface(Supplier.class, checkedMethod, target));
                 case 1: return noReturn
-                        ? from(checkedMethod, generateFrom(Consumer.class, checkedMethod, target))
-                        : from(checkedMethod, generateFrom(Function.class, checkedMethod, target));
+                        ? from(checkedMethod, implementFunctionalInterface(Consumer.class, checkedMethod, target))
+                        : from(checkedMethod, implementFunctionalInterface(Function.class, checkedMethod, target));
                 case 2: return noReturn
-                        ? from(checkedMethod, generateFrom(BiConsumer.class, checkedMethod, target))
-                        : from(checkedMethod, generateFrom(BiFunction.class, checkedMethod, target));
+                        ? from(checkedMethod, implementFunctionalInterface(BiConsumer.class, checkedMethod, target))
+                        : from(checkedMethod, implementFunctionalInterface(BiFunction.class, checkedMethod, target));
                 default: {
                     final MethodHandle methodHandle;
                     {
@@ -158,7 +158,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
     }
 
     @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull Runnable generatedRunnable
     ) {
@@ -174,8 +174,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull Consumer<Object> generatedConsumer
     ) {
@@ -191,8 +191,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull BiConsumer<Object, Object> generatedBiConsumer
     ) {
@@ -209,7 +209,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
     }
 
     @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull Supplier<R> generatedSupplier
     ) {
@@ -223,8 +223,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull Function<Object, R> generatedFunction
     ) {
@@ -238,8 +238,8 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         );
     }
 
-    @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    @SuppressWarnings({"unchecked", "overloads"})
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull BiFunction<Object, Object, R> generatedBiFunction
     ) {
@@ -254,7 +254,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
     }
 
     @SuppressWarnings("unchecked")
-    private static <@NotNull T, R> @NotNull StaticMethodWrapper<T, R> from(
+    private static <T, R> @NotNull StaticMethodWrapper<T, R> from(
             final @NotNull Method method,
             final @NotNull MethodHandle methodHandle
     ) {
@@ -275,7 +275,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
         return invoker.apply(parameters);
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateFrom(
+    private static <F, T> @NotNull F implementFunctionalInterface(
             final @NotNull Class<F> functionalType,
             final @NotNull Method method
     ) {
@@ -285,7 +285,7 @@ public class InvokeStaticMethodWrapper<@NotNull T, R>
                 .createUnsafely();
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateFrom(
+    private static <F, T> @NotNull F implementFunctionalInterface(
             final @NotNull Class<F> functionalType,
             final @NotNull Method method, final T target
     ) {

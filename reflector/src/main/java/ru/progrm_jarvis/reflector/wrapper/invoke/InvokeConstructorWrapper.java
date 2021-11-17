@@ -22,19 +22,19 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * {@link ru.progrm_jarvis.reflector.wrapper.ConstructorWrapper} based on {@link java.lang.invoke Invoke API}.
+ * {@link ConstructorWrapper} based on {@link java.lang.invoke Invoke API}.
  *
  * @param <T> type of the object instantiated by the wrapped constructor
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeConstructorWrapper<@NotNull T>
+public final class InvokeConstructorWrapper<T>
         extends AbstractConstructorWrapper<T> {
 
     /**
      * Weak cache of allocated instance of this constructor wrapper
      */
-    protected static final @NotNull Cache<@NotNull Constructor<?>, @NotNull ConstructorWrapper<?>> WRAPPER_CACHE
+    private static final @NotNull Cache<@NotNull Constructor<?>, @NotNull ConstructorWrapper<?>> WRAPPER_CACHE
             = Caches.weakValuesCache();
 
     /**
@@ -49,9 +49,9 @@ public class InvokeConstructorWrapper<@NotNull T>
      * @param wrapped wrapped object
      * @param invoker function performing the constructor invocation
      */
-    protected InvokeConstructorWrapper(final @NotNull Class<? extends T> containingClass,
-                                       final @NotNull Constructor<? extends T> wrapped,
-                                       final @NotNull Function<@NotNull Object[], @NotNull T> invoker) {
+    private InvokeConstructorWrapper(final @NotNull Class<? extends T> containingClass,
+                                     final @NotNull Constructor<? extends T> wrapped,
+                                     final @NotNull Function<@NotNull Object[], @NotNull T> invoker) {
         super(containingClass, wrapped);
         this.invoker = invoker;
     }
@@ -69,18 +69,18 @@ public class InvokeConstructorWrapper<@NotNull T>
      * @return cached constructor wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    public static <@NotNull T> @NotNull ConstructorWrapper<T> from(
+    public static <T> @NotNull ConstructorWrapper<T> from(
             final @NonNull Constructor<? extends T> constructor
     ) {
         return (ConstructorWrapper<T>) WRAPPER_CACHE.get(constructor, checkedConstructor -> {
             switch (checkedConstructor.getParameterCount()) {
-                case 0: return from(checkedConstructor, generateFrom(
+                case 0: return from(checkedConstructor, implementFunctionalInterface(
                         Supplier.class, uncheckedConstructorCast(constructor)
                 ));
-                case 1: return from(checkedConstructor, generateFrom(
+                case 1: return from(checkedConstructor, implementFunctionalInterface(
                         Function.class, uncheckedConstructorCast(constructor)
                 ));
-                case 2: return from(checkedConstructor, generateFrom(
+                case 2: return from(checkedConstructor, implementFunctionalInterface(
                         BiFunction.class, uncheckedConstructorCast(constructor)
                 ));
                 default: {
@@ -101,9 +101,9 @@ public class InvokeConstructorWrapper<@NotNull T>
         });
     }
 
-    private static <@NotNull T> @NotNull ConstructorWrapper<T> from(
+    private static <T> @NotNull ConstructorWrapper<T> from(
             final @NotNull Constructor<? extends T> constructor,
-            final @NotNull Supplier<T> generatedSupplier
+            final @NotNull Supplier<@NotNull T> generatedSupplier
     ) {
         return new InvokeConstructorWrapper<>(
                 constructor.getDeclaringClass(), constructor,
@@ -115,9 +115,9 @@ public class InvokeConstructorWrapper<@NotNull T>
         );
     }
 
-    private static <@NotNull T> @NotNull ConstructorWrapper<T> from(
+    private static <T> @NotNull ConstructorWrapper<T> from(
             final @NotNull Constructor<? extends T> constructor,
-            final @NotNull Function<Object, T> generatedFunction
+            final @NotNull Function<Object, @NotNull T> generatedFunction
     ) {
         return new InvokeConstructorWrapper<>(
                 constructor.getDeclaringClass(), constructor,
@@ -129,9 +129,9 @@ public class InvokeConstructorWrapper<@NotNull T>
         );
     }
 
-    private static <@NotNull T> @NotNull ConstructorWrapper<T> from(
+    private static <T> @NotNull ConstructorWrapper<T> from(
             final @NotNull Constructor<? extends T> constructor,
-            final @NotNull BiFunction<Object, Object, T> generatedBiFunction
+            final @NotNull BiFunction<Object, Object, @NotNull T> generatedBiFunction
     ) {
         return new InvokeConstructorWrapper<>(
                 constructor.getDeclaringClass(), constructor,
@@ -144,7 +144,7 @@ public class InvokeConstructorWrapper<@NotNull T>
     }
 
     @SuppressWarnings("unchecked")
-    private static <@NotNull T> @NotNull ConstructorWrapper<T> from(
+    private static <T> @NotNull ConstructorWrapper<T> from(
             final @NotNull Constructor<? extends T> constructor,
             final @NotNull MethodHandle methodHandle
     ) {
@@ -170,9 +170,9 @@ public class InvokeConstructorWrapper<@NotNull T>
         return (Constructor<T>) type;
     }
 
-    private static <@NotNull F, @NotNull T> @NotNull F generateFrom(
+    private static <F, T> @NotNull F implementFunctionalInterface(
             final @NotNull Class<F> functionalType,
-            final @NotNull Constructor<T> constructor
+            final @NotNull Constructor<@NotNull T> constructor
     ) {
         return InvokeUtil.<F, T>invokeFactory()
                 .implementing(functionalType)
