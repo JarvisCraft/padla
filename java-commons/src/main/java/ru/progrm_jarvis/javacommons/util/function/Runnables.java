@@ -37,7 +37,7 @@ public class Runnables {
      */
     public <T> @NotNull Runnable stateful(final T initialState,
                                           final @NonNull Consumer<? super T> handler) {
-        return new StatefulMutableImRunnable<>(handler, initialState);
+        return new StatefulImmutableRunnable<>(handler, initialState);
     }
 
     /**
@@ -108,7 +108,7 @@ public class Runnables {
      */
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class StatefulMutableImRunnable<T> implements Runnable {
+    private static final class StatefulImmutableRunnable<T> implements Runnable {
 
         /**
          * Handler invoked on each call to {@link #run()} with the state applied to it
