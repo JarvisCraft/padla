@@ -7,7 +7,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.util.BlackHole;
 
 /**
  * Utilities for creation of <a href="https://github.com/ben-manes/caffeine">Caffeine</a>-based
@@ -19,16 +18,16 @@ public class CaffeineCache {
     /**
      * Flag indicating whether {@link Caffeine} is available
      */
-    private static final boolean AVAILABLE;
+    private final @Nullable CacheFactory CACHE_FACTORY;
 
     static {
-        boolean available = true;
-        try { // check if Caffeine class is available
-            BlackHole.consume(Caffeine.class);
+        CacheFactory cacheFactory;
+        try { // check if Caffeine is available
+            cacheFactory = new CaffeineCacheFactory(Caffeine::newBuilder);
         } catch (final Throwable ignored) {
-            available = false;
+            cacheFactory = null;
         }
-        AVAILABLE = available;
+        CACHE_FACTORY = cacheFactory;
     }
 
     /**
@@ -38,10 +37,10 @@ public class CaffeineCache {
      *
      * @throws IllegalStateException if Caffeine is not available
      */
-    public static @NotNull CacheFactory createFactory() {
-        if (AVAILABLE) return CaffeineCacheFactory.INSTANCE;
+    public @NotNull CacheFactory createFactory() {
+        if (CACHE_FACTORY == null) throw new IllegalStateException("Caffeine Cache is not available");
 
-        throw new IllegalStateException("Caffeine Cache is not available");
+        return CACHE_FACTORY;
     }
 
     /**
@@ -49,8 +48,8 @@ public class CaffeineCache {
      *
      * @return created Caffeine Cache factory or {@code null} if it is unavailable
      */
-    public static @Nullable CacheFactory tryCreateFactory() {
-        return AVAILABLE ? CaffeineCacheFactory.INSTANCE : null;
+    public @Nullable CacheFactory tryCreateFactory() {
+        return CACHE_FACTORY;
     }
 
     /**
@@ -58,12 +57,12 @@ public class CaffeineCache {
      */
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class CaffeineCacheFactory implements CacheFactory {
+    private final class CaffeineCacheFactory implements CacheFactory {
 
         /**
-         * Singleton instance of this {@link CacheFactory} implementation
+         * Factory used for creation of {@link Caffeine} builder
          */
-        private static final @NotNull CacheFactory INSTANCE = new CaffeineCacheFactory();
+        private @NotNull CaffeineBuilderFactory factory;
 
         /**
          * Wraps the provided {@link com.github.benmanes.caffeine.cache.Cache Caffeine Cache} into {@link Cache}.
@@ -81,17 +80,30 @@ public class CaffeineCache {
 
         @Override
         public <K, V> @NotNull Cache<K, V> weakKeysCache() {
-            return wrap(Caffeine.newBuilder().weakKeys().build());
+            return wrap(factory.newBuilder().weakKeys().build());
         }
 
         @Override
         public <K, V> @NotNull Cache<K, V> weakValuesCache() {
-            return wrap(Caffeine.newBuilder().weakValues().build());
+            return wrap(factory.newBuilder().weakValues().build());
         }
 
         @Override
         public <K, V> @NotNull Cache<K, V> softValuesCache() {
-            return wrap(Caffeine.newBuilder().softValues().build());
+            return wrap(factory.newBuilder().softValues().build());
+        }
+
+        /**
+         * Factory responsible for creation of {@link Caffeine} builder.
+         */
+        public interface CaffeineBuilderFactory {
+
+            /**
+             * Creates a {@link Caffeine} builder.
+             *
+             * @return Caffeine builder
+             */
+            Caffeine<Object, Object> newBuilder();
         }
     }
 }
