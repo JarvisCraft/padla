@@ -26,21 +26,6 @@ public class Runnables {
     }
 
     /**
-     * Creates a stateful runnable which stores its state mutably.
-     *
-     * @param initialState initial state of the created runnable
-     * @param handler handler invoked on each call to {@link Runnable#run()} with the state applied to it
-     * @param <T> type of stored state
-     * @return created stateful runnable
-     *
-     * @throws NullPointerException if {@code handler} is {@code null}
-     */
-    public <T> @NotNull Runnable stateful(final T initialState,
-                                          final @NonNull Consumer<? super T> handler) {
-        return new StatefulImmutableRunnable<>(handler, initialState);
-    }
-
-    /**
      * Creates a stateful runnable which stores its state immutably.
      *
      * @param initialState initial state of the created runnable
