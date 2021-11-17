@@ -13,6 +13,7 @@ import java.util.*;
  * It provides lazy access to its entries so that iteration happens only when needed.
  *
  * @param <E> type of element stored
+ * @param <C> type of target collection
  */
 @RequiredArgsConstructor
 @ToString(includeFieldNames = false)
@@ -59,7 +60,7 @@ public class LazyIteratorToCollectionWrapper<E, C extends Collection<E>> impleme
      * @return {@code true} if the element is contained in the wrapped iterator and {@code false} otherwise
      */
     protected boolean isIteratorContaining(final Object element) {
-        if (iterator.hasNext()) while (iterator.hasNext()) {
+        while (iterator.hasNext()) {
             val nextElement = iterator.next();
             if (Objects.equals(element, nextElement)) return true;
         }
