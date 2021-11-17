@@ -133,7 +133,13 @@
                         </archive>
                     </configuration>
                 </plugin>
+
                 <!-- Code-generation -->
+                <plugin>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok-maven-plugin</artifactId>
+                    <version>1.18.20.0</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.drill.tools</groupId>
                     <artifactId>drill-fmpp-maven-plugin</artifactId>
@@ -335,6 +341,36 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-delomboked-javadoc-sources</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>delombok</goal>
+                                </goals>
+                                <configuration>
+                                    <addOutputDirectory>false</addOutputDirectory>
+                                    <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                    <outputDirectory>${project.build.directory}/javadoc-sources</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-delomboked-javadoc-sources-for-generated-sources</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>delombok</goal>
+                                </goals>
+                                <configuration>
+                                    <addOutputDirectory>false</addOutputDirectory>
+                                    <sourceDirectory>${project.build.directory}/generated-sources</sourceDirectory>
+                                    <outputDirectory>${project.build.directory}/javadoc-sources</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
@@ -343,6 +379,9 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <sourcepath>${project.build.directory}/javadoc-sources</sourcepath>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
