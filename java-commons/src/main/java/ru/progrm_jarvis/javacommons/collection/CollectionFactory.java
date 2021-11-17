@@ -97,7 +97,6 @@ public class CollectionFactory {
                     .sorted()
                     .toArray(Enum[]::new);
 
-            //noinspection unchecked
             return (Set<E>) IMMUTABLE_ENUM_SETS.get(enumValues, valuesArray -> {
                 //<editor-fold desc="Class generation" defaultstate="collapsed">
                 val enumType = valuesArray.getClass().getComponentType();

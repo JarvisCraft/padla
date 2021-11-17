@@ -7,6 +7,7 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.cache.Cache;
 import ru.progrm_jarvis.javacommons.cache.Caches;
+import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles.Lookup;
@@ -227,11 +228,10 @@ public class InvokeUtil {
         val lookup = lookup(method.getDeclaringClass());
         try {
             val methodHandle = lookup.unreflect(method);
-            //noinspection unchecked: generic type of returned object
-            return (Supplier<R>) metafactory(
+            return UncheckedCasts.uncheckedObjectCast(metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
-            ).getTarget().invokeExact();
+            ).getTarget().invokeExact());
         } catch (final Throwable x) {
             throw new RuntimeException(
                     "An exception occurred while trying to convert method " + method + " to Supplier", x
@@ -256,12 +256,11 @@ public class InvokeUtil {
         val lookup = lookup(method.getDeclaringClass());
         try {
             val methodHandle = lookup.unreflect(method);
-            //noinspection unchecked: generic type of returned object
-            return (Supplier<R>) metafactory(
+            return UncheckedCasts.uncheckedObjectCast(metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME,
                     SUPPLIER_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
                     OBJECT__METHOD_TYPE, methodHandle, OBJECT__METHOD_TYPE.changeReturnType(method.getReturnType())
-            ).getTarget().invoke(target);
+            ).getTarget().invoke(target));
         } catch (final Throwable x) {
             throw new RuntimeException(
                     "An exception occurred while trying to convert method " + method + " to Supplier", x
@@ -283,11 +282,10 @@ public class InvokeUtil {
         val lookup = lookup(constructor.getDeclaringClass());
         try {
             val methodHandle = lookup.unreflectConstructor(constructor);
-            //noinspection unchecked: generic type of returned object
-            return (Supplier<T>) metafactory(
+            return UncheckedCasts.uncheckedObjectCast(metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
-            ).getTarget().invokeExact();
+            ).getTarget().invokeExact());
         } catch (final Throwable x) {
             throw new RuntimeException(
                     "An exception occurred while trying to convert constructor " + constructor + " to Supplier", x
@@ -315,8 +313,7 @@ public class InvokeUtil {
 
         return () -> {
             try {
-                //noinspection unchecked
-                return (V) methodHandle.invoke();
+                return UncheckedCasts.uncheckedObjectCast(methodHandle.invoke());
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
@@ -344,8 +341,7 @@ public class InvokeUtil {
 
         return () -> {
             try {
-                //noinspection unchecked
-                return (V) methodHandle.invoke();
+                return UncheckedCasts.uncheckedObjectCast(methodHandle.invoke());
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
@@ -373,8 +369,7 @@ public class InvokeUtil {
 
         return target -> {
             try {
-                //noinspection unchecked
-                return (V) methodHandle.invoke(target);
+                return UncheckedCasts.uncheckedObjectCast(methodHandle.invoke(target));
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
