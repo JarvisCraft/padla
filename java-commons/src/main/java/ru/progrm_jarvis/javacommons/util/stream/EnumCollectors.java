@@ -62,6 +62,7 @@ public class EnumCollectors {
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public <T, E extends Enum<E>, V> @NotNull Collector<T, ?, @NotNull Map<E, V>> toEnumMap(
             final @NonNull Function<T, E> keyMapper,
             final @NonNull Function<T, V> valueMapper,
@@ -135,6 +136,7 @@ public class EnumCollectors {
      * @return a collector collecting al its elements into an enum-map
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public <E extends Enum<E>, V> @NotNull Collector<E, ?, @NotNull Map<E, V>> toEnumMap(
             final @NonNull Function<E, V> valueMapper,
             final @NonNull BinaryOperator<V> merger,
@@ -164,6 +166,7 @@ public class EnumCollectors {
      * @return a collector collecting al its elements into an enum-set
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     public <E extends Enum<E>> Collector<E, ?, Set<E>> toEnumSet(
             @TypeHint final @Nullable E @NonNull ... typeHint
     ) {
@@ -177,7 +180,7 @@ public class EnumCollectors {
      * @param <V> type of the mapped value
      * @return default throwing merger
      */
-    private static <V> @NotNull BinaryOperator<V> throwingMerger() {
+    private <V> @NotNull BinaryOperator<V> throwingMerger() {
         return (left, right) -> {
             throw new IllegalStateException("Duplicate elements " + left + " and " + right);
         };

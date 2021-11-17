@@ -100,6 +100,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this takes ownership over {@code values}
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> only(final @Own T @Own @NonNull ... values) {
         Arrays.sort(values);
 
@@ -129,6 +130,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code values} not preserving order
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> onlyCopy(final @Own T @Ref @NonNull ... values) {
         return only(Arrays.copyOf(values, values.length));
     }
@@ -190,6 +192,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this takes ownership over {@code values}
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> except(final @Own T @Own @NonNull ... values) {
         Arrays.sort(values);
 
@@ -219,6 +222,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code values} not preserving order
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> exceptCopy(final @Own T @Own @NonNull ... values) {
         return except(Arrays.copyOf(values, values.length));
     }
@@ -359,6 +363,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this takes ownership over {@code ranges}
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> anyOf(final @Ref @NotNull Range<T> @NonNull ... ranges) {
         return value -> {
             for (val range : ranges) if (range.includes(value)) return true;
@@ -394,6 +399,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} preserving order
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> anyOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
         return anyOf(Arrays.copyOf(ranges, ranges.length));
     }
@@ -434,6 +440,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this takes ownership over {@code ranges}
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> allOf(final @Ref @NotNull Range<T> @NonNull ... ranges) {
         return value -> {
             for (val range : ranges) if (!range.includes(value)) return false;
@@ -469,6 +476,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} preserving order
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> allOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
         return allOf(Arrays.copyOf(ranges, ranges.length));
     }
@@ -509,6 +517,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this takes ownership over {@code ranges}
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> noneOf(final @Ref @NotNull Range<T> @NonNull ... ranges) {
         return value -> {
             for (val range : ranges) if (range.includes(value)) return false;
@@ -544,6 +553,7 @@ public interface Range<T> extends Predicate<T> {
      * @apiNote this copies {@code ranges} preserving order
      */
     @SafeVarargs
+    @SuppressWarnings("varargs")
     static <T> @NotNull Range<T> noneOfCopy(final @Ref @NotNull Range<T> @NonNull ... ranges) {
         return noneOf(Arrays.copyOf(ranges, ranges.length));
     }

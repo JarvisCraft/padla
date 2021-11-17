@@ -5,7 +5,10 @@ import java.lang.annotation.*;
 /**
  * Marker indicating that {@link Object#equals(Object)} and {@link Object#hashCode()} methods
  * are not overridden for this class for some reason.
+ *
+ * @deprecated this annotation is applicable by default thus it is redundant
  */
+@Deprecated
 @Inherited
 @Documented
 @Target(ElementType.TYPE)

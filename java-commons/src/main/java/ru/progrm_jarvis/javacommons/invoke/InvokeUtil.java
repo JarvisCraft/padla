@@ -96,7 +96,6 @@ public class InvokeUtil {
      * @return created cached lookup for the given class
      */
     public @NotNull Lookup lookup(final @NonNull Class<?> clazz) {
-        //noinspection ConstantConditions: the result cannot be null as `create(Class<?>)` is non-null
         return LOOKUPS.get(clazz, LOOKUP_FACTORY::create);
     }
 
@@ -227,11 +226,10 @@ public class InvokeUtil {
         val lookup = lookup(method.getDeclaringClass());
         try {
             val methodHandle = lookup.unreflect(method);
-            //noinspection unchecked: generic type of returned object
-            return (Supplier<R>) metafactory(
+            return Unchecked.cast((Supplier<?>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
-            ).getTarget().invokeExact();
+            ).getTarget().invokeExact());
         } catch (final Throwable x) {
             throw new RuntimeException(
                     "An exception occurred while trying to convert method " + method + " to Supplier", x
@@ -256,12 +254,11 @@ public class InvokeUtil {
         val lookup = lookup(method.getDeclaringClass());
         try {
             val methodHandle = lookup.unreflect(method);
-            //noinspection unchecked: generic type of returned object
-            return (Supplier<R>) metafactory(
+            return Unchecked.cast((Supplier<?>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME,
                     SUPPLIER_OBJECT__METHOD_TYPE.changeParameterType(0, target.getClass()),
                     OBJECT__METHOD_TYPE, methodHandle, OBJECT__METHOD_TYPE.changeReturnType(method.getReturnType())
-            ).getTarget().invoke(target);
+            ).getTarget().invoke(target));
         } catch (final Throwable x) {
             throw new RuntimeException(
                     "An exception occurred while trying to convert method " + method + " to Supplier", x
@@ -283,11 +280,10 @@ public class InvokeUtil {
         val lookup = lookup(constructor.getDeclaringClass());
         try {
             val methodHandle = lookup.unreflectConstructor(constructor);
-            //noinspection unchecked: generic type of returned object
-            return (Supplier<T>) metafactory(
+            return Unchecked.cast((Supplier<?>) metafactory(
                     lookup, SUPPLIER_FUNCTIONAL_METHOD_NAME, SUPPLIER__METHOD_TYPE,
                     OBJECT__METHOD_TYPE, methodHandle, methodHandle.type()
-            ).getTarget().invokeExact();
+            ).getTarget().invokeExact());
         } catch (final Throwable x) {
             throw new RuntimeException(
                     "An exception occurred while trying to convert constructor " + constructor + " to Supplier", x
@@ -303,6 +299,7 @@ public class InvokeUtil {
      * @return supplier getting the value of the field
      * @throws IllegalArgumentException if the given field is not static
      */
+    @SuppressWarnings("unchecked") // cast of the value
     public <V> @NotNull Supplier<V> toStaticGetterSupplier(final @NonNull Field field) {
         Check.isStatic(field);
 
@@ -315,7 +312,6 @@ public class InvokeUtil {
 
         return () -> {
             try {
-                //noinspection unchecked
                 return (V) methodHandle.invoke();
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
@@ -332,6 +328,7 @@ public class InvokeUtil {
      * @return supplier getting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
+    @SuppressWarnings("unchecked") // cast of the value
     public <V> @NotNull Supplier<V> toBoundGetterSupplier(final @NonNull Field field, final @NonNull Object target) {
         Check.isNotStatic(field);
 
@@ -344,7 +341,6 @@ public class InvokeUtil {
 
         return () -> {
             try {
-                //noinspection unchecked
                 return (V) methodHandle.invoke();
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
@@ -361,6 +357,7 @@ public class InvokeUtil {
      * @return function getting the value of the field
      * @throws IllegalArgumentException if the given field is static
      */
+    @SuppressWarnings("unchecked") // cast of the value
     public <T, V> @NotNull Function<T, V> toGetterFunction(final @NonNull Field field) {
         Check.isNotStatic(field);
 
@@ -373,7 +370,6 @@ public class InvokeUtil {
 
         return target -> {
             try {
-                //noinspection unchecked
                 return (V) methodHandle.invoke(target);
             } catch (final Throwable throwable) {
                 throw new RuntimeException(throwable);
@@ -458,7 +454,7 @@ public class InvokeUtil {
         };
     }
 
-    private static @NotNull MethodHandle createSetterMethodHandle(final @NonNull Field field, final int modifiers) {
+    private @NotNull MethodHandle createSetterMethodHandle(final @NonNull Field field, final int modifiers) {
         final MethodHandle methodHandle;
         if (Modifier.isFinal(modifiers)) {
             val accessible = field.isAccessible();
@@ -480,16 +476,16 @@ public class InvokeUtil {
 
     @UtilityClass
     @SuppressWarnings("TypeMayBeWeakened") // the error message are specific to classes
-    private static final class Check {
+    private static class Check {
 
-        private static void hasNoParameters(final @NotNull Method method) {
+        private void hasNoParameters(final @NotNull Method method) {
             final int parameterCount;
             if ((parameterCount = method.getParameterCount()) != 0) throw new IllegalArgumentException(
                     "Method should have no parameters but it has " + parameterCount
             );
         }
 
-        private static void hasNoParameters(final @NotNull Constructor<?> constructor) {
+        private void hasNoParameters(final @NotNull Constructor<?> constructor) {
             final int parameterCount;
             if ((parameterCount = constructor.getParameterCount()) != 0) throw new IllegalArgumentException(
                     "Constructor should have no parameters but it has " + parameterCount
@@ -530,6 +526,19 @@ public class InvokeUtil {
             );
 
             return modifiers;
+        }
+    }
+
+    @UtilityClass
+    @SuppressWarnings("unchecked")
+    private class Unchecked {
+
+        public <T> Supplier<T> cast(final Supplier<?> supplier) {
+            return (Supplier<T>) supplier;
+        }
+
+        public <T, R> Function<T, R> cast(final Function<?, ?> function) {
+            return (Function<T, R>) function;
         }
     }
 }

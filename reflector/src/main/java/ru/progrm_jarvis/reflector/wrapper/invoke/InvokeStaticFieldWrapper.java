@@ -26,24 +26,27 @@ import java.util.function.Supplier;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeStaticFieldWrapper<@NotNull T, V>
+public final class InvokeStaticFieldWrapper<T, V>
         extends AbstractFieldWrapper<T, V> implements StaticFieldWrapper<T, V> {
 
     /**
      * Weak cache of allocated instance of this static field wrappers of static fields
      */
-    protected static final @NotNull Cache<@NotNull Field, @NotNull StaticFieldWrapper<?, ?>> STATIC_WRAPPER_CACHE
+    private static final @NotNull Cache<@NotNull Field, @NotNull StaticFieldWrapper<?, ?>> STATIC_WRAPPER_CACHE
             = Caches.weakValuesCache();
+
     /**
      * Weak cache of allocated instance of this static field wrappers of non-static bound fields
      */
-    protected static final @NotNull Cache<
+    private static final @NotNull Cache<
             @NotNull Pair<@NotNull Field, @NotNull ?>, @NotNull StaticFieldWrapper<?, ?>
             > BOUND_WRAPPER_CACHE = Caches.weakValuesCache();
+
     /**
      * Supplier performing the field get operation
      */
     @NonNull Supplier<V> getter;
+
     /**
      * Consumer performing the field set operation
      */
@@ -57,9 +60,9 @@ public class InvokeStaticFieldWrapper<@NotNull T, V>
      * @param getter supplier performing the field get operation
      * @param setter consumer performing the field set operation
      */
-    protected InvokeStaticFieldWrapper(final @NotNull Class<? extends T> containingClass,
-                                       final @NotNull Field wrapped,
-                                       final @NotNull Supplier<V> getter, final @NotNull Consumer<V> setter) {
+    private InvokeStaticFieldWrapper(final @NotNull Class<? extends T> containingClass,
+                                     final @NotNull Field wrapped,
+                                     final @NotNull Supplier<V> getter, final @NotNull Consumer<V> setter) {
         super(containingClass, wrapped);
         this.getter = getter;
         this.setter = setter;
