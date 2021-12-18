@@ -26,21 +26,6 @@ public class Runnables {
     }
 
     /**
-     * Creates a stateful runnable which stores its state mutably.
-     *
-     * @param initialState initial state of the created runnable
-     * @param handler handler invoked on each call to {@link Runnable#run()} with the state applied to it
-     * @param <T> type of stored state
-     * @return created stateful runnable
-     *
-     * @throws NullPointerException if {@code handler} is {@code null}
-     */
-    public <T> @NotNull Runnable stateful(final T initialState,
-                                          final @NonNull Consumer<? super T> handler) {
-        return new StatefulMutableImRunnable<>(handler, initialState);
-    }
-
-    /**
      * Creates a stateful runnable which stores its state immutably.
      *
      * @param initialState initial state of the created runnable
@@ -66,8 +51,8 @@ public class Runnables {
      *
      * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public @NotNull Runnable stateful(final int initialState,
-                                      final @NonNull IntUnaryOperator handler) {
+    public @NotNull Runnable intStateful(final int initialState,
+                                         final @NonNull IntUnaryOperator handler) {
         return new StatefulMutableIntRunnable(handler, initialState);
     }
 
@@ -81,8 +66,8 @@ public class Runnables {
      *
      * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public @NotNull Runnable stateful(final long initialState,
-                                      final @NonNull LongUnaryOperator handler) {
+    public @NotNull Runnable longStateful(final long initialState,
+                                          final @NonNull LongUnaryOperator handler) {
         return new StatefulMutableLongRunnable(handler, initialState);
     }
 
@@ -96,8 +81,8 @@ public class Runnables {
      *
      * @throws NullPointerException if {@code handler} is {@code null}
      */
-    public @NotNull Runnable stateful(final double initialState,
-                                      final @NonNull DoubleUnaryOperator handler) {
+    public @NotNull Runnable doubleStateful(final double initialState,
+                                            final @NonNull DoubleUnaryOperator handler) {
         return new StatefulMutableDoubleRunnable(handler, initialState);
     }
 
@@ -108,7 +93,7 @@ public class Runnables {
      */
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private static final class StatefulMutableImRunnable<T> implements Runnable {
+    private static final class StatefulImmutableRunnable<T> implements Runnable {
 
         /**
          * Handler invoked on each call to {@link #run()} with the state applied to it
