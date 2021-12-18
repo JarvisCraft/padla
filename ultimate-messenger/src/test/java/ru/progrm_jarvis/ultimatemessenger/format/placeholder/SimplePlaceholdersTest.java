@@ -47,10 +47,10 @@ class SimplePlaceholdersTest {
                         arguments(target, "{:} hello", "{:} hello"),
                         arguments(target, "hello {:}", "hello {:}"),
                         arguments(target, "{:} hello {:}", "{:} hello {:}"),
-                        arguments(target, "{rand} hello {:}", "??? hello {:}"),
-                        arguments(target, "{rand} hello {rand}", "??? hello ???"),
-                        arguments(target, "{rand} hello {:}", "??? hello {:}"),
-                        arguments(target, "{unknown:} hello {:}", "??? hello {:}")
+                        arguments(target, "{rand} hello {:}", "<?> hello {:}"),
+                        arguments(target, "{rand} hello {rand}", "<?> hello <?>"),
+                        arguments(target, "{rand} hello {:}", "<?> hello {:}"),
+                        arguments(target, "{unknown:} hello {:}", "<?> hello {:}")
                 ));
     }
 
@@ -102,11 +102,11 @@ class SimplePlaceholdersTest {
                         arguments(target, "hello \\{:}\\", "hello {:}\\"),
                         arguments(target, "\\{\\:\\}\\ hello \\{\\:\\}", "{:} hello {:}"),
                         arguments(target, "\\{\\:\\}\\ hello \\{\\:\\}\\", "{:} hello {:}\\"),
-                        arguments(target, "{\\ran\\d} hello {:}", "??? hello {:}"),
-                        arguments(target, "{rand\\} \\hello {rand}", "???"),
-                        arguments(target, "{rand\\} hello \\{:}", "???"),
-                        arguments(target, "{unknown:\\} hi\\\\ {:}", "???"),
-                        arguments(target, "{unknown:\\\\} <magic", "??? <magic")
+                        arguments(target, "{\\ran\\d} hello {:}", "<?> hello {:}"),
+                        arguments(target, "{rand\\} \\hello {rand}", "<?>"),
+                        arguments(target, "{rand\\} hello \\{:}", "<?>"),
+                        arguments(target, "{unknown:\\} hi\\\\ {:}", "<?>"),
+                        arguments(target, "{unknown:\\\\} <magic", "<?> <magic")
                 ));
     }
 
@@ -203,7 +203,7 @@ class SimplePlaceholdersTest {
     @BeforeEach
     void setUp() {
         placeholders = SimplePlaceholders.<Target>builder().build();
-        placeholders.add("*", ((value, target) -> "#"));
+        placeholders.add("*", (value, target) -> "#");
         placeholders.add("test", (value, target) -> {
             switch (value) {
                 case "name": return target.name;
