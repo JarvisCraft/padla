@@ -83,8 +83,19 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
         }
     }
 
+    /**
+     * Creates a service for the provided owner.
+     *
+     * @param owner owner of the created service
+     * @return creates service
+     */
     protected abstract S newService(@NonNull O owner);
 
+    /**
+     * Marks the provided owner as ready.
+     *
+     * @param owner owner which should now be considered ready
+     */
     @SuppressWarnings("resource") // close() is already the cause of this method being called
     protected void markAsReady(final @NonNull O owner) {
         final Lock lock;
@@ -226,6 +237,12 @@ public abstract class AbstractManagedPendingService<O, S, R> implements ManagedP
             closed = new AtomicBoolean();
         }
 
+        /**
+         * Triggers the failure due to this service being closed.
+         *
+         * @throws IllegalStateException <i>always</i>
+         */
+        @SuppressWarnings("MethodMayBeStatic") // overriding classes may implement instance-specific behaviour
         protected void failOnClosed() {
             throw new IllegalStateException("This managed service has already been closed");
         }
