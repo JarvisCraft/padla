@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Predicate;
 
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 public class ConcurrentSetFromMapWrapper<E, W extends Map<E, Boolean>>

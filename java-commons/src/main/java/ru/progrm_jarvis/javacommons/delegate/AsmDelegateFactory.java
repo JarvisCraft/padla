@@ -26,6 +26,9 @@ import java.util.function.Supplier;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 
+/**
+ * Implementation of {@link DelegateFactory delegate factory} which uses runtime class generation via <b>ASM</b>.
+ */
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
 
@@ -67,7 +70,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
      */
     VOID_SUPPLIER_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, SUPPLIER_TYPE);
 
-    private AsmDelegateFactory(final @NotNull Cache<Class<?>, DelegateWrapperFactory<?>> factories) {
+    private AsmDelegateFactory(final @NotNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> factories) {
         super(factories);
     }
 

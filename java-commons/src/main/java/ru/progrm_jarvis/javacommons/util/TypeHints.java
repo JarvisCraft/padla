@@ -20,8 +20,7 @@ public class TypeHints {
      * @param <T> generic type whose class object should be resolved
      * @return class object for the given array
      */
-    @SuppressWarnings("unchecked")
-    public <T> @NotNull Class<T> resolve(final @Nullable T... typeHint) {
+    public <T> @NotNull Class<T> resolve(final @Nullable T @NotNull [] typeHint) {
         return UncheckedCasts.uncheckedClassCast(typeHint.getClass().getComponentType());
     }
 

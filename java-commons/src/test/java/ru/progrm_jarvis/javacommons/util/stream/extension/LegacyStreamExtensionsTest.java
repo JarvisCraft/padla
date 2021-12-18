@@ -17,8 +17,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtensionMethod(LegacyCollectorExtensions.class)
-class LegacyCollectorExtensionsTest {
+@ExtensionMethod(LegacyStreamExtensions.class)
+class LegacyStreamExtensionsTest {
 
     static @NotNull Stream<@NotNull Arguments> provideLists() {
         //noinspection DynamicRegexReplaceableByCompiledPattern: called in test for

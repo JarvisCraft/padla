@@ -12,6 +12,12 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface LookupFactory extends Function<Class<?>, Lookup> {
 
+    /**
+     * Creates a lookup for the given class.
+     *
+     * @param clazz class for which to create a lookup
+     * @return lookup for the given class
+     */
     @NotNull Lookup create(final @NonNull Class<?> clazz);
 
     @Override

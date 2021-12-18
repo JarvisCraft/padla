@@ -48,11 +48,17 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      */
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this also allows instance caching)
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class SimpleTextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    private static final class SimpleTextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
 
+        /**
+         * Elements appended to this builder.
+         */
         @NonNull List<TextModel<T>> elements = new ArrayList<>();
 
+        /**
+         * Last static text or {@code null} if there are no elements or the last element is dynamic
+         */
         @NonFinal transient String lastStaticText;
 
         @Override

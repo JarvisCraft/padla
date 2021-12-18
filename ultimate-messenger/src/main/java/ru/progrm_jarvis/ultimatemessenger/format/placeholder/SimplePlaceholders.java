@@ -21,8 +21,8 @@ import java.util.Optional;
  */
 @Data
 @Builder
-@FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public class SimplePlaceholders<T> implements Placeholders<T> {
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public final class SimplePlaceholders<T> implements Placeholders<T> {
 
     /**
      * Formatters used for handling placeholders which accept placeholder value and formatting target
@@ -32,41 +32,54 @@ public class SimplePlaceholders<T> implements Placeholders<T> {
     /**
      * Prefix of placeholders
      */
-    @Builder.Default char prefix = '{',
+    @Builder.Default char prefix = '{';
+
     /**
      * Suffix of placeholders
      */
-    suffix = '}',
+    @Builder.Default char suffix = '}';
+
     /**
      * Delimiter separating placeholders' keys from values
      */
-    delimiter = ':',
+    @Builder.Default char delimiter = ':';
+
     /**
      * Character used for escaping other characters (including itself)
      */
-    escapeCharacter = '\\',
+    @Builder.Default char escapeCharacter = '\\';
+
     /* ********************************************* Special characters ********************************************* */
+
     /**
      * Tab character ({@code \t})
      */
-    tabCharacter = 't',
+    @Builder.Default char tabCharacter = 't';
+
     /**
      * Backspace character ({@code \b})
      */
-    backspaceCharacter = 'b',
+    @Builder.Default char backspaceCharacter = 'b';
+
     /**
      * New line character ({@code \n})
      */
-    newLineCharacter = 'n',
+    @Builder.Default char newLineCharacter = 'n';
+
     /**
      * Carriage return character ({@code \r})
      */
-    carriageReturnCharacter = 'r',
+    @Builder.Default char carriageReturnCharacter = 'r';
+
     /**
      * Form feed character ({@code \f})
      */
-    formFeedCharacter = 'f';
-    @Builder.Default @NonNull String unknownPlaceholderReplacement = "???";
+    @Builder.Default char formFeedCharacter = 'f';
+
+    /**
+     * Text used to replace occurrences of empty placeholders
+     */
+    @Builder.Default @NonNull String unknownPlaceholderReplacement = "<?>";
 
     @Override
     public @NotNull String format(@NotNull String source, final T target) {

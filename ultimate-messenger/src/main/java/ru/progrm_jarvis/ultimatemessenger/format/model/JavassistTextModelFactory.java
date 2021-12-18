@@ -24,7 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
 /**
- * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
+ * Implementation of {@link TextModelFactory text model factory}
+ * which uses runtime class generation via <b>Javasssist</b>.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)

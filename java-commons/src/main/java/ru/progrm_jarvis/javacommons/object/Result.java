@@ -1,9 +1,6 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
+import lombok.*;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -215,6 +212,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
      * @param throwableType class instance representing the type of the thrown exception
      * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
+     * @param <X> type of the thrown throwable
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
      * if {@link Class#isInstance(Object) it is of} the expected type
@@ -244,8 +242,8 @@ public interface Result<T, E> extends Supplier<T> {
      *
      * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
      * @param throwableTypeHint array used for throwable type discovery
-     * @param <X> type of the thrown throwable
      * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
+     * @param <X> type of the thrown throwable
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
      * if {@link Class#isInstance(Object) it is of} the expected type
@@ -674,6 +672,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
+    @Getter(AccessLevel.NONE)
     class Success<T, @Any E> implements Result<T, E> {
 
         /**
@@ -872,6 +871,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
+    @Getter(AccessLevel.NONE)
     class Error<@Any T, E> implements Result<T, E> {
 
         /**

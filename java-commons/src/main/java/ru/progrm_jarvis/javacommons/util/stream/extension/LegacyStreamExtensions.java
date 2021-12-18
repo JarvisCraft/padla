@@ -17,14 +17,18 @@ import java.util.stream.Stream;
 
 import static java.lang.invoke.MethodType.methodType;
 
+/**
+ * Extensions to provide new {@link Stream} methods on older Java versions.
+ */
 @UtilityClass
-public class LegacyCollectorExtensions {
+public class LegacyStreamExtensions {
+
     /**
      * Method handle of
      * {@link Collectors}{@code .toList()} method
      * being {@code null} if this method is unavailable.
      */
-    private static final @Nullable MethodHandle TO_LIST__METHOD_HANDLE;
+    private final @Nullable MethodHandle TO_LIST__METHOD_HANDLE;
 
     static {
         val lookup = MethodHandles.lookup();
@@ -50,7 +54,7 @@ public class LegacyCollectorExtensions {
      * @apiNote this method is available on {@link Stream} itself since Java 16
      */
     @SneakyThrows // call to `MethodHandle#invokeExact(...)`
-    public static <T> @NotNull @Unmodifiable List<T> toList(final @NotNull @Own Stream<?> stream) {
+    public <T> @NotNull @Unmodifiable List<T> toList(final @NotNull @Own Stream<?> stream) {
         if (TO_LIST__METHOD_HANDLE == null) {
             // all implementation rely on `toArray()` conversion
             final Object[] array;
@@ -77,7 +81,7 @@ public class LegacyCollectorExtensions {
     // note: no nullability annotations are present on lists as cast of `null` is also safe
     @Contract("_ -> param1")
     @SuppressWarnings("unchecked")
-    private static <T> List<T> uncheckedListCast(final List<?> raw) {
+    private <T> List<T> uncheckedListCast(final List<?> raw) {
         return (List<T>) raw;
     }
 }
