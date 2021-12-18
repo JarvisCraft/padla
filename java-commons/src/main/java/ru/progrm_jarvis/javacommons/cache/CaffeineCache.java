@@ -57,7 +57,7 @@ public class CaffeineCache {
      */
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-    private final class CaffeineCacheFactory implements CacheFactory {
+    private static final class CaffeineCacheFactory implements CacheFactory {
 
         /**
          * Factory used for creation of {@link Caffeine} builder
