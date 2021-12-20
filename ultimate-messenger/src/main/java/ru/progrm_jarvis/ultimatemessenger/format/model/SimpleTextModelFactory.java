@@ -97,7 +97,7 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
 
         @Override
         protected @NotNull TextModel<T> buildTextModel(final boolean release) {
-            return elements.isEmpty() ? TextModel.empty() : DelegatingCompoundTextModel.fromCopyOf(elements);
+            return elements.isEmpty() ? TextModel.empty() : CompoundTextModel.fromCopyOf(elements);
         }
     }
 }

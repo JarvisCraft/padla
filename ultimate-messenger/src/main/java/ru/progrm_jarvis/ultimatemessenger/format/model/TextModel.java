@@ -36,7 +36,29 @@ public interface TextModel<T> {
     @NotNull String getText(T target);
 
     /**
-     * Writes the text formatted for the gicen target into the provided output.
+     * Writes the text formatted for the given target into the provided output.
+     *
+     * @param output text output
+     * @param target object according to which the text models gets formatted
+     * @return chained {@code output}
+     */
+    default @NotNull StringBuilder write(final @NonNull StringBuilder output, final T target) {
+        return output.append(getText(target));
+    }
+
+    /**
+     * Writes the text formatted for the given target into the provided output.
+     *
+     * @param output text output
+     * @param target object according to which the text models gets formatted
+     * @return chained {@code output}
+     */
+    default @NotNull StringBuffer write(final @NonNull StringBuffer output, final T target) {
+        return output.append(getText(target));
+    }
+
+    /**
+     * Writes the text formatted for the given target into the provided output.
      *
      * @param output text output
      * @param target object according to which the text models gets formatted
@@ -47,7 +69,7 @@ public interface TextModel<T> {
     }
 
     /**
-     * Writes the text formatted for the gicen target into the provided output.
+     * Writes the text formatted for the given target into the provided output.
      *
      * @param output text output
      * @param target object according to which the text models gets formatted
@@ -58,7 +80,7 @@ public interface TextModel<T> {
     }
 
     /**
-     * Writes the text formatted for the gicen target into the provided output.
+     * Writes the text formatted for the given target into the provided output.
      *
      * @param output text output
      * @param target object according to which the text models gets formatted
@@ -144,6 +166,16 @@ public interface TextModel<T> {
         }
 
         @Override
+        public @NotNull StringBuilder write(final @NonNull StringBuilder output, final Object target) {
+            return output;
+        }
+
+        @Override
+        public @NotNull StringBuffer write(final @NonNull StringBuffer output, final Object target) {
+            return output;
+        }
+
+        @Override
         public void write(final @NonNull DataOutputStream output, final Object target) {}
 
         @Override
@@ -215,6 +247,16 @@ public interface TextModel<T> {
         @Contract(pure = true)
         public @NotNull String getText(final @Nullable T target) {
             return text;
+        }
+
+        @Override
+        public @NotNull StringBuilder write(final @NonNull StringBuilder output, final Object target) {
+            return output.append(text);
+        }
+
+        @Override
+        public @NotNull StringBuffer write(final @NonNull StringBuffer output, final Object target) {
+            return output.append(text);
         }
 
         @Override
