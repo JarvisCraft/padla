@@ -17,6 +17,16 @@ import java.util.OptionalLong;
 public class NumberUtil {
 
     /**
+     * Number of bits in an {@code int} except for the sign bit.
+     */
+    public final int INT_NON_SIGN_BITS = Integer.SIZE - 1;
+
+    /**
+     * Number of bits in a {@code long} except for the sign bit.
+     */
+    public final int LONG_NON_SIGN_BITS = Long.SIZE - 1;
+
+    /**
      * Default radix of a number.
      */
     public final int DEFAULT_RADIX = 10;
@@ -395,6 +405,40 @@ public class NumberUtil {
             final @NonNull CharSequence possibleLong
     ) {
         return parseLongResult(possibleLong, DEFAULT_RADIX);
+    }
+
+    // the following is based on: https://stackoverflow.com/a/2633161/6277184
+
+    /**
+     * Sums the {@code int} values using their bounds instead of wrapping on overflow.
+     *
+     * @param left left addend
+     * @param right right addend
+     * @return sum of the addends
+     *
+     * @implNote implementation is based
+     * on <a href="https://stackoverflow.com/a/2633161/6277184">Stackoverflow answer</a>
+     */
+    public int saturatingSum(final int left, final int right) {
+        final int sum;
+        return (Integer.MIN_VALUE ^ (sum = left + right) >> INT_NON_SIGN_BITS ^ sum)
+                & ((left ^ sum) & ~(left ^ right)) >> INT_NON_SIGN_BITS ^ sum;
+    }
+
+    /**
+     * Sums the {@code long} values using their bounds instead of wrapping on overflow.
+     *
+     * @param left left addend
+     * @param right right addend
+     * @return sum of the addends
+     *
+     * @implNote implementation is based
+     * on <a href="https://stackoverflow.com/a/2633161/6277184">Stackoverflow answer</a>
+     */
+    public long saturatingSum(final long left, final long right) {
+        final long sum;
+        return (Long.MIN_VALUE ^ (sum = left + right) >> LONG_NON_SIGN_BITS ^ sum)
+                & ((left ^ sum) & ~(left ^ right)) >> LONG_NON_SIGN_BITS ^ sum;
     }
 
     /**
