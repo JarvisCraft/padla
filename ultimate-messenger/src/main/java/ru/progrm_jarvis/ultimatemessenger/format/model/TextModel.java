@@ -44,7 +44,7 @@ public interface TextModel<T> {
      *
      * @return minimal possible length of the value returned by {@link #getText(Object)} being empty if it is undefined
      */
-    @NotNull default OptionalInt getMinLength() {
+    default @NotNull OptionalInt getMinLength() {
         return OptionalInt.empty();
     }
 
@@ -53,7 +53,7 @@ public interface TextModel<T> {
      *
      * @return maximal possible length of the value returned by {@link #getText(Object)} being empty if it is undefined
      */
-    @NotNull default OptionalInt getMaxLength() {
+    default @NotNull OptionalInt getMaxLength() {
         return OptionalInt.empty();
     }
 
@@ -64,7 +64,7 @@ public interface TextModel<T> {
      * @return singleton of an empty static text model
      */
     @SuppressWarnings("unchecked")
-    @NotNull static <T> TextModel<T> empty() {
+    static <T> @NotNull TextModel<T> empty() {
         return (TextModel<T>) EmptyTextModel.INSTANCE;
     }
 

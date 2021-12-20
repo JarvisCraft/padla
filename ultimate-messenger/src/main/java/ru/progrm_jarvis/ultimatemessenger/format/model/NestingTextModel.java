@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public interface NestingTextModel<T> extends TextModel<T>, List<TextModel<T>> {
 
     @Override
-    @NotNull default String getText(@NotNull T target) {
+    default @NotNull String getText(@NotNull T target) {
         return stream()
                 .map(element -> element.getText(target))
                 .collect(Collectors.joining());
