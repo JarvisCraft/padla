@@ -6,6 +6,7 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
+import ru.progrm_jarvis.javacommons.primitive.NumberUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     protected void endModification(final @NotNull DN dynamicNode) {
         // increment the amount of dynamic elements
         dynamicNodeCount++;
-        minDynamicLength += dynamicNode.getContent().getMinLength();
+        minDynamicLength = NumberUtil.saturatingSum(minDynamicLength, dynamicNode.getContent().getMinLength());
     }
 
     /**

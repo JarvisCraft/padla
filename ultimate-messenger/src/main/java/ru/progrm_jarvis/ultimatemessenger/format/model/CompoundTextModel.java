@@ -73,7 +73,7 @@ public interface CompoundTextModel<T> extends TextModel<T>, List<TextModel<T>> {
         var minLength = 0;
         var maxLength = 0;
         for (val element : elements) {
-            minLength += element.getMinLength();
+            minLength = NumberUtil.saturatingSum(minLength, element.getMinLength());
             maxLength = NumberUtil.saturatingSum(maxLength, element.getMaxLength());
         }
 
@@ -93,7 +93,7 @@ public interface CompoundTextModel<T> extends TextModel<T>, List<TextModel<T>> {
         var maxLength = 0;
         for (val element : elements) {
             copy.add(element);
-            minLength += element.getMinLength();
+            minLength = NumberUtil.saturatingSum(minLength, element.getMinLength());
             maxLength = NumberUtil.saturatingSum(maxLength, element.getMaxLength());
         }
 
