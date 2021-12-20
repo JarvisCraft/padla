@@ -64,8 +64,8 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
         @Override
         public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
             if (!staticText.isEmpty()) {
-                if (lastStaticText == null) elements.add(StaticTextModel.of(lastStaticText = staticText));
-                else elements.set(elements.size() - 1, StaticTextModel.of(lastStaticText += staticText)); // ...
+                if (lastStaticText == null) elements.add(TextModel.of(lastStaticText = staticText));
+                else elements.set(elements.size() - 1, TextModel.of(lastStaticText += staticText)); // ...
                 // ... join nearby static text blocks
 
                 markAsChanged();

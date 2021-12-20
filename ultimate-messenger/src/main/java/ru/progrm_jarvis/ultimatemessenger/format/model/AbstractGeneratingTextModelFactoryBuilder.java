@@ -186,7 +186,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
             val tail = lastNode;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;
-            return StaticTextModel.of(tail.asStatic().getText());
+            return TextModel.of(tail.asStatic().getText());
         }
         if (staticLength == 0 && dynamicNodeCount == 1) { // only 1 dynamic element without static ones
             val tail = lastNode;

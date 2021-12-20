@@ -1,7 +1,7 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,6 +66,17 @@ public interface TextModel<T> {
     @SuppressWarnings("unchecked")
     static <T> @NotNull TextModel<T> empty() {
         return (TextModel<T>) EmptyTextModel.INSTANCE;
+    }
+
+    /**
+     * Creates a text model of the given static text.
+     *
+     * @param text static text of the text model
+     * @param <T> type of object according to which the text model is formatted (effectively unused)
+     * @return text model of the given static text
+     */
+    static @NotNull <T> TextModel<T> of(final @NonNull String text) {
+        return new StaticTextModel<>(text, OptionalInt.of(text.length()));
     }
 
     /**
@@ -138,6 +149,69 @@ public interface TextModel<T> {
         @Contract(pure = true)
         public String toString() {
             return "TextModel{\"\"}";
+        }
+    }
+
+    /**
+     * Text model representing a block of static text.
+     *
+     * @param <T> type of object according to which the text model is formatted (actually, not used)
+     */
+    @Value
+    @FieldDefaults(level = AccessLevel.PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    class StaticTextModel<T> implements TextModel<T> {
+
+        /**
+         * Text of this text model
+         */
+        @NonNull String text;
+        /**
+         * Length of ths text model's {@link #text text} wrapped in {@link OptionalInt}
+         */
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull OptionalInt length;
+
+        @Override
+        @Contract(pure = true)
+        public boolean isDynamic() {
+            return false;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public @NotNull OptionalInt getMinLength() {
+            return length;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public @NotNull OptionalInt getMaxLength() {
+            return length;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public @NotNull String getText(final @Nullable T target) {
+            return text;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public boolean equals(final @Nullable Object object) {
+            if (object == this) return true;
+            if (object instanceof TextModel) {
+                final TextModel<?> textModel;
+                return !(textModel = (TextModel<?>) object).isDynamic() // cheapest check
+                        && textModel.hashCode() == hashCode() // `Object#equals(Object)` contract
+                        && textModel.getText(null).equals(text);
+            }
+            return false;
+        }
+
+        @Override
+        @Contract(pure = true)
+        public int hashCode() {
+            return text.hashCode();
         }
     }
 }
