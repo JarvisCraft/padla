@@ -14,7 +14,6 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class TextModelTest {
@@ -50,19 +49,13 @@ class TextModelTest {
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
     void testMinLength(final @NotNull TextModel<User> textModel, final @NotNull String text) {
-        assertThat(textModel.getMinLength().orElseGet(() -> {
-            fail("Min length is undefined");
-            return 0;
-        }), is(text.length()));
+        assertThat(textModel.getMinLength(), is(text.length()));
     }
 
     @ParameterizedTest
     @MethodSource("provideTestSubjects")
     void testMaxLength(final @NotNull TextModel<User> textModel, final @NotNull String text) {
-        assertThat(textModel.getMaxLength().orElseGet(() -> {
-            fail("Max length is undefined");
-            return 0;
-        }), is(text.length()));
+        assertThat(textModel.getMaxLength(), is(text.length()));
     }
 
     @Value

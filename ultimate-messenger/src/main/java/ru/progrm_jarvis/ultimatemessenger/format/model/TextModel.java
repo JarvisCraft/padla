@@ -5,6 +5,7 @@ import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.util.OptionalInt;
 
@@ -42,19 +43,20 @@ public interface TextModel<T> {
     /**
      * Gets the minimal length of the value returned by {@link #getText(Object)}.
      *
-     * @return minimal possible length of the value returned by {@link #getText(Object)} being empty if it is undefined
+     * @return minimal possible length of the value returned by {@link #getText(Object)}
      */
-    default @NotNull OptionalInt getMinLength() {
-        return OptionalInt.empty();
+    default @Range(from = 0, to = Integer.MAX_VALUE) int getMinLength() {
+        return 0;
     }
 
     /**
      * Gets the maximal length of the value returned by {@link #getText(Object)}.
      *
-     * @return maximal possible length of the value returned by {@link #getText(Object)} being empty if it is undefined
+     * @return maximal possible length of the value returned by {@link #getText(Object)}
+     * or {@link Integer#MAX_VALUE} if it is unknown or may be bigger than {@link Integer#MAX_VALUE}
      */
-    default @NotNull OptionalInt getMaxLength() {
-        return OptionalInt.empty();
+    default @Range(from = 0, to = Integer.MAX_VALUE) int getMaxLength() {
+        return Integer.MAX_VALUE;
     }
 
     /**
@@ -76,7 +78,7 @@ public interface TextModel<T> {
      * @return text model of the given static text
      */
     static @NotNull <T> TextModel<T> of(final @NonNull String text) {
-        return new StaticTextModel<>(text, OptionalInt.of(text.length()));
+        return new StaticTextModel<>(text);
     }
 
     /**
@@ -92,12 +94,6 @@ public interface TextModel<T> {
         private static final int EMPTY_HASHCODE = 0;
 
         /**
-         * {@code 0} wrapped in {@link OptionalInt}
-         */
-        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-        private static final @NotNull OptionalInt OPTIONAL_ZERO = OptionalInt.of(0);
-
-        /**
          * Singleton instance of this text model
          */
         private static final TextModel<?> INSTANCE = new EmptyTextModel();
@@ -110,14 +106,14 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        public @NotNull OptionalInt getMinLength() {
-            return OPTIONAL_ZERO;
+        public @Range(from = 0, to = Integer.MAX_VALUE) int getMinLength() {
+            return 0;
         }
 
         @Override
         @Contract(pure = true)
-        public @NotNull OptionalInt getMaxLength() {
-            return OPTIONAL_ZERO;
+        public @Range(from = 0, to = Integer.MAX_VALUE) int getMaxLength() {
+            return 0;
         }
 
         @Override
@@ -166,10 +162,6 @@ public interface TextModel<T> {
          * Text of this text model
          */
         @NonNull String text;
-        /**
-         * Length of ths text model's {@link #text text} wrapped in {@link OptionalInt}
-         */
-        @SuppressWarnings("OptionalUsedAsFieldOrParameterType") @NonNull OptionalInt length;
 
         @Override
         @Contract(pure = true)
@@ -179,14 +171,14 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
-        public @NotNull OptionalInt getMinLength() {
-            return length;
+        public @Range(from = 0, to = Integer.MAX_VALUE) int getMinLength() {
+            return text.length();
         }
 
         @Override
         @Contract(pure = true)
-        public @NotNull OptionalInt getMaxLength() {
-            return length;
+        public @Range(from = 0, to = Integer.MAX_VALUE) int getMaxLength() {
+            return text.length();
         }
 
         @Override

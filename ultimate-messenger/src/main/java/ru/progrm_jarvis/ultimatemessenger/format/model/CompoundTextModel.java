@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  *
  * @param <T> type of object according to which the text model is formatted
  */
-public interface NestingTextModel<T> extends TextModel<T>, List<TextModel<T>> {
+public interface CompoundTextModel<T> extends TextModel<T>, List<TextModel<T>> {
 
     @Override
     default @NotNull String getText(@NotNull T target) {

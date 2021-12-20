@@ -79,7 +79,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     protected void endModification(final @NotNull DN dynamicNode) {
         // increment the amount of dynamic elements
         dynamicNodeCount++;
-        dynamicNode.getContent().getMinLength().ifPresent(length -> minDynamicLength += length);
+        minDynamicLength += dynamicNode.getContent().getMinLength();
     }
 
     /**
