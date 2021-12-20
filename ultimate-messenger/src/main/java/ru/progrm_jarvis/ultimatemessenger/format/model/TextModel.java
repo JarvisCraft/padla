@@ -1,13 +1,19 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
-import java.util.OptionalInt;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * Parsed model of a dynamic text.
@@ -20,7 +26,7 @@ public interface TextModel<T> {
     /**
      * Gets the text formatted for the given target.
      *
-     * @param target object according to which the text models gets formatted,
+     * @param target object according to which the text models gets formatted
      * if the model is not {@link #isDynamic() dynamic} then it should return the same result for any {@code target}
      * including {@code null}
      * @return text formatted for the given target
@@ -28,6 +34,39 @@ public interface TextModel<T> {
      * @throws NullPointerException if the target is {@code null} but this text model is {@link #isDynamic() dynamic}
      */
     @NotNull String getText(T target);
+
+    /**
+     * Writes the text formatted for the gicen target into the provided output.
+     *
+     * @param output text output
+     * @param target object according to which the text models gets formatted
+     * @throws IOException if it is thrown by the {@code output}
+     */
+    default void write(final @NonNull DataOutputStream output, final T target) throws IOException {
+        output.writeUTF(getText(target));
+    }
+
+    /**
+     * Writes the text formatted for the gicen target into the provided output.
+     *
+     * @param output text output
+     * @param target object according to which the text models gets formatted
+     * @throws IOException if it is thrown by the {@code output}
+     */
+    default void write(final @NonNull Writer output, final T target) throws IOException {
+        output.write(getText(target));
+    }
+
+    /**
+     * Writes the text formatted for the gicen target into the provided output.
+     *
+     * @param output text output
+     * @param target object according to which the text models gets formatted
+     * @throws IOException if it is thrown by the {@code output}
+     */
+    default void write(final @NonNull PrintWriter output, final T target) {
+        output.write(getText(target));
+    }
 
     /**
      * Retrieves whether this text model is dynamic.
@@ -105,6 +144,15 @@ public interface TextModel<T> {
         }
 
         @Override
+        public void write(final @NonNull DataOutputStream output, final Object target) {}
+
+        @Override
+        public void write(final @NonNull Writer output, final Object target) {}
+
+        @Override
+        public void write(final @NonNull PrintWriter output, final Object target) {}
+
+        @Override
         @Contract(pure = true)
         public @Range(from = 0, to = Integer.MAX_VALUE) int getMinLength() {
             return 0;
@@ -165,6 +213,27 @@ public interface TextModel<T> {
 
         @Override
         @Contract(pure = true)
+        public @NotNull String getText(final @Nullable T target) {
+            return text;
+        }
+
+        @Override
+        public void write(final @NonNull DataOutputStream output, final Object target) throws IOException {
+            output.writeUTF(text);
+        }
+
+        @Override
+        public void write(final @NonNull Writer output, final Object target) throws IOException {
+            output.write(text);
+        }
+
+        @Override
+        public void write(final @NonNull PrintWriter output, final Object target) {
+            output.write(text);
+        }
+
+        @Override
+        @Contract(pure = true)
         public boolean isDynamic() {
             return false;
         }
@@ -179,12 +248,6 @@ public interface TextModel<T> {
         @Contract(pure = true)
         public @Range(from = 0, to = Integer.MAX_VALUE) int getMaxLength() {
             return text.length();
-        }
-
-        @Override
-        @Contract(pure = true)
-        public @NotNull String getText(final @Nullable T target) {
-            return text;
         }
 
         @Override
