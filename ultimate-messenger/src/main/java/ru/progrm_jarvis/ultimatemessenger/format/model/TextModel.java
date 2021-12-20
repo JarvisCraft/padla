@@ -84,7 +84,6 @@ public interface TextModel<T> {
      *
      * @param output text output
      * @param target object according to which the text models gets formatted
-     * @throws IOException if it is thrown by the {@code output}
      */
     default void write(final @NonNull PrintWriter output, final T target) {
         output.write(getText(target));
