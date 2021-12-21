@@ -9,6 +9,9 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Object used for runtime class definition.
+ */
 public interface ClassDefiner {
 
     /**Uns

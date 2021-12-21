@@ -1,7 +1,6 @@
 package ru.progrm_jarvis.javacommons.util;
 
 import lombok.experimental.UtilityClass;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,25 +20,8 @@ public class TypeHints {
      * @param <T> generic type whose class object should be resolved
      * @return class object for the given array
      */
-    @SuppressWarnings("unchecked")
-    public <T> @NotNull Class<T> resolve(final @Nullable T... typeHint) {
-        return uncheckedClassCast(typeHint.getClass().getComponentType());
-    }
-
-    /**
-     * Casts the given class object into the specific one.
-     *
-     * @param type raw-typed class object
-     * @param <T> exact wanted type of class object
-     * @return the provided class object with its type case to the specific one
-     *
-     * @apiNote this is effectively no-op
-     */
-    // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
-    @Contract("_ -> param1")
-    @SuppressWarnings("unchecked")
-    private <T> Class<T> uncheckedClassCast(final Class<?> type) {
-        return (Class<T>) type;
+    public <T> @NotNull Class<T> resolve(final @Nullable T @NotNull [] typeHint) {
+        return UncheckedCasts.uncheckedClassCast(typeHint.getClass().getComponentType());
     }
 
     /**

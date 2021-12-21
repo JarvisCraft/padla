@@ -15,6 +15,7 @@ import ru.progrm_jarvis.javacommons.cache.Cache;
 import ru.progrm_jarvis.javacommons.cache.Caches;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
 import ru.progrm_jarvis.javacommons.classloading.GcClassDefiners;
+import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -25,6 +26,9 @@ import java.util.function.Supplier;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 
+/**
+ * Implementation of {@link DelegateFactory delegate factory} which uses runtime class generation via <b>ASM</b>.
+ */
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
 
@@ -66,7 +70,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
      */
     VOID_SUPPLIER_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, SUPPLIER_TYPE);
 
-    private AsmDelegateFactory(final @NotNull Cache<Class<?>, DelegateWrapperFactory<?>> factories) {
+    private AsmDelegateFactory(final @NotNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> factories) {
         super(factories);
     }
 
@@ -248,9 +252,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
         }
         //</editor-fold>
 
-        //noinspection unchecked
-        return (Class<? extends T>) GcClassDefiners.getDefault()
-                .defineClass(LOOKUP, className, clazz.toByteArray());
+        return UncheckedCasts.uncheckedClassCast(GcClassDefiners.getDefault().defineClass(LOOKUP, className, clazz.toByteArray()));
     }
 
     @UtilityClass

@@ -13,7 +13,7 @@ import java.util.function.Supplier;
  * @param <X> the type of the exception thrown by the function
  */
 @FunctionalInterface
-public interface ThrowingRunnable<X extends Throwable> extends Runnable{
+public interface ThrowingRunnable<X extends Throwable> extends Runnable {
 
     /**
      * Runs an action.

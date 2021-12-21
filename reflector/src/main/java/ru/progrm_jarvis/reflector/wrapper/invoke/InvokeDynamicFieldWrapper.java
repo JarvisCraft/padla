@@ -24,19 +24,20 @@ import java.util.function.Function;
  */
 @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = true)
-public class InvokeDynamicFieldWrapper<@NotNull T, V>
+public final class InvokeDynamicFieldWrapper<T, V>
         extends AbstractFieldWrapper<T, V> implements DynamicFieldWrapper<T, V> {
 
     /**
      * Weak cache of allocated instance of this dynamic field wrapper
      */
-    protected static final @NotNull Cache<@NotNull Field, @NotNull DynamicFieldWrapper<?, ?>> CACHE
+    private static final @NotNull Cache<@NotNull Field, @NotNull DynamicFieldWrapper<?, ?>> CACHE
             = Caches.weakValuesCache();
 
     /**
      * Function performing the field get operation
      */
     @NotNull Function<@NotNull T, V> getter;
+
     /**
      * Bi-consumer performing the field set operation
      */
@@ -50,10 +51,10 @@ public class InvokeDynamicFieldWrapper<@NotNull T, V>
      * @param getter function performing the field get operation
      * @param setter bi-consumer performing the field set operation
      */
-    protected InvokeDynamicFieldWrapper(final @NotNull Class<? extends T> containingClass,
-                                        final @NotNull Field wrapped,
-                                        final @NotNull Function<@NotNull T, V> getter,
-                                        final @NotNull BiConsumer<@NotNull T, V> setter) {
+    private InvokeDynamicFieldWrapper(final @NotNull Class<? extends T> containingClass,
+                                      final @NotNull Field wrapped,
+                                      final @NotNull Function<@NotNull T, V> getter,
+                                      final @NotNull BiConsumer<@NotNull T, V> setter) {
         super(containingClass, wrapped);
         this.getter = getter;
         this.setter = setter;
@@ -68,7 +69,7 @@ public class InvokeDynamicFieldWrapper<@NotNull T, V>
      * @return cached dynamic field wrapper for the given constructor
      */
     @SuppressWarnings("unchecked")
-    public static <@NotNull T, V> @NotNull DynamicFieldWrapper<T, V> from(
+    public static <T, V> @NotNull DynamicFieldWrapper<T, V> from(
             final @NonNull Field field
     ) {
         if (Modifier.isStatic(field.getModifiers())) throw new IllegalArgumentException("Field should be non-static");

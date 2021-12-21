@@ -48,18 +48,24 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
      */
     @ToString
     @EqualsAndHashCode(callSuper = true) // simply, why not? :) (this also allows instance caching)
-    @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-    protected static class SimpleTextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
+    @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+    private static final class SimpleTextModelBuilder<T> extends AbstractCachingTextModelFactoryBuilder<T> {
 
+        /**
+         * Elements appended to this builder.
+         */
         @NonNull List<TextModel<T>> elements = new ArrayList<>();
 
+        /**
+         * Last static text or {@code null} if there are no elements or the last element is dynamic
+         */
         @NonFinal transient String lastStaticText;
 
         @Override
         public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
             if (!staticText.isEmpty()) {
-                if (lastStaticText == null) elements.add(StaticTextModel.of(lastStaticText = staticText));
-                else elements.set(elements.size() - 1, StaticTextModel.of(lastStaticText += staticText)); // ...
+                if (lastStaticText == null) elements.add(TextModel.of(lastStaticText = staticText));
+                else elements.set(elements.size() - 1, TextModel.of(lastStaticText += staticText)); // ...
                 // ... join nearby static text blocks
 
                 markAsChanged();
@@ -91,7 +97,7 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
 
         @Override
         protected @NotNull TextModel<T> buildTextModel(final boolean release) {
-            return elements.isEmpty() ? TextModel.empty() : DelegatingNestingTextModel.fromCopyOf(elements);
+            return elements.isEmpty() ? TextModel.empty() : CompoundTextModel.fromCopyOf(elements);
         }
     }
 }

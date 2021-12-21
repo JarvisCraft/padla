@@ -17,9 +17,19 @@ import java.util.OptionalLong;
 public class NumberUtil {
 
     /**
+     * Number of bits in an {@code int} except for the sign bit.
+     */
+    public final int INT_NON_SIGN_BITS = Integer.SIZE - 1;
+
+    /**
+     * Number of bits in a {@code long} except for the sign bit.
+     */
+    public final int LONG_NON_SIGN_BITS = Long.SIZE - 1;
+
+    /**
      * Default radix of a number.
      */
-    public static final int DEFAULT_RADIX = 10;
+    public final int DEFAULT_RADIX = 10;
 
     /**
      * <p>Parses an {@code int} number.</p>
@@ -28,16 +38,13 @@ public class NumberUtil {
      *
      * @param possibleInteger string which is expected to contain an {@code int} number but may not
      * @param radix radix of the possible number
-     * @return optional containing the parsed number or an empty one if it could not be parsed
      *
+     * @return optional containing the parsed number or an empty one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull OptionalInt parseInt(final @NonNull CharSequence possibleInteger, final int radix) {
-        // check radix bounds
-        if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) throw new IllegalArgumentException(
-                "Radix " + radix + " is out of bounds [" + Character.MIN_RADIX + "; " + Character.MAX_RADIX + "]"
-        );
+        checkRadix(radix);
 
         // check string length
         final int length;
@@ -107,10 +114,10 @@ public class NumberUtil {
      * but it returns {@link OptionalInt} to handle invalid input instead of throwing {@link NumberFormatException}.
      *
      * @param possibleInteger string which is expected to contain an {@code int} number but may not
-     * @return optional containing the parsed number or an empty one if it could not be parsed
      *
+     * @return optional containing the parsed number or an empty one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull OptionalInt parseInt(final @NonNull CharSequence possibleInteger) {
         return parseInt(possibleInteger, 10);
@@ -123,18 +130,15 @@ public class NumberUtil {
      *
      * @param possibleInteger string which is expected to contain an {@code int} number but may not
      * @param radix radix of the possible number
-     * @return result containing the parsed number or an error one if it could not be parsed
      *
+     * @return result containing the parsed number or an error one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull Result<@NotNull Integer, @NotNull IntegerParseError> parseIntResult(
             final @NonNull CharSequence possibleInteger, final int radix
     ) {
-        // check radix bounds
-        if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) throw new IllegalArgumentException(
-                "Radix " + radix + " is out of bounds [" + Character.MIN_RADIX + "; " + Character.MAX_RADIX + "]"
-        );
+        checkRadix(radix);
 
         final int length;
 
@@ -204,13 +208,14 @@ public class NumberUtil {
      * but it returns {@link Result} to handle invalid input instead of throwing {@link NumberFormatException}.
      *
      * @param possibleInteger string which is expected to contain an {@code int} number but may not
-     * @return result containing the parsed number or an error one if it could not be parsed
      *
+     * @return result containing the parsed number or an error one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull Result<@NotNull Integer, @NotNull IntegerParseError> parseIntResult(
-            final @NonNull CharSequence possibleInteger) {
+            final @NonNull CharSequence possibleInteger
+    ) {
         return parseIntResult(possibleInteger, DEFAULT_RADIX);
     }
 
@@ -221,16 +226,13 @@ public class NumberUtil {
      *
      * @param possibleLong string which is expected to contain a {@code long} number but may not
      * @param radix radix of the possible number
-     * @return optional containing the parsed number or an empty one if it could not be parsed
      *
+     * @return optional containing the parsed number or an empty one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull OptionalLong parseLong(final @NonNull CharSequence possibleLong, final int radix) {
-        // check radix bounds
-        if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) throw new IllegalArgumentException(
-                "Radix " + radix + " is out of bounds [" + Character.MIN_RADIX + "; " + Character.MAX_RADIX + "]"
-        );
+        checkRadix(radix);
 
         // check string length
         final int length;
@@ -300,10 +302,10 @@ public class NumberUtil {
      * but it returns {@link OptionalLong} to handle invalid input instead of throwing {@link NumberFormatException}.
      *
      * @param possibleLong string which is expected to contain a {@code long} number but may not
-     * @return optional containing the parsed number or an empty one if it could not be parsed
      *
+     * @return optional containing the parsed number or an empty one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull OptionalLong parseLong(final @NonNull CharSequence possibleLong) {
         return parseLong(possibleLong, DEFAULT_RADIX);
@@ -316,18 +318,15 @@ public class NumberUtil {
      *
      * @param possibleLong string which is expected to contain a {@code long} number but may not
      * @param radix radix of the possible number
-     * @return result containing the parsed number or an error one if it could not be parsed
      *
+     * @return result containing the parsed number or an error one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull Result<@NotNull Long, @NotNull IntegerParseError> parseLongResult(
             final @NonNull CharSequence possibleLong, final int radix
     ) {
-        // check radix bounds
-        if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) throw new IllegalArgumentException(
-                "Radix " + radix + " is out of bounds [" + Character.MIN_RADIX + "; " + Character.MAX_RADIX + "]"
-        );
+        checkRadix(radix);
 
         // check string length
         final int length;
@@ -397,14 +396,61 @@ public class NumberUtil {
      * but it returns {@link Result} to handle invalid input instead of throwing {@link NumberFormatException}.
      *
      * @param possibleLong string which is expected to contain a {@code long} number but may not
-     * @return result containing the parsed number or an error one if it could not be parsed
      *
+     * @return result containing the parsed number or an error one if it could not be parsed
      * @throws IllegalArgumentException if the radix
-     * is out of bound <i>[{@value Character#MIN_RADIX}; {@value Character#MAX_RADIX}]</i>.
+     * is out of bound <i>[{@link Character#MIN_RADIX}; {@link Character#MAX_RADIX}]</i>.
      */
     public @NotNull Result<@NotNull Long, @NotNull IntegerParseError> parseLongResult(
             final @NonNull CharSequence possibleLong
     ) {
         return parseLongResult(possibleLong, DEFAULT_RADIX);
+    }
+
+    // the following is based on: https://stackoverflow.com/a/2633161/6277184
+
+    /**
+     * Sums the {@code int} values using their bounds instead of wrapping on overflow.
+     *
+     * @param left left addend
+     * @param right right addend
+     * @return sum of the addends
+     *
+     * @implNote implementation is based
+     * on <a href="https://stackoverflow.com/a/2633161/6277184">Stackoverflow answer</a>
+     */
+    public int saturatingSum(final int left, final int right) {
+        final int sum;
+        return (Integer.MIN_VALUE ^ (sum = left + right) >> INT_NON_SIGN_BITS ^ sum)
+                & ((left ^ sum) & ~(left ^ right)) >> INT_NON_SIGN_BITS ^ sum;
+    }
+
+    /**
+     * Sums the {@code long} values using their bounds instead of wrapping on overflow.
+     *
+     * @param left left addend
+     * @param right right addend
+     * @return sum of the addends
+     *
+     * @implNote implementation is based
+     * on <a href="https://stackoverflow.com/a/2633161/6277184">Stackoverflow answer</a>
+     */
+    public long saturatingSum(final long left, final long right) {
+        final long sum;
+        return (Long.MIN_VALUE ^ (sum = left + right) >> LONG_NON_SIGN_BITS ^ sum)
+                & ((left ^ sum) & ~(left ^ right)) >> LONG_NON_SIGN_BITS ^ sum;
+    }
+
+    /**
+     * Checks that the radix is between {@link Character#MIN_RADIX} and {@link Character#MAX_RADIX}.
+     *
+     * @param radix checked radix
+     *
+     * @throws IllegalArgumentException if {@code radix} is not between the bounds
+     */
+    private void checkRadix(final int radix) {
+        if (radix < Character.MIN_RADIX || radix > Character.MAX_RADIX) throw new IllegalArgumentException(
+                "Radix " + radix + " is out of bounds [" + Character.MIN_RADIX + "; " + Character.MAX_RADIX + "]"
+        );
     }
 }

@@ -18,7 +18,7 @@ public abstract class CachingGeneratingDelegateFactory implements DelegateFactor
     /**
      * Cache of {@link DelegateWrapperFactory delegate-wrapper factories} by wrapped types
      */
-    protected final @NonNull Cache<Class<?>, DelegateWrapperFactory<?>> factories;
+    protected final @NonNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> factories;
 
     /**
      * Creates a {@link DelegateWrapperFactory delegate-wrapper factory} fot the given type.

@@ -17,6 +17,7 @@ import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 import ru.progrm_jarvis.javacommons.object.valuestorage.SimpleValueStorage;
 import ru.progrm_jarvis.javacommons.object.valuestorage.ValueStorage;
+import ru.progrm_jarvis.javacommons.util.UncheckedCasts;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -31,7 +32,8 @@ import static org.objectweb.asm.Type.*;
 import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
 
 /**
- * Implementation of {@link TextModelFactory text model factory} which uses runtime class generation.
+ * Implementation of {@link TextModelFactory text model factory}
+ *  * which uses runtime class generation via <b>ASM</b>.
  *
  * @param <T> type of object according to which the created text models are formatted
  * @param <C> type of configuration used by this text model factory
@@ -550,7 +552,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
 
             final MethodHandle constructor;
             {
-                final Class<? extends TextModel<T>> definedClass = uncheckedClassCast(
+                final Class<? extends TextModel<T>> definedClass = UncheckedCasts.uncheckedClassCast(
                         GcClassDefiners.getDefault()
                                 .defineClass(LOOKUP, className, clazz.toByteArray())
                 );
@@ -572,22 +574,6 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
                         "Generated class " + className + " cannot be instantiated", x
                 );
             }
-        }
-
-        /**
-         * Casts the given class object into the specific one.
-         *
-         * @param type raw-typed class object
-         * @param <T> exact wanted type of class object
-         * @return the provided class object with its type cast to the specific one
-         *
-         * @apiNote this is effectively no-op
-         */
-        // note: no nullability annotations are present on parameter and return type as cast of `null` is also safe
-        @Contract("_ -> param1")
-        @SuppressWarnings("unchecked")
-        private static <T> Class<T> uncheckedClassCast(final Class<?> type) {
-            return (Class<T>) type;
         }
 
         /**

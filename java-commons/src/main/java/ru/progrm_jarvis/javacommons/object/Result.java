@@ -1,13 +1,13 @@
 package ru.progrm_jarvis.javacommons.object;
 
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.Value;
+import lombok.*;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.annotation.Any;
+import ru.progrm_jarvis.javacommons.util.SneakyThrower;
+import ru.progrm_jarvis.javacommons.util.TypeHints;
+import ru.progrm_jarvis.javacommons.util.TypeHints.TypeHint;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingRunnable;
 import ru.progrm_jarvis.javacommons.util.function.ThrowingSupplier;
 
@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -142,10 +143,58 @@ public interface Result<T, E> extends Supplier<T> {
      * Creates a result by running the specified runnable.
      *
      * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @param throwableType class instance representing the type of the thrown exception
+     * @param <X> type of the thrown throwable
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SuppressWarnings("unchecked")
+    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRun(
+            final @NonNull ThrowingRunnable<? extends X> runnable,
+            final @NonNull Class<? super X> throwableType
+    ) {
+        //noinspection OverlyBroadCatchBlock: cannot catch generic exception type
+        try {
+            runnable.runChecked();
+        } catch (final Throwable x) {
+            if (throwableType.isInstance(x)) return error((X) x);
+
+            return SneakyThrower.sneakyThrow(x);
+        }
+
+        return nullSuccess();
+    }
+
+    /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
+     * @param throwableTypeHint array used for throwable type discovery
+     * @param <X> type of the thrown throwable
+     * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    static <X extends Throwable> @NotNull Result<@Nullable Void, @NotNull X> tryRun(
+            final @NonNull ThrowingRunnable<? extends X> runnable,
+            @TypeHint final @Nullable X @NonNull ... throwableTypeHint
+    ) {
+        return tryRun(runnable, TypeHints.resolve(throwableTypeHint));
+    }
+
+    /**
+     * Creates a result by running the specified runnable.
+     *
+     * @param runnable function whose failure indicates the {@link #error(Object) error result}
      * @return {@link #nullSuccess() successful void-result} if the runnable runs unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
      */
-    static @NotNull Result<@Nullable Void, ? extends @NotNull Throwable> tryRun(
+    static @NotNull Result<@Nullable Void, ? extends @NotNull Throwable> tryRunCatchAny(
             final @NonNull ThrowingRunnable<? extends Throwable> runnable
     ) {
         try {
@@ -161,16 +210,69 @@ public interface Result<T, E> extends Supplier<T> {
      * Creates a result by getting the value of the specified supplier.
      *
      * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @param throwableType class instance representing the type of the thrown exception
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
+     * @param <X> type of the thrown throwable
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
+     */
+    @SuppressWarnings("unchecked")
+    static <T, X extends Throwable> Result<T, @NotNull X> tryGet(
+            final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
+            final @NonNull Class<? super X> throwableType
+    ) {
+        final T value;
+        //noinspection OverlyBroadCatchBlock: cannot catch generic exception type
+        try {
+            value = supplier.getChecked();
+        } catch (final Throwable x) {
+            if (throwableType.isInstance(x)) return error((X) x);
+
+            return SneakyThrower.sneakyThrow(x);
+        }
+
+        return success(value);
+    }
+
+    /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @param throwableTypeHint array used for throwable type discovery
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
+     * @param <X> type of the thrown throwable
      * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable} otherwise
+     * if {@link Class#isInstance(Object) it is of} the expected type
+     * @apiNote if an unexpected exception is thrown then it will be rethrown
      */
-    static <T> Result<T, @NotNull Exception> tryGet(
-            final @NonNull ThrowingSupplier<? extends T, ? extends Throwable> supplier
+    @SafeVarargs
+    @SuppressWarnings("varargs")
+    static <T, X extends Throwable> Result<T, @NotNull X> tryGet(
+            final @NonNull ThrowingSupplier<? extends T, ? extends X> supplier,
+            @TypeHint final @Nullable X @NonNull ... throwableTypeHint
+    ) {
+        return tryGet(supplier, TypeHints.resolve(throwableTypeHint));
+    }
+
+    /**
+     * Creates a result by getting the value of the specified supplier.
+     *
+     * @param <T> type of the successful result value
+     * @param supplier provider of the result whose failure indicates the {@link #error(Object) error result}
+     * @return {@link #success(Object) successful result} if the supplier provides the value unexceptionally
+     * or an {@link #error(Object) error result} containing the thrown {@link Throwable throwable}
+     */
+    static <T> Result<T, @NotNull Throwable> tryGetCatchAny(
+            final @NonNull ThrowingSupplier<? extends T, Throwable> supplier
     ) {
         final T value;
         try {
-            value = supplier.get();
-        } catch (final Exception x) {
+            value = supplier.getChecked();
+        } catch (final Throwable x) {
             return error(x);
         }
 
@@ -181,7 +283,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Creates a result by calling the specified callable.
      *
      * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
-     * @param <T> type of the result provided by the given callable
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
      * @return {@link #success(Object) successful result} if the callable completes unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      */
@@ -200,7 +302,7 @@ public interface Result<T, E> extends Supplier<T> {
      * Creates a result by calling the specified callable.
      *
      * @param callable provider of the result whose failure indicates the {@link #error(Object) error result}
-     * @param <T> type of the result provided by the given callable
+     * @param <T> type of the {@link #success(Object) successful result} provided by the given supplier
      * @return {@link #success(Object) successful result} if the callable completes unexceptionally
      * or an {@link #error(Object) error result} containing the thrown {@link Exception exception} otherwise
      * @deprecated in favor of {@link #tryCall(Callable)}
@@ -570,6 +672,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
+    @Getter(AccessLevel.NONE)
     class Success<T, @Any E> implements Result<T, E> {
 
         /**
@@ -768,6 +871,7 @@ public interface Result<T, E> extends Supplier<T> {
      * @param <E> type of error result
      */
     @Value
+    @Getter(AccessLevel.NONE)
     class Error<@Any T, E> implements Result<T, E> {
 
         /**
@@ -988,6 +1092,12 @@ public interface Result<T, E> extends Supplier<T> {
     @NoArgsConstructor
     @SuppressWarnings("PublicConstructor")
     class NotSuccessException extends RuntimeException {
+
+        /**
+         * Version ID of this {@link java.io.Serializable} class
+         */
+        private static final long serialVersionUID = 2021_11_17__0L;
+
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
         /**
@@ -1042,6 +1152,12 @@ public interface Result<T, E> extends Supplier<T> {
     @NoArgsConstructor
     @SuppressWarnings("PublicConstructor")
     class NotErrorException extends RuntimeException {
+
+        /**
+         * Version ID of this {@link java.io.Serializable} class
+         */
+        private static final long serialVersionUID = 2021_11_17__0L;
+
         //<editor-fold desc="Inheriting constructors" defaultstate="collapsed">
 
         /**
@@ -1129,7 +1245,7 @@ public interface Result<T, E> extends Supplier<T> {
          * of the ability to specify {@code super}-bounds on generic parameters relative to the other ones
          */
         @SuppressWarnings("unchecked") // Results are immutable so they are always safe to upcast
-        public <T, E> Result<T, E> upcast(final @NotNull Result<? extends T, ? extends E> result) {
+        public <@Any T, @Any E> Result<T, E> upcast(final @NotNull Result<? extends T, ? extends E> result) {
             return (Result<T, E>) result;
         }
 
@@ -1141,7 +1257,97 @@ public interface Result<T, E> extends Supplier<T> {
          * @return either the success or the error value
          */
         public <T> T any(final @NotNull Result<? extends T, ? extends T> result) {
-            return Extensions.<T, T>upcast(result).orComputeDefault(Function.identity());
+            return Extensions
+                    .<T, T>upcast(result)
+                    .orComputeDefault(Function.identity());
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrap() successful value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to apply the mapping to the {@link #unwrap() successful value}
+         * @param mappingFunction function used to map the {@link #unwrap() successful value}
+         * if it matches the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting successful value, super-type of {@code <T>}
+         * @return the result whose {@link #unwrap() successful value} is mapped if it matches the predicate
+         */
+        public <T extends R, E, R> @NotNull Result<R, E> mapIf(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super T> predicate,
+                final @NonNull Function<? super T, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .map(value -> predicate.test(value) ? mappingFunction.apply(value) : value);
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrap() successful value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to not apply the mapping to the {@link #unwrap() successful value}
+         * @param mappingFunction function used to map the {@link #unwrap() successful value}
+         * if it does not match the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting successful value, super-type of {@code <T>}
+         * @return the result whose {@link #unwrap() successful value} is mapped if it does not match the predicate
+         */
+        public <T extends R, E, R> @NotNull Result<R, E> mapIfNot(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super T> predicate,
+                final @NonNull Function<? super T, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .map(value -> predicate.test(value) ? value : mappingFunction.apply(value));
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrapError() error value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to apply the mapping to the {@link #unwrapError() error value}
+         * @param mappingFunction function used to map the {@link #unwrapError() error value}
+         * if it matches the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting error value, super-type of {@code <E>}
+         * @return the result whose {@link #unwrapError() error value} is mapped if it matches the predicate
+         */
+        public <T, E extends R, R> @NotNull Result<T, R> mapErrorIf(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super E> predicate,
+                final @NonNull Function<? super E, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .mapError(error -> predicate.test(error) ? mappingFunction.apply(error) : error);
+        }
+
+        /**
+         * Conditionally maps the {@link #unwrapError() error value} otherwise applying no changes.
+         *
+         * @param result given result
+         * @param predicate condition on which to not apply the mapping to the {@link #unwrapError() error value}
+         * @param mappingFunction function used to map the {@link #unwrapError() error value}
+         * if it does not match the predicate
+         * @param <T> type of the successful result value
+         * @param <E> type of the error result value
+         * @param <R> type of the resulting error value, super-type of {@code <E>}
+         * @return the result whose {@link #unwrapError() error value} is mapped if it does not match the predicate
+         */
+        public <T, E extends R, R> @NotNull Result<T, R> mapErrorIfNot(
+                final @NonNull Result<? extends T, ? extends E> result,
+                final @NonNull Predicate<? super E> predicate,
+                final @NonNull Function<? super E, ? extends R> mappingFunction
+        ) {
+            return Extensions
+                    .<T, E>upcast(result)
+                    .mapError(error -> predicate.test(error) ? error : mappingFunction.apply(error));
         }
     }
 }

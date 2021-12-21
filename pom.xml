@@ -5,12 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0.0-rc.7</version>
+    <version>1.0.0-rc.8</version>
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
         <module>ultimate-messenger</module>
-        <module>tools</module>
         <module>padla-bom</module>
     </modules>
     <packaging>pom</packaging>
@@ -19,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version.minimal>8</java.version.minimal>
         <!-- Duplicated dependency versions -->
-        <version.mockito>4.0.0</version.mockito>
+        <version.mockito>4.2.0</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
@@ -81,6 +80,18 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.1</version>
+                    <configuration>
+                        <fork>true</fork>
+                        <release>${java.version.minimal}</release>
+                        <showWarnings>true</showWarnings>
+                        <showDeprecation>true</showDeprecation>
+                        <compilerArgs>
+                            <!-- Enable all lints except for:
+                            - `processing`: gets triggered by documenting annotations
+                            -->
+                            <compilerArg>-Xlint:all,-processing</compilerArg>
+                        </compilerArgs>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>java-11</id>
@@ -89,10 +100,10 @@
                             </goals>
                             <configuration>
                                 <release>11</release>
+                                <multiReleaseOutput>true</multiReleaseOutput>
                                 <compileSourceRoots>
                                     <compileSourceRoot>${project.basedir}/src/main/java11</compileSourceRoot>
                                 </compileSourceRoots>
-                                <multiReleaseOutput>true</multiReleaseOutput>
                             </configuration>
                         </execution>
                         <execution>
@@ -102,16 +113,13 @@
                             </goals>
                             <configuration>
                                 <release>17</release>
+                                <multiReleaseOutput>true</multiReleaseOutput>
                                 <compileSourceRoots>
                                     <compileSourceRoot>${project.basedir}/src/main/java17</compileSourceRoot>
                                 </compileSourceRoots>
-                                <multiReleaseOutput>true</multiReleaseOutput>
                             </configuration>
                         </execution>
                     </executions>
-                    <configuration>
-                        <release>${java.version.minimal}</release>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -125,7 +133,13 @@
                         </archive>
                     </configuration>
                 </plugin>
+
                 <!-- Code-generation -->
+                <plugin>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok-maven-plugin</artifactId>
+                    <version>1.18.20.0</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.drill.tools</groupId>
                     <artifactId>drill-fmpp-maven-plugin</artifactId>
@@ -239,7 +253,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.8.1</version>
+                <version>5.8.2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -249,7 +263,7 @@
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.9.2</version>
+                <version>2.9.3</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
@@ -282,7 +296,7 @@
             <dependency>
                 <groupId>org.jetbrains</groupId>
                 <artifactId>annotations</artifactId>
-                <version>22.0.0</version>
+                <version>23.0.0</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
@@ -327,6 +341,36 @@
                         </executions>
                     </plugin>
                     <plugin>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-delomboked-javadoc-sources</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>delombok</goal>
+                                </goals>
+                                <configuration>
+                                    <addOutputDirectory>false</addOutputDirectory>
+                                    <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                                    <outputDirectory>${project.build.directory}/javadoc-sources</outputDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-delomboked-javadoc-sources-for-generated-sources</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>delombok</goal>
+                                </goals>
+                                <configuration>
+                                    <addOutputDirectory>false</addOutputDirectory>
+                                    <sourceDirectory>${project.build.directory}/generated-sources</sourceDirectory>
+                                    <outputDirectory>${project.build.directory}/javadoc-sources</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
@@ -335,6 +379,9 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <sourcepath>${project.build.directory}/javadoc-sources</sourcepath>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
