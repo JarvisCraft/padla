@@ -6,6 +6,7 @@ import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
+import ru.progrm_jarvis.javacommons.primitive.NumberUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +80,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
     protected void endModification(final @NotNull DN dynamicNode) {
         // increment the amount of dynamic elements
         dynamicNodeCount++;
-        dynamicNode.getContent().getMinLength().ifPresent(length -> minDynamicLength += length);
+        minDynamicLength = NumberUtil.saturatingSum(minDynamicLength, dynamicNode.getContent().getMinLength());
     }
 
     /**
@@ -186,7 +187,7 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
             val tail = lastNode;
             // this should never happen actually, but it might be an error marker for broken implementations
             assert tail != null;
-            return StaticTextModel.of(tail.asStatic().getText());
+            return TextModel.of(tail.asStatic().getText());
         }
         if (staticLength == 0 && dynamicNodeCount == 1) { // only 1 dynamic element without static ones
             val tail = lastNode;

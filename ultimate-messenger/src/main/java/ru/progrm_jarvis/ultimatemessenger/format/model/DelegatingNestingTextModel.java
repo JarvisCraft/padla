@@ -1,51 +1,48 @@
 package ru.progrm_jarvis.ultimatemessenger.format.model;
 
-import lombok.AccessLevel;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Delegate;
-import lombok.experimental.FieldDefaults;
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
+import ru.progrm_jarvis.javacommons.ownership.annotation.Own;
+import ru.progrm_jarvis.javacommons.ownership.annotation.Ref;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@link NestingTextModel} which delegates its {@link List list} methods to the inner {@link List}.
+ * Legacy factory of static {@link CompoundTextModel compound text models}.
  *
- * @param <T> type of object according to which the text model is formatted
+ * @deprecated use {@link CompoundTextModel#from(List)} and {@link CompoundTextModel#fromCopyOf(List)} instead,
+ * this one will most probably be removed before release <b>1.0.0</b>
  */
-@Data
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED) // allow extension
-@FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
-public class DelegatingNestingTextModel<T> implements NestingTextModel<T> {
+@Deprecated
+@UtilityClass
+public class DelegatingNestingTextModel {
 
     /**
-     * Content of this {@link NestingTextModel nesting text model}
-     */
-    @Delegate @NonNull List<TextModel<T>> elements;
-
-    /**
-     * Creates a new delegating {@link NestingTextModel} using the given collection fot its backend.
+     * Creates a new unmodifiable compound text model using the given collection for its backend.
      *
-     * @param elements elements to use as this {@link NestingTextModel nesting text model's} content
+     * @param elements elements to use as this compound text model's content
      * @param <T> type of object according to which the text model is formatted
      * @return created delegating nesting text model
+     * 
+     * @deprecated use {@link CompoundTextModel#from(List)} instead
      */
-    public static <T> @NotNull NestingTextModel<T> from(final @NonNull List<TextModel<T>> elements) {
-        return new DelegatingNestingTextModel<>(elements);
+    @Deprecated
+    public <T> @NotNull CompoundTextModel<T> from(final @NonNull @Own List<TextModel<T>> elements) {
+        return CompoundTextModel.from(elements);
     }
 
     /**
-     * Creates a new delegating {@link NestingTextModel} using the copy of the given collection fot its backend.
+     * Creates a new unmodifiable compound text model using the copy of the given collection's copy for its backend.
      *
-     * @param elements elements copied to the new collection which will be used
-     * as this {@link NestingTextModel nesting text model's} content
+     * @param elements elements copied to the new collection which will be used as this text model's content
      * @param <T> type of object according to which the text model is formatted
      * @return created delegating nesting text model
+     *
+     * @deprecated use {@link CompoundTextModel#fromCopyOf(List)} instead
      */
-    public static <T> @NotNull NestingTextModel<T> fromCopyOf(final @NonNull List<TextModel<T>> elements) {
-        return new DelegatingNestingTextModel<>(new ArrayList<>(elements));
+    @Deprecated
+    public <T> @NotNull CompoundTextModel<T> fromCopyOf(final @NonNull @Ref List<TextModel<T>> elements) {
+        return CompoundTextModel.fromCopyOf(elements);
     }
 }
