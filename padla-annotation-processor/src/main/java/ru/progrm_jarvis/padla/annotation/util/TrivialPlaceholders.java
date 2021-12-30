@@ -2,6 +2,7 @@ package ru.progrm_jarvis.padla.annotation.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import lombok.var;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
