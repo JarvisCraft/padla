@@ -41,6 +41,7 @@
             <groupId>ru.progrm-jarvis</groupId>
             <artifactId>padla-annotation-processor</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

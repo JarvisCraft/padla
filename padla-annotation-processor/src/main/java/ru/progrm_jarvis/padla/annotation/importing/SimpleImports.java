@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jetbrains.annotations.UnmodifiableView;
 import ru.progrm_jarvis.padla.annotation.util.ClassNames;
 import ru.progrm_jarvis.padla.annotation.util.JavaSourceParts;
+import ru.progrm_jarvis.padla.annotation.util.PackageAndName;
 
 import java.util.*;
 
@@ -53,19 +54,6 @@ public final class SimpleImports implements Imports {
      *
      * @param packageName package name of the class for which the imports are computed
      * @param simpleName simple name of the class for which the imports are computed
-     *
-     * @return imports for the provided class
-     */
-    public static @NotNull Imports create(final @NonNull String packageName,
-                                          final @NotNull String simpleName) {
-        return create(packageName, simpleName, new TreeSet<>());
-    }
-
-    /**
-     * Creates simple {@link Imports} for the provided class.
-     *
-     * @param packageName package name of the class for which the imports are computed
-     * @param simpleName simple name of the class for which the imports are computed
      * @param comparator comparator used to order imports
      *
      * @return imports for the provided class
@@ -81,13 +69,64 @@ public final class SimpleImports implements Imports {
      *
      * @param packageName package name of the class for which the imports are computed
      * @param simpleName simple name of the class for which the imports are computed
+     *
+     * @return imports for the provided class
+     */
+    public static @NotNull Imports create(final @NonNull String packageName,
+                                          final @NotNull String simpleName) {
+        return create(packageName, simpleName, new TreeSet<>());
+    }
+
+    /**
+     * Creates simple {@link Imports} for the provided class.
+     *
+     * @param fullName full name of the class for which the imports are computed
+     * @param comparator comparator used to order imports
+     *
+     * @return imports for the provided class
+     * @throws IllegalArgumentException if {@code fullName}
+     */
+    public static @NotNull Imports create(final @NonNull String fullName,
+                                          final @NotNull Comparator<? super String> comparator) {
+        final PackageAndName packageAndName;
+
+        return create(
+                (packageAndName = ClassNames.parsePackageAndName(fullName)).packageName(),
+                packageAndName.simpleName(),
+                new TreeSet<>(comparator)
+        );
+    }
+
+    /**
+     * Creates simple {@link Imports} for the provided class.
+     *
+     * @param fullName full name of the class for which the imports are computed
+     *
+     * @return imports for the provided class
+     * @throws IllegalArgumentException if {@code fullName}
+     */
+    public static @NotNull Imports create(final @NonNull String fullName) {
+        final PackageAndName packageAndName;
+
+        return create(
+                (packageAndName = ClassNames.parsePackageAndName(fullName)).packageName(),
+                packageAndName.simpleName(),
+                new TreeSet<>()
+        );
+    }
+
+    /**
+     * Creates simple {@link Imports} for the provided class.
+     *
+     * @param packageName package name of the class for which the imports are computed
+     * @param simpleName simple name of the class for which the imports are computed
      * @param fullNames set to be used for storing full names
      *
      * @return imports for the provided class
      */
     private static @NotNull Imports create(final @NonNull String packageName,
                                            final @NotNull String simpleName,
-                                           final @NotNull Set<String> fullNames){
+                                           final @NotNull Set<String> fullNames) {
         final Set<String> simpleNames;
         (simpleNames = new HashSet<>()).add(simpleName);
 
