@@ -141,7 +141,7 @@
                             <configuration>
                                 <config>src/main/freemarker/config.fmpp</config>
                                 <templates>src/main/freemarker/templates</templates>
-                                <output>${project.build.directory}/generated-sources</output>
+                                <output>${project.build.directory}/generated-sources/ffmp</output>
                             </configuration>
                         </execution>
                     </executions>
