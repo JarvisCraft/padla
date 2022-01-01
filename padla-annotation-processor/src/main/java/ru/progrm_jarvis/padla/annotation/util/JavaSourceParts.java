@@ -3,8 +3,6 @@ package ru.progrm_jarvis.padla.annotation.util;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-
 /**
  * Commonly used parts of Java source files.
  */
@@ -17,14 +15,15 @@ public class JavaSourceParts {
     public final @NotNull String END_OF_EXPRESSION = '}' + LINE_SEPARATOR;
 
     @UtilityClass
-    public class PackageName {
+    public class PackageNames {
         public final @NotNull String JAVA_LANG = "java.lang";
         public final @NotNull String JAVA_UTIL = "java.util";
         public final @NotNull String JAVA_UTIL_STREAM = "java.util.stream";
+        public final @NotNull String JAVAX_ANNOTATION_PROCESSING  = "javax.annotation.processing";
     }
 
     @UtilityClass
-    public class Name {
+    public class Names {
         public final @NotNull String ASSERTION_ERROR = "AssertionError";
 
         public final @NotNull String LIST = "List";
@@ -33,33 +32,6 @@ public class JavaSourceParts {
         public final @NotNull String COLLECTIONS = "Collections";
         public final @NotNull String ENUM_SET = "EnumSet";
         public final @NotNull String STREAM = "Stream";
-    }
-
-    public @NotNull String importIfPossible(final @NotNull Appendable writer,
-                                            final @NotNull String className,
-                                            final @NotNull CharSequence importedPackageName,
-                                            final @NotNull String importedClassName) throws IOException {
-        if (importedClassName.equals(className)) return importedPackageName + "." + importedClassName;
-
-        writer.append("import ")
-                .append(importedPackageName).append('.').append(importedClassName)
-                .append(END_OF_STATEMENT);
-
-        return importedClassName;
-    }
-
-    public @NotNull String importAnnotationIfPossible(final @NotNull Appendable writer,
-                                                      final @NotNull String className,
-                                                      final @NotNull CharSequence importedPackageName,
-                                                      final @NotNull String importedClassName) throws IOException {
-        if (className.isEmpty()) return "";
-
-        if (importedClassName.equals(className)) return "@" + importedPackageName + '.' + importedClassName + ' ';
-
-        writer.append("import ")
-                .append(importedPackageName).append('.').append(importedClassName)
-                .append(END_OF_STATEMENT);
-
-        return '@' + importedClassName + ' ';
+        public final @NotNull String GENERATED = "Generated";
     }
 }

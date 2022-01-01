@@ -13,7 +13,7 @@ import java.lang.annotation.*;
  * <p>This annotation is only applicable to {@code enum}s.</p>
  */
 @Target(ElementType.TYPE)
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface EnumHelper {
 
     /**
@@ -43,7 +43,7 @@ public @interface EnumHelper {
      * This specifies which members should be generated.
      */
     @Target({})
-    @Retention(RetentionPolicy.SOURCE)
+    @Retention(RetentionPolicy.RUNTIME)
     @interface Generate {
 
         /**
@@ -79,15 +79,8 @@ public @interface EnumHelper {
      * This specifies which annotations should be used for annotating members of the generated class.
      */
     @Target({})
-    @Retention(RetentionPolicy.SOURCE)
+    @Retention(RetentionPolicy.RUNTIME)
     @interface Annotations {
-
-        /**
-         * Annotation to mark nullable values or {@link None}{@code .class} if none.
-         *
-         * @return annotation to mark nullable values or {@link None}{@code .class} if none
-         */
-        Class<? extends Annotation> nullable() default Nullable.class;
 
         /**
          * Annotation to mark not-null values or {@link None}{@code .class} if none.
@@ -95,6 +88,13 @@ public @interface EnumHelper {
          * @return annotation to mark not-null values or {@link None}{@code .class} if none
          */
         Class<? extends Annotation> notNull() default NotNull.class;
+
+        /**
+         * Annotation to mark nullable values or {@link None}{@code .class} if none.
+         *
+         * @return annotation to mark nullable values or {@link None}{@code .class} if none
+         */
+        Class<? extends Annotation> nullable() default Nullable.class;
 
         /**
          * Annotation to mark unmodifiable values or {@link None}{@code .class} if none.
@@ -114,7 +114,7 @@ public @interface EnumHelper {
          * Special annotation which should be used whenever no annotation should be present.
          */
         @Target({})
-        @Retention(RetentionPolicy.SOURCE)
+        @Retention(RetentionPolicy.RUNTIME)
         @interface None {}
     }
 
