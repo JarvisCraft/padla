@@ -83,6 +83,13 @@ public @interface EnumHelper {
         String set() default "set";
 
         /**
+         * Name of the generated map method or {@link #NONE} if none should be generated.
+         *
+         * @return name of the generated map method or {@link #NONE} if none should be generated.
+         */
+        String map() default "map";
+
+        /**
          * Name of the generated stream method or {@link #NONE} if none should be generated.
          *
          * @return name of the generated stream method or {@link #NONE} if none should be generated.

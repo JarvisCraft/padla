@@ -68,14 +68,29 @@ public class JavaSourceParts {
         public final @NotNull String ASSERTION_ERROR = "AssertionError";
 
         /**
-         * Name of {@link AssertionError}
+         * Name of {@link String}
+         */
+        public final @NotNull String STRING = "String";
+
+        /**
+         * Name of {@link java.util.List}
          */
         public final @NotNull String LIST = "List";
 
         /**
-         * Name of {@link AssertionError}
+         * Name of {@link java.util.Set}
          */
         public final @NotNull String SET = "Set";
+
+        /**
+         * Name of {@link java.util.Map}
+         */
+        public final @NotNull String MAP = "Map";
+
+        /**
+         * Name of {@link java.util.HashMap}
+         */
+        public final @NotNull String HASH_MAP = "HashMap";
 
         /**
          * Name of {@link java.util.Arrays}

@@ -14,10 +14,7 @@ import ru.progrm_jarvis.padla.annotation.util.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.*;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import java.io.IOException;
@@ -28,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static ru.progrm_jarvis.padla.annotation.util.JavaSourceParts.*;
 
@@ -164,7 +162,6 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
         // @formatter:off
         for (val annotationElement : annotations) for (val annotatedElement
                 : roundEnvironment.getElementsAnnotatedWith(annotationElement)) {
-
             // @formatter:on
             if (annotatedElement.getKind() != ElementKind.ENUM) {
                 messager.printMessage(
@@ -222,8 +219,6 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
             final @NotNull TypeElement enumElement,
             @SuppressWarnings("UseOfConcreteClass" /* local class */) final @NotNull EnumHelperMirror enumHelper
     ) throws IOException {
-        // flags
-
         final String fullEnumName, fullEnumHelperName, enumHelperPackage, enumHelperName;
         {
             final Map<String, String> placeholders;
@@ -244,23 +239,29 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
             enumHelperName = enumHelperPackageAndName.simpleName();
         }
 
-        final Imports imports;
-
         // do as much as possible before opening a writer
 
-        final boolean anyCollectionMethod;
         val java9OrLater = sourceVersion.compareTo(SourceVersion.RELEASE_8) > 0;
+
+        val constantNames = enumElement.getEnclosedElements().stream()
+                .filter(element -> element.getKind() == ElementKind.ENUM_CONSTANT)
+                .map(element -> element.getSimpleName().toString())
+                .collect(Collectors.toSet());
+
+        final boolean anyCollectionMethod;
+        final Imports imports;
         final String
                 enumName = (imports = SimpleImports.create(fullEnumHelperName)).importClass(fullEnumName),
                 $AssertionError = imports.importClass(PackageNames.JAVA_LANG, Names.ASSERTION_ERROR),
-                setMethod, listMethod, streamMethod,
+                setMethod, listMethod, mapMethod, streamMethod,
                 // imported annotation
                 $NotNull = importAnnotationIf(imports, enumHelper.annotationNotNull(), anyCollectionMethod =
                         (setMethod = enumHelper.setMethod()) != null
                                 | (listMethod = enumHelper.listMethod()) != null
                                 | (streamMethod = enumHelper.streamMethod()) != null
+                                | (mapMethod = enumHelper.mapMethod()) != null
                 ),
-                // $Nullable = importAnnotation(imports, enumName),
+                //$Nullable = importAnnotationIf(imports, enumName, ),
                 $Unmodifiable = importAnnotationIf(imports, enumHelper.annotationUnmodifiable(), anyCollectionMethod),
                 //$UnmodifiableView = importAnnotation(imports, enumHelper.annotationUnmodifiableView())
                 // imported collections
@@ -278,6 +279,17 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
         } else {
             $Set = null;
             $EnumSet = null;
+        }
+
+        final String $String, $Map, $HashMap;
+        if (mapMethod != null) {
+            $String = imports.importClass(PackageNames.JAVA_LANG, Names.STRING);
+            $Map = imports.importClass(PackageNames.JAVA_UTIL, Names.MAP);
+            $HashMap = imports.importClass(PackageNames.JAVA_UTIL, Names.HASH_MAP);
+        } else {
+            $String = null;
+            $Map = null;
+            $HashMap = null;
         }
 
         final String $Generated, $Arrays;
@@ -316,9 +328,11 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
 
             if (setMethod != null) out
                     .append(LINE_SEPARATOR)
+                    // `private static final @NotNull @Unmodifiable Set<${enumName}> AS_SET`
                     .append("    private static final ")
                     .append($NotNull).append($Unmodifiable).append($Set)
                     .append('<').append($NotNull).append(enumName).append("> AS_SET").append(LINE_SEPARATOR)
+                    // `= Collections.unmodifiableSet(EnumSet.allOf(${enumName}));`
                     .append("            = ").append($Collections)
                     .append(".unmodifiableSet(")
                     .append($EnumSet).append(".allOf(").append(enumName)
@@ -340,6 +354,41 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                 ).write(END_OF_STATEMENT);
             }
 
+            if (mapMethod != null) out
+                    .append(LINE_SEPARATOR)
+                    // `private static final @NotNull @Unmodifiable Map<@NotNull String, @NotNull ${enumName} AS_MAP;`
+                    .append("    private static final ")
+                    .append($NotNull).append($Unmodifiable).append($Map).append('<')
+                    .append($NotNull).append($String).append(", ").append($NotNull).append(enumName)
+                    .append("> AS_MAP").write(END_OF_STATEMENT);
+
+            // static initializer
+            if (mapMethod != null) {
+                // TODO: finders
+                out.append(LINE_SEPARATOR)
+                        // `static {
+                        .append("    static ").write(START_OF_EXPRESSION);
+                if (mapMethod != null) {
+                    // final Map<String, ${enumName}> asMap = new HashMap<>(${constantNames.size()});
+                    out.append("        final ").append($Map).append('<')
+                            .append($String).append(", ").append(enumName)
+                            .append("> asMap = new ").append($HashMap).append("<>(")
+                            .append(Integer.toString(constantNames.size()))
+                            .append(')').write(END_OF_STATEMENT);
+
+                    // `asMap.put("${constantName}", ${enumName}.${constantName});`
+                    for (val constantName : constantNames) out
+                            .append("        asMap.put(\"").append(constantName).append("\", ")
+                            .append(enumName).append('.').append(constantName).append(')').write(END_OF_STATEMENT);
+
+                    // `AS_MAP = Collections.unmodifiableMap(asMap);`
+                    out.append("        AS_MAP = ")
+                            .append($Collections).append(".unmodifiableMap(asMap)").write(END_OF_STATEMENT);
+                }
+                // `}`
+                out.append("    ").write(END_OF_EXPRESSION);
+            }
+
             out
                     .append(LINE_SEPARATOR)
                     // `private ${helperName}() {`
@@ -355,7 +404,7 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                     // `}`
                     .append("    ").append(END_OF_EXPRESSION);
 
-            // `set()` method
+            // set-method
             if (setMethod != null) out
                     .append(LINE_SEPARATOR)
                     // `public static @NotNull @Unmodifiable Set<@NotNull ${enumName}> ${setMethod}() {`
@@ -368,7 +417,7 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                     // `}`
                     .append("    ").append(END_OF_EXPRESSION);
 
-            // `list()` method
+            // list-method
             if (listMethod != null) out
                     .append(LINE_SEPARATOR)
                     // `public static @NotNull @Unmodifiable List<@NotNull ${enumName}> ${listMethod}() {`
@@ -381,7 +430,22 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                     // `}`
                     .append("    ").append(END_OF_EXPRESSION);
 
-            // `stream()` method
+            // map-method
+            if (mapMethod != null) out
+                    .append(LINE_SEPARATOR)
+                    // `public static @NotNull @Unmodifiable Map<@NotNull String, @NotNull ${enumName}> ${listMethod}() {`
+                    .append("    public static ").append($NotNull).append($Unmodifiable)
+                    .append($Map).append('<')
+                    .append($NotNull).append($String).append(", ").append($NotNull).append(enumName)
+                    .append("> ")
+                    .append(mapMethod).append("() ")
+                    .append(START_OF_EXPRESSION)
+                    // `return AS_MAP;`
+                    .append("        return AS_MAP").append(END_OF_STATEMENT)
+                    // `}`
+                    .append("    ").append(END_OF_EXPRESSION);
+
+            // stream-method
             if (streamMethod != null) out
                     .append(LINE_SEPARATOR)
                     // `public static @NotNull @Unmodifiable Stream<@NotNull ${enumName}> ${streamMethod}() {`
@@ -403,9 +467,7 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
     private static @Nullable String importAnnotationIf(final @NonNull Imports imports,
                                                        final @Nullable String fullName,
                                                        final boolean condition) {
-        return condition
-                ? fullName == null ? "" : '@' + imports.importClass(fullName) + ' '
-                : null;
+        return condition ? fullName == null ? "" : '@' + imports.importClass(fullName) + ' ' : null;
     }
 
     /**
@@ -438,6 +500,16 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
          * Value of {@link EnumHelper.Generate#stream()}
          */
         @Nullable String streamMethod;
+
+        /**
+         * Value of {@link EnumHelper.Generate#map()}
+         */
+        @Nullable String mapMethod;
+
+        /**
+         * Value of {@link EnumHelper.Generate#match()}
+         */
+        @Nullable String matchMethod;
 
         // @Annotations
 
@@ -480,13 +552,15 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                                         .equals(EnumHelper.Generate.NONE) ? null : exactValue;
                             }
 
-                            final Name simpleMethodName;
-                            if ((simpleMethodName = methodName.getSimpleName()).contentEquals("set")) builder
+                            final Name methodType;
+                            if ((methodType = methodName.getSimpleName()).contentEquals("set")) builder
                                     .setMethod(method);
-                            else if (simpleMethodName.contentEquals("list")) builder.listMethod(method);
-                            else if (simpleMethodName.contentEquals("stream")) builder.streamMethod(method);
+                            else if (methodType.contentEquals("list")) builder.listMethod(method);
+                            else if (methodType.contentEquals("stream")) builder.streamMethod(method);
+                            else if (methodType.contentEquals("match")) builder.matchMethod(method);
+                            else if (methodType.contentEquals("map")) builder.mapMethod(method);
                             else assert false : "Unknown annotation value found at `@EnumHelper.generate`: \""
-                                        + keyName + '"';
+                                        + methodType + '"';
                         });
                 else if (keyName.contentEquals("annotations")) elements
                         .getElementValuesWithDefaults(JavaCodegen.annotationValueAnnotation(genericValue))
@@ -506,17 +580,17 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                                 // TODO: check annotation availability
                             }
 
-                            final Name subKeyName;
-                            if ((subKeyName = subKey.getSimpleName()).contentEquals("notNull")) builder
+                            final Name annotationType;
+                            if ((annotationType = subKey.getSimpleName()).contentEquals("notNull")) builder
                                     .annotationNotNull(annotationClass);
-                            else if (subKeyName.contentEquals("nullable")) builder
+                            else if (annotationType.contentEquals("nullable")) builder
                                     .annotationNullable(annotationClass);
-                            else if (subKeyName.contentEquals("unmodifiable")) builder
+                            else if (annotationType.contentEquals("unmodifiable")) builder
                                     .annotationUnmodifiable(annotationClass);
-                            else if (subKeyName.contentEquals("unmodifiableView")) builder
+                            else if (annotationType.contentEquals("unmodifiableView")) builder
                                     .annotationUnmodifiableView(annotationClass);
                             else assert false : "Unknown annotation value found at `@EnumHelper.annotations`: \""
-                                        + keyName + '"';
+                                        + annotationType + '"';
                         });
                 else assert false : "Unknown annotation attribute found at `@EnumHelper`: \"" + keyName + "\"";
             });
