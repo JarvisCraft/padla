@@ -39,6 +39,23 @@ public @interface EnumHelper {
     Annotations annotations() default @Annotations;
 
     /**
+     * Placeholders. Applicable in {@link #value()}.
+     */
+    @UtilityClass
+    class Placeholders {
+
+        /**
+         * Placeholder to be replaced with the package of the annotated enum.
+         */
+        public final @NotNull String PACKAGE = "{package}";
+
+        /**
+         * Placeholder to be replaced with the name of the annotated enum.
+         */
+        public final @NotNull String NAME = "{name}";
+    }
+
+    /**
      * Codegen configuration.
      * This specifies which members should be generated.
      */
@@ -72,7 +89,6 @@ public @interface EnumHelper {
          */
         String stream() default "stream";
     }
-
 
     /**
      * Annotations' configuration.
@@ -116,22 +132,5 @@ public @interface EnumHelper {
         @Target({})
         @Retention(RetentionPolicy.RUNTIME)
         @interface None {}
-    }
-
-    /**
-     * Placeholders. Applicable in {@link #value()}.
-     */
-    @UtilityClass
-    class Placeholders {
-
-        /**
-         * Placeholder to be replaced with the package of the annotated enum.
-         */
-        public final @NotNull String PACKAGE = "{package}";
-
-        /**
-         * Placeholder to be replaced with the name of the annotated enum.
-         */
-        public final @NotNull String NAME = "{name}";
     }
 }

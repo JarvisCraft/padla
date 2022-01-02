@@ -12,6 +12,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>ru.progrm-jarvis</groupId>
+            <artifactId>padla-annotations</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.auto.service</groupId>
             <artifactId>auto-service</artifactId>
         </dependency>
