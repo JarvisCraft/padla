@@ -20,10 +20,7 @@ import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -269,6 +266,8 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                         ? imports.importClass(PackageNames.JAVA_UTIL, Names.COLLECTIONS) : null,
                 $List = listMethod != null
                         ? imports.importClass(PackageNames.JAVA_UTIL, Names.LIST) : null,
+                $HashMap = mapMethod != null && !java9OrLater
+                        ? imports.importClass(PackageNames.JAVA_UTIL, Names.HASH_MAP) : null,
                 $Stream = streamMethod != null
                         ? imports.importClass(PackageNames.JAVA_UTIL_STREAM, Names.STREAM) : null,
                 $Set, $EnumSet;
@@ -281,15 +280,13 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
             $EnumSet = null;
         }
 
-        final String $String, $Map, $HashMap;
+        final String $String, $Map;
         if (mapMethod != null) {
             $String = imports.importClass(PackageNames.JAVA_LANG, Names.STRING);
             $Map = imports.importClass(PackageNames.JAVA_UTIL, Names.MAP);
-            $HashMap = imports.importClass(PackageNames.JAVA_UTIL, Names.HASH_MAP);
         } else {
             $String = null;
             $Map = null;
-            $HashMap = null;
         }
 
         final String $Generated, $Arrays;
@@ -322,7 +319,7 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                     .append("    private static final ")
                     .append($NotNull).append(enumName).append(' ').append($NotNull)
                     .append("[] AS_ARRAY").append(LINE_SEPARATOR)
-                    // `= <...>.values();`
+                    // `= ${enumName}.values();`
                     .append("            = ").append(enumName).append(".values()")
                     .write(END_OF_STATEMENT);
 
@@ -354,21 +351,62 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
                 ).write(END_OF_STATEMENT);
             }
 
-            if (mapMethod != null) out
-                    .append(LINE_SEPARATOR)
-                    // `private static final @NotNull @Unmodifiable Map<@NotNull String, @NotNull ${enumName} AS_MAP;`
-                    .append("    private static final ")
-                    .append($NotNull).append($Unmodifiable).append($Map).append('<')
-                    .append($NotNull).append($String).append(", ").append($NotNull).append(enumName)
-                    .append("> AS_MAP").write(END_OF_STATEMENT);
+            if (mapMethod != null) {
+                // `private static final @NotNull @Unmodifiable Map<@NotNull String, @NotNull ${enumName} AS_MAP`
+                out.append(LINE_SEPARATOR)
+                        .append("    private static final ")
+                        .append($NotNull).append($Unmodifiable).append($Map).append('<')
+                        .append($NotNull).append($String).append(", ").append($NotNull).append(enumName)
+                        .write("> AS_MAP");
+                if (java9OrLater) {
+                    // `= Map.`
+                    out.append(LINE_SEPARATOR).append("            = ").append($Map).write('.');
+
+                    final String prefix, suffix;
+                    if (constantNames.size() <= MagicJavaConstants.MAP_OF_MAX_PAIRS) {
+                        // `of(`
+                        out.append("of(");
+                        // entry! = `"${constantName}", ${enumName}.${constantName}`
+                        prefix = suffix = "";
+                    } else {
+                        // `ofEntries(`
+                        out.append("ofEntries(");
+                        // entry! = `Map.entry("${constantName}", ${enumName}.${constantName})`
+                        prefix = $Map + ".entry(";
+                        suffix = ")";
+                    }
+
+                    val constantNamesIterator = constantNames.iterator();
+                    if (constantNamesIterator.hasNext()) {
+                        while (true) {
+                            final String constantName;
+                            // `${entry!}`
+                            out.append(LINE_SEPARATOR).append("            ")
+                                    .append(prefix)
+                                    .append('"').append(constantName = constantNamesIterator.next())
+                                    .append("\", ").append(enumName).append('.').append(constantName)
+                                    .write(suffix);
+
+                            // `,` on non-last entries
+                            if (constantNamesIterator.hasNext()) out.append(',');
+                            else break;
+                        }
+                        out.write(LINE_SEPARATOR);
+                    }
+
+                    // `)`
+                    out.write("    )");
+                }
+                out.write(END_OF_STATEMENT);
+            }
 
             // static initializer
-            if (mapMethod != null) {
+            if (mapMethod != null && !java9OrLater) {
                 // TODO: finders
                 out.append(LINE_SEPARATOR)
                         // `static {
                         .append("    static ").write(START_OF_EXPRESSION);
-                if (mapMethod != null) {
+                if (mapMethod != null && !java9OrLater) {
                     // final Map<String, ${enumName}> asMap = new HashMap<>(${constantNames.size()});
                     out.append("        final ").append($Map).append('<')
                             .append($String).append(", ").append(enumName)

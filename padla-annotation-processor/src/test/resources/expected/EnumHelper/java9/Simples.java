@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Unmodifiable;
 import javax.annotation.processing.Generated;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,15 +26,12 @@ public final class Simples {
     private static final @NotNull @Unmodifiable List<@NotNull Simple> AS_LIST
             = List.of(AS_ARRAY);
 
-    private static final @NotNull @Unmodifiable Map<@NotNull String, @NotNull Simple> AS_MAP;
-
-    static {
-        final Map<String, Simple> asMap = new HashMap<>(3);
-        asMap.put("SOME_A", Simple.SOME_A);
-        asMap.put("OTHER_B", Simple.OTHER_B);
-        asMap.put("AT_LAST_ITS_C", Simple.AT_LAST_ITS_C);
-        AS_MAP = Collections.unmodifiableMap(asMap);
-    }
+    private static final @NotNull @Unmodifiable Map<@NotNull String, @NotNull Simple> AS_MAP
+            = Map.of(
+            "SOME_A", Simple.SOME_A,
+            "OTHER_B", Simple.OTHER_B,
+            "AT_LAST_ITS_C", Simple.AT_LAST_ITS_C
+    );
 
     private Simples() {
         throw new AssertionError(
