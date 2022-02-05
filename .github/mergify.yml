@@ -3,8 +3,9 @@ queue_rules:
     conditions:
       - check-success=Run Tests
       - check-success=Check Javadocs
-      - check-success=CodeFactor
+      - check-success=Analyze
       - check-success=CodeQL
+      - check-success=CodeFactor
 
 pull_request_rules:
   - name: Automatic merge for Dependabot pull requests
