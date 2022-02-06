@@ -54,6 +54,17 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "CertainLach",
+      "name": "Yaroslav Bolyukin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6235312?v=4",
+      "profile": "https://github.com/CertainLach",
+      "contributions": [
+        "ideas",
+        "security",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
