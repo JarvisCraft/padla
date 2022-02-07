@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2.4.0
 
       - name: Set up Java 17 & Deployment credentials
-        uses: actions/setup-java@v2.4.0
+        uses: actions/setup-java@v2.5.0
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -27,7 +27,7 @@ jobs:
       - uses: jactions/maven-version@v1.0.0
         id: get_version
 
-      - name: Deploy snapshot
+      - name: Deploy release
         if: ${{ !endsWith(steps.get_version.outputs.version, '-SNAPSHOT') }}
         run: mvn deploy -B -P build-extras,sign-artifacts,automatic-central-release
         env:
