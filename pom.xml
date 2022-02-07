@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-rc.9</version>
     <modules>
         <module>java-commons</module>
         <module>reflector</module>
