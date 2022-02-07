@@ -6,7 +6,7 @@
 </details>
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![License](https://img.shields.io/github/license/JarvisCraft/padla)](/LICENSE)
@@ -50,6 +50,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/AbstractCoderX"><img src="https://avatars.githubusercontent.com/u/38766980?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Areg Yazychyan</b></sub></a><br /><a href="#ideas-AbstractCoderX" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/JarvisCraft/padla/pulls?q=is%3Apr+reviewed-by%3AAbstractCoderX" title="Reviewed Pull Requests">👀</a> <a href="#business-AbstractCoderX" title="Business development">💼</a> <a href="https://github.com/JarvisCraft/padla/commits?author=AbstractCoderX" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/xxDark"><img src="https://avatars.githubusercontent.com/u/19853368?v=4?s=100" width="100px;" alt=""/><br /><sub><b>xxDark</b></sub></a><br /><a href="https://github.com/JarvisCraft/padla/commits?author=xxDark" title="Code">💻</a> <a href="#ideas-xxDark" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/JarvisCraft/padla/issues?q=author%3AxxDark" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://vk.com/zabelovq"><img src="https://avatars.githubusercontent.com/u/45364639?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniil Sudomoin</b></sub></a><br /><a href="https://github.com/JarvisCraft/padla/commits?author=zabelovq" title="Code">💻</a> <a href="#ideas-zabelovq" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/CertainLach"><img src="https://avatars.githubusercontent.com/u/6235312?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Yaroslav Bolyukin</b></sub></a><br /><a href="#ideas-CertainLach" title="Ideas, Planning, & Feedback">🤔</a> <a href="#security-CertainLach" title="Security">🛡️</a> <a href="https://github.com/JarvisCraft/padla/commits?author=CertainLach" title="Documentation">📖</a></td>
   </tr>
 </table>
 
