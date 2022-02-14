@@ -236,19 +236,6 @@
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
-                    <dependencies>
-                        <!-- Manual fix of Plugin crash on latest Java versions -->
-                        <dependency>
-                            <groupId>com.thoughtworks.xstream</groupId>
-                            <artifactId>xstream</artifactId>
-                            <version>1.4.17</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.ogce</groupId>
-                            <artifactId>xpp3</artifactId>
-                            <version>1.1.6</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
