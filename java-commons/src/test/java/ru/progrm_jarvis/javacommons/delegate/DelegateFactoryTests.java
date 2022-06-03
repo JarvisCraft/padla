@@ -1,25 +1,27 @@
 package ru.progrm_jarvis.javacommons.delegate;
 
 import lombok.val;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-class AsmDelegateFactoryTest {
+class DelegateFactoryTests {
 
-    private DelegateFactory testTarget;
-
-    @BeforeEach
-    void setup() {
-        testTarget = AsmDelegateFactory.create();
+    private static @NotNull Stream<@NotNull Arguments> provideDelegateFactoryImplementations() {
+        return Stream.of(ProxyDelegateFactory.create(), AsmDelegateFactory.create())
+                .map(Arguments::of);
     }
 
-    @Test
-    public void testDelegateWrapperOfInterface() {
+    @ParameterizedTest
+    @MethodSource("provideDelegateFactoryImplementations")
+    public void testDelegateWrapperOfInterface(final @NotNull DelegateFactory delegateFactory) {
         val implementation = mock(SimpleInterface.class);
         when(implementation.getInt()).thenReturn(0xCAFEBABE);
         when(implementation.toString(1)).thenReturn("1");
@@ -29,7 +31,7 @@ class AsmDelegateFactoryTest {
         @SuppressWarnings("unchecked") val factory = (Supplier<SimpleInterface>) mock(Supplier.class);
         when(factory.get()).thenReturn(implementation);
 
-        val wrapper = testTarget.createWrapper(SimpleInterface.class, factory);
+        val wrapper = delegateFactory.createWrapper(SimpleInterface.class, factory);
 
         // test that no unneeded calls are done
         verify(factory, times(0)).get();
