@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version.minimal>8</java.version.minimal>
         <!-- Duplicated dependency versions -->
-        <version.mockito>4.6.0</version.mockito>
+        <version.mockito>4.6.1</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
