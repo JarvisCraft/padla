@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.val;
 import ru.progrm_jarvis.javacommons.classloading.ClassLoadingUtil;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
+import ru.progrm_jarvis.padla.annotation.EnumHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * @implNote this could have been implemented
  */
+@EnumHelper
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public enum CommonBytecodeLibrary implements BytecodeLibrary {

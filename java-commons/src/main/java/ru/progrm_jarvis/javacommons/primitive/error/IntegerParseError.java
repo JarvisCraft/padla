@@ -1,8 +1,11 @@
 package ru.progrm_jarvis.javacommons.primitive.error;
 
+import ru.progrm_jarvis.padla.annotation.EnumHelper;
+
 /**
  * An error occurring while parsing an integer (e.g. an {@code int}).
  */
+@EnumHelper
 public enum IntegerParseError {
     /**
      * Parsed expression contains no digits at all.

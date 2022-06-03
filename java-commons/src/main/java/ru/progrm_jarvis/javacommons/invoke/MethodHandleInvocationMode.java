@@ -1,10 +1,13 @@
 package ru.progrm_jarvis.javacommons.invoke;
 
+import ru.progrm_jarvis.padla.annotation.EnumHelper;
+
 import java.lang.invoke.MethodHandle;
 
 /**
- * Mode of {@link java.lang.invoke.MethodHandle} invocation.
+ * Mode of {@link MethodHandle} invocation.
  */
+@EnumHelper
 public enum MethodHandleInvocationMode {
 
     /**

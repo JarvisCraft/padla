@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import ru.progrm_jarvis.padla.annotation.EnumHelper;
 import ru.progrm_jarvis.padla.annotation.importing.Imports;
 import ru.progrm_jarvis.padla.annotation.importing.SimpleImports;
@@ -38,12 +39,12 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
     /**
      * {@link Class#getCanonicalName()} of {@link EnumHelpersAnnotationProcessor}
      */
-    private static @NotNull String THIS_CANONICAL_NAME = EnumHelpersAnnotationProcessor.class.getCanonicalName();
+    private static final @NotNull String THIS_CANONICAL_NAME = EnumHelpersAnnotationProcessor.class.getCanonicalName();
 
     /**
      * Canonical name of {@link EnumHelper.Annotations.None}
      */
-    private static @NotNull String ENUM_HELPER__ANNOTATIONS__NONE__CANONICAL_NAME
+    private static final @NotNull String ENUM_HELPER__ANNOTATIONS__NONE__CANONICAL_NAME
             = EnumHelper.Annotations.None.class.getCanonicalName();
 
     /**
@@ -54,7 +55,7 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
     /**
      * Set containing only {@link EnumHelper}{@code .class}.
      */
-    private static final @NotNull Set<@NotNull String> SUPPORTED_ANNOTATION_TYPES = Collections.singleton(
+    private static final @NotNull @Unmodifiable Set<@NotNull String> SUPPORTED_ANNOTATION_TYPES = Collections.singleton(
             EnumHelper.class.getCanonicalName()
     );
 
@@ -135,8 +136,10 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
     }
 
     @Override
-    public boolean process(final @NotNull Set<? extends @NotNull TypeElement> annotations,
-                           final @NotNull RoundEnvironment roundEnvironment) {
+    public boolean process(
+            final @NotNull Set<? extends @NotNull TypeElement> annotations,
+            final @NotNull RoundEnvironment roundEnvironment
+    ) {
         if (roundEnvironment.processingOver()) return false;
 
         final SourceVersion sourceVersion;
@@ -572,8 +575,10 @@ public final class EnumHelpersAnnotationProcessor extends AbstractProcessor {
         @Nullable String annotationUnmodifiableView;
 
         @SuppressWarnings("UseOfConcreteClass") // this is a simple inner value class
-        private static @NotNull EnumHelperMirror from(final @NotNull AnnotationMirror annotation,
-                                                      final @NotNull Elements elements) {
+        private static @NotNull EnumHelperMirror from(
+                final @NotNull AnnotationMirror annotation,
+                final @NotNull Elements elements
+        ) {
             val builder = builder();
             elements.getElementValuesWithDefaults(annotation).forEach((key, genericValue) -> {
                 final Name keyName;
