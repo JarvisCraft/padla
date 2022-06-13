@@ -24,12 +24,12 @@ public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Text model factory who is used for actual logic implementation
      */
-    @NonNull TextModelFactory<T> textModelFactory;
+    @NotNull TextModelFactory<T> textModelFactory;
 
     /**
      * Handler accepting debug messages on each method called
      */
-    @NonNull Consumer<String> debugHandler;
+    @NotNull Consumer<@NotNull String> debugHandler;
 
     /**
      * Creates a new debugging {@link TextModel text model factory}.
@@ -39,8 +39,10 @@ public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
      * @param <T> type of object according to which the created text models are formatted
      * @return created text model factory
      */
-    public static <T> @NotNull TextModelFactory<T> create(final @NonNull TextModelFactory<T> textModelFactory,
-                                                          final @NonNull Consumer<String> debugHandler) {
+    public static <T> @NotNull TextModelFactory<T> create(
+            final @NonNull TextModelFactory<T> textModelFactory,
+            final @NonNull Consumer<@NotNull String> debugHandler
+    ) {
         return new DebuggingTextModelFactory<>(textModelFactory, debugHandler);
     }
 
@@ -52,7 +54,7 @@ public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public TextModelFactory.@NotNull TextModelBuilder<T> newBuilder() {
         debugHandler.accept("TextModelFactory#newBuilder()");
 
         return new DebuggingTextModelBuilder(textModelFactory.newBuilder());
@@ -62,10 +64,10 @@ public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
     @FieldDefaults(level = AccessLevel.PROTECTED, makeFinal = true)
     private final class DebuggingTextModelBuilder implements TextModelFactory.TextModelBuilder<T> {
 
-        @NonNull TextModelFactory.TextModelBuilder<T> textModelBuilder;
+        TextModelFactory.@NotNull TextModelBuilder<T> textModelBuilder;
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull String staticText) {
+        public TextModelFactory.@NotNull TextModelBuilder<T> append(final @NonNull String staticText) {
             debugHandler.accept(
                     "TextModelBuilder#append(\""
                             + StringMicroOptimizationUtil.escapeJavaStringLiteral(staticText) + "\")"
@@ -75,14 +77,14 @@ public final class DebuggingTextModelFactory<T> implements TextModelFactory<T> {
         }
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
+        public TextModelFactory.@NotNull TextModelBuilder<T> append(final @NonNull TextModel<T> dynamicText) {
             debugHandler.accept("TextModelBuilder#append(" + dynamicText + ')');
 
             return textModelBuilder.append(dynamicText);
         }
 
         @Override
-        public @NotNull TextModelFactory.TextModelBuilder<T> clear() {
+        public TextModelFactory.@NotNull TextModelBuilder<T> clear() {
             debugHandler.accept("TextModelBuilder#clear()");
 
             return textModelBuilder.clear();

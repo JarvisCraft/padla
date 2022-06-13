@@ -2,6 +2,7 @@ package ru.progrm_jarvis.javacommons.delegate;
 
 import lombok.*;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.object.ObjectUtil;
 
@@ -15,8 +16,16 @@ import java.util.function.Supplier;
 /**
  * Implementation of {@link DelegateFactory delegate factory} which uses runtime proxy generation via {@link Proxy}.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProxyDelegateFactory implements DelegateFactory {
+
+    /**
+     * Creates a {@link Proxy}-based {@link DelegateFactory delegate factory}.
+     *
+     * @publicForSpi {@link #create() preferred creation method}
+     */
+    @ApiStatus.Internal
+    @SuppressWarnings("PublicConstructor") // SPI API
+    public ProxyDelegateFactory() {}
 
     /**
      * Creates a proxy-based {@link DelegateFactory delegate factory}.
@@ -24,7 +33,7 @@ public final class ProxyDelegateFactory implements DelegateFactory {
      * @return proxy-based delegate factory
      * @apiNote singleton may be used here
      */
-    public static DelegateFactory create() {
+    public static @NotNull DelegateFactory create() {
         return Singleton.INSTANCE;
     }
 

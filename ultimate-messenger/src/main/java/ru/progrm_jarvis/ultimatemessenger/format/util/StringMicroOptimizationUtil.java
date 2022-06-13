@@ -6,7 +6,6 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ru.progrm_jarvis.javacommons.invoke.InvokeUtil;
 
 import java.lang.invoke.MethodHandle;
@@ -23,7 +22,7 @@ public class StringMicroOptimizationUtil {
     /**
      * Name of the field of class {@link String} which holds its chars (according to OpenJDK sources)
      */
-    private final String STRING_VALUE_FIELD_NAME = "value";
+    private final @NotNull String STRING_VALUE_FIELD_NAME = "value";
     /**
      * Method handle for accessing {@link String}{@code .}{@value #STRING_VALUE_FIELD_NAME} if it is possible
      */
@@ -66,8 +65,8 @@ public class StringMicroOptimizationUtil {
      * @param source source {@link String string}
      * @return valid value for copying into {@link String string literal} {@code "}s
      */
-    public String escapeJavaStringLiteral(final @NonNull String source) {
-        @Nullable StringBuilder result = null;
+    public @NotNull String escapeJavaStringLiteral(final @NonNull String source) {
+        StringBuilder result = null;
         val characters = getStringChars(source);
         int lastWriteIndex = -1;
         val length = characters.length;

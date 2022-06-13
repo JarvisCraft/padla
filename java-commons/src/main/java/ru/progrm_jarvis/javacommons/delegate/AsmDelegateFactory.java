@@ -3,6 +3,7 @@ package ru.progrm_jarvis.javacommons.delegate;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -20,6 +21,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.function.Supplier;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -76,6 +78,17 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
 
     private AsmDelegateFactory(final @NotNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> factories) {
         super(factories);
+    }
+
+    /**
+     * Creates a {@link Proxy}-based {@link DelegateFactory delegate factory}.
+     *
+     * @publicForSpi {@link #create() preferred creation method}
+     */
+    @ApiStatus.Internal
+    @SuppressWarnings("PublicConstructor") // SPI API
+    public AsmDelegateFactory() {
+        this(SharedCache.INSTANCE);
     }
 
     /**
@@ -265,13 +278,24 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
     }
 
     @UtilityClass
+    private static class SharedCache {
+
+        /**
+         * Shared cache instance to be used by {@link Singleton#INSTANCE}
+         * and all instances created via SPI {@link AsmDelegateFactory#AsmDelegateFactory()}.
+         *
+         * @apiNote  classes are GC-friendly loaded so they may be effectively weakly-referenced
+         */
+        private final @NotNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> INSTANCE
+                = Caches.weakKeysCache();
+    }
+
+    @UtilityClass
     private static class Singleton {
 
         /**
          * Instance of {@link AsmDelegateFactory ASM-based delegate factory}
          */
-        private final @NotNull DelegateFactory INSTANCE = new AsmDelegateFactory(
-                Caches.weakKeysCache() // classes are GC-friendly loaded so they may be effectively weakly-referenced
-        );
+        private final @NotNull DelegateFactory INSTANCE = new AsmDelegateFactory(SharedCache.INSTANCE);
     }
 }
