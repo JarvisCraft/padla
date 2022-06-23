@@ -3,6 +3,7 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import ru.progrm_jarvis.javacommons.lazy.Lazy;
 
@@ -12,14 +13,22 @@ import java.util.List;
 /**
  * Simple implementation of {@link TextModelFactory text model factory}.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
 
     /**
      * Lazy singleton of this text model factory
      */
-    private static final Lazy<TextModelFactory<?>> INSTANCE
+    private static final @NotNull Lazy<@NotNull TextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(SimpleTextModelFactory::new);
+
+    /**
+     * Creates a simple {@link TextModelFactory text model factory}.
+     *
+     * @publicForSpi {@link #create() preferred creation method}
+     */
+    @ApiStatus.Internal
+    @SuppressWarnings({"PublicConstructor", "RedundantNoArgConstructor"}) // SPI API
+    public SimpleTextModelFactory() {}
 
     /**
      * Creates a simple {@link TextModelFactory text model factory}.
@@ -35,7 +44,7 @@ public final class SimpleTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public TextModelFactory.@NotNull TextModelBuilder<T> newBuilder() {
         return new SimpleTextModelBuilder<>();
     }
 

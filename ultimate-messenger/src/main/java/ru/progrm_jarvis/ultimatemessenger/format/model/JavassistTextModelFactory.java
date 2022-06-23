@@ -3,8 +3,8 @@ package ru.progrm_jarvis.ultimatemessenger.format.model;
 import javassist.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.classloading.ClassNamingStrategy;
@@ -27,7 +27,6 @@ import java.lang.reflect.Modifier;
  * Implementation of {@link TextModelFactory text model factory}
  * which uses runtime class generation via <b>Javasssist</b>.
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.JAVASSIST)
 public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
 
@@ -36,6 +35,15 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
      */
     private static final @NotNull Lazy<@NotNull TextModelFactory<?>> INSTANCE
             = Lazy.createThreadSafe(JavassistTextModelFactory::new);
+
+    /**
+     * Creates a Javassist-based {@link TextModelFactory text model factory}.
+     *
+     * @publicForSpi {@link #create() preferred creation method}
+     */
+    @ApiStatus.Internal
+    @SuppressWarnings({"PublicConstructor", "RedundantNoArgConstructor"}) // SPI API
+    public JavassistTextModelFactory() {}
 
     /**
      * Creates a Javassist-based {@link TextModelFactory text model factory}.
@@ -51,7 +59,7 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
     }
 
     @Override
-    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public TextModelFactory.@NotNull TextModelBuilder<T> newBuilder() {
         return new JavassistTextModelBuilder<>();
     }
 
@@ -79,25 +87,15 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          */
         private static final @NotNull MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
-        @Override
-        protected @NotNull Node<T, StaticNode, DynamicNode<T>> newStaticNode(final @NotNull String text) {
-            return new SimpleStaticNode<>(text);
-        }
-
-        @Override
-        protected @NotNull Node<T, StaticNode, DynamicNode<T>> newDynamicNode(final @NotNull TextModel<T> content) {
-            return new SimpleDynamicNode<>(content);
-        }
-
         /**
          * Full name (including canonical class name) of {@link #internal$getDynamicTextModel(String)} method
          */
         private static final @NotNull String INTERNAL_GET_DYNAMIC_TEXT_MODEL_METHOD_FULL_NAME
-                = JavassistTextModelBuilder.class.getCanonicalName() + ".internal$getDynamicTextModel",
+                = JavassistTextModelBuilder.class.getCanonicalName() + ".internal$getDynamicTextModel";
         /**
          * Prefix of generated fields after which the index will go
          */
-        GENERATED_FIELD_NAME_PREFIX = "D";
+        private static final @NotNull String GENERATED_FIELD_NAME_PREFIX = "D";
 
         /**
          * Internal storage of {@link TextModel dynamic text models} passed to {@code static final} fields.
@@ -108,7 +106,8 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
         /**
          * Lazily initialized {@link ClassPool Javassist class pool}
          */
-        private static final @NotNull Lazy<@NotNull ClassPool> CLASS_POOL = Lazy.createThreadSafe(ClassPool::getDefault);
+        private static final @NotNull Lazy<@NotNull ClassPool> CLASS_POOL
+                = Lazy.createThreadSafe(ClassPool::getDefault);
 
         /**
          * Lazily initialized {@link CtClass compile-time class} of {@link TextModel text model}
@@ -134,6 +133,16 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
                 JavassistTextModelBuilder.class.getName() + "$$Generated$$TextModel$$"
         );
 
+        @Override
+        protected @NotNull Node<T, StaticNode, DynamicNode<T>> newStaticNode(final @NotNull String text) {
+            return new SimpleStaticNode<>(text);
+        }
+
+        @Override
+        protected @NotNull Node<T, StaticNode, DynamicNode<T>> newDynamicNode(final @NotNull TextModel<T> content) {
+            return new SimpleDynamicNode<>(content);
+        }
+
         /**
          * Retrieves (gets and removes) {@link TextModel dynamic text model}
          * stored in {@link #DYNAMIC_MODELS} by the given key.
@@ -143,7 +152,7 @@ public final class JavassistTextModelFactory<T> implements TextModelFactory<T> {
          * @deprecated this method is internal
          */
         @Deprecated
-        @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
+        @ApiStatus.Internal
         public static @NotNull TextModel<?> internal$getDynamicTextModel(final @NotNull String uniqueKey) {
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }

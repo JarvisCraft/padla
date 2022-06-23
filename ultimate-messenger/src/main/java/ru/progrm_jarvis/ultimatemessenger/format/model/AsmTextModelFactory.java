@@ -7,7 +7,6 @@ import lombok.experimental.NonFinal;
 import lombok.extern.java.Log;
 import org.jetbrains.annotations.*;
 import org.objectweb.asm.*;
-import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
@@ -36,14 +35,13 @@ import static ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil.*;
  *  * which uses runtime class generation via <b>ASM</b>.
  *
  * @param <T> type of object according to which the created text models are formatted
- * @param <C> type of configuration used by this text model factory
  */
 @Log
 @ToString
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @UsesBytecodeModification(CommonBytecodeLibrary.ASM)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configuration> implements TextModelFactory<T> {
+public final class AsmTextModelFactory<T> implements TextModelFactory<T> {
     /**
      * Lazy singleton of this text model factory
      */
@@ -91,7 +89,20 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
      *
      * @apiNote generic to support extension
      */
-    @NonNull C configuration;
+    @NonNull Configuration configuration;
+
+    /**
+     * Creates an ASM-based {@link TextModelFactory text model factory}
+     * using the {@link SimpleConfiguration#getDefault() default configuration}.
+     *
+     * @publicForSpi {@link #create() preferred creation method},
+     * {@link #create(Configuration) customizable creation method}
+     */
+    @ApiStatus.Internal
+    @SuppressWarnings("PublicConstructor") // SPI API
+    public AsmTextModelFactory() {
+        this(SimpleConfiguration.getDefault());
+    }
 
     /**
      * Creates a new ASM-based text model factory with the given configuration.
@@ -135,7 +146,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
     }
 
     @Override
-    public @NotNull TextModelFactory.TextModelBuilder<T> newBuilder() {
+    public TextModelFactory.@NotNull TextModelBuilder<T> newBuilder() {
         return new AsmTextModelBuilder<>(configuration);
     }
 
@@ -522,7 +533,7 @@ public final class AsmTextModelFactory<T, C extends AsmTextModelFactory.Configur
          * @deprecated this method is internal
          */
         @Deprecated
-        @Internal("This is expected to be invoked only by generated TextModels to initialize their fields")
+        @ApiStatus.Internal
         public static @NotNull TextModel<?> internal$getDynamicTextModel(final @NotNull String uniqueKey) {
             return DYNAMIC_MODELS.retrieveValue(uniqueKey);
         }

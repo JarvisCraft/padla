@@ -94,6 +94,20 @@
                     </configuration>
                     <executions>
                         <execution>
+                            <!-- Minimal required version for Java 9 modules -->
+                            <id>java-9</id>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                            <configuration>
+                                <release>9</release>
+                                <multiReleaseOutput>true</multiReleaseOutput>
+                                <compileSourceRoots>
+                                    <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
+                                </compileSourceRoots>
+                            </configuration>
+                        </execution>
+                        <execution>
                             <id>java-11</id>
                             <goals>
                                 <goal>compile</goal>
@@ -203,6 +217,11 @@
                                 <name>implSpec</name>
                                 <placement>a</placement>
                                 <head>Implementation specification</head>
+                            </tag>
+                            <tag>
+                                <name>publicForSpi</name>
+                                <placement>c</placement>
+                                <head>This constructor is only visible for Java SPI consider using</head>
                             </tag>
                         </tags>
                     </configuration>

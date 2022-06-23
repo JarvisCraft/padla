@@ -31,13 +31,6 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
         extends AbstractCachingTextModelFactoryBuilder<T> {
 
     /**
-     * Instantiates new abstract generating text model factory builder using {@link ArrayList} for its backend.
-     */
-    protected AbstractGeneratingTextModelFactoryBuilder() {
-        this(new ArrayList<>());
-    }
-
-    /**
      * Nodes of the text model
      */
     List<N> nodes;
@@ -59,6 +52,13 @@ public abstract class AbstractGeneratingTextModelFactoryBuilder<T,
      * Last appended node
      */
     @NonFinal transient N lastNode;
+
+    /**
+     * Instantiates new abstract generating text model factory builder using {@link ArrayList} for its backend.
+     */
+    protected AbstractGeneratingTextModelFactoryBuilder() {
+        this(new ArrayList<>());
+    }
 
     /**
      * Ends the modification of ta static node.
