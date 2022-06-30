@@ -24,7 +24,7 @@ jobs:
           gpg-private-key: ${{ secrets.CODE_SIGNING_GPG_PRIVATE_KEY }}
           gpg-passphrase: CODE_SIGNING_GPG_KEY_PASSPHRASE
 
-      - uses: jactions/maven-version@v1.0.0
+      - uses: jactions/maven-version@v1.0.1
         id: get_version
 
       - name: Deploy release
