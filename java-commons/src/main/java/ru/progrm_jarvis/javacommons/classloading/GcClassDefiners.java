@@ -7,7 +7,6 @@ import lombok.val;
 import lombok.var;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.classloading.extension.LegacyClassExtensions;
 import ru.progrm_jarvis.javacommons.invoke.FullAccessLookupFactories;
 import ru.progrm_jarvis.javacommons.object.Pair;
@@ -29,7 +28,7 @@ import static java.lang.invoke.MethodType.methodType;
 @UtilityClass
 public class GcClassDefiners {
 
-    private static final @NotNull ClassDefiner CLASS_DEFINER;
+    private final @NotNull ClassDefiner CLASS_DEFINER;
 
     static {
         ClassDefiner classDefiner;
@@ -64,7 +63,7 @@ public class GcClassDefiners {
          * Method handle referring to
          * {@link Lookup}{@code .defineHiddenClass(byte[], boolean, Lookup.ClassOption)} method
          */
-        private static final MethodHandle LOOKUP__DEFINE_HIDDEN_CLASS__METHOD_HANDLE;
+        private static final @NotNull MethodHandle LOOKUP__DEFINE_HIDDEN_CLASS__METHOD_HANDLE;
 
         static {
             final Class<?> lookupClassOptionClass;
@@ -96,19 +95,23 @@ public class GcClassDefiners {
         }
 
         @SuppressWarnings("unchecked")
-        private static <E extends Enum<E>> @NotNull E uncheckedEnumValueOf(final @NotNull Class<?> type,
-                                                                           final @NotNull String constantName) {
+        private static <E extends Enum<E>> @NotNull E uncheckedEnumValueOf(
+                final @NotNull Class<?> type,
+                final @NotNull String constantName
+        ) {
             return Enum.valueOf((Class<E>) type, constantName);
         }
 
         @SneakyThrows // call to `MethodHandle#invokeExact(...)`
-        private static Class<?> defineHiddenClass(final @NotNull Lookup owner,
-                                                  final byte @NotNull [] bytecode) {
+        private static @NotNull Class<?> defineHiddenClass(
+                final @NotNull Lookup owner,
+                final byte @NotNull [] bytecode
+        ) {
             return (Class<?>) LOOKUP__DEFINE_HIDDEN_CLASS__METHOD_HANDLE.invokeExact(owner, bytecode);
         }
 
         @Override
-        public Class<?> defineClass(
+        public @NotNull Class<?> defineClass(
                 final @NonNull Lookup owner,
                 final @Nullable String name,
                 final byte @NonNull [] bytecode
@@ -117,7 +120,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Class<?>[] defineClasses(
+        public @NotNull Class<?> @NotNull [] defineClasses(
                 final @NonNull Lookup owner,
                 final byte @NotNull [] @NonNull ... bytecodes
         ) {
@@ -130,7 +133,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public List<Class<?>> defineClasses(
+        public @NotNull List<@NotNull Class<?>> defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull List<byte @NotNull []> bytecodes
         ) {
@@ -143,7 +146,7 @@ public class GcClassDefiners {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Class<?>[] defineClasses(
+        public @NotNull Class<?> @NotNull [] defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull Pair<@Nullable String, byte @NotNull []>... bytecodes
         ) {
@@ -156,7 +159,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Map<String, Class<?>> defineClasses(
+        public @NotNull Map<@NotNull String, @NotNull Class<?>> defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull Map<String, byte @NotNull []> namedBytecode
         ) {
@@ -231,15 +234,17 @@ public class GcClassDefiners {
         }
 
         @SneakyThrows // call to `MethodHandle#invokeExact(...)`
-        private static Class<?> defineAnonymousClass(final @NotNull Class<?> owner,
-                                                     final byte @NotNull [] bytecode) {
+        private static @NotNull Class<?> defineAnonymousClass(
+                final @NotNull Class<?> owner,
+                final byte @NotNull [] bytecode
+        ) {
             return (Class<?>) UNSAFE__DEFINE_ANONYMOUS_CLASS__METHOD_HANDLE.invokeExact(
                     owner, bytecode
             );
         }
 
         @Override
-        public Class<?> defineClass(
+        public @NotNull Class<?> defineClass(
                 final @NonNull Lookup owner,
                 final @Nullable String name,
                 final byte @NonNull [] bytecode
@@ -248,7 +253,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Class<?>[] defineClasses(
+        public @NotNull Class<?> @NotNull [] defineClasses(
                 final @NonNull Lookup owner,
                 final byte @NotNull [] @NonNull ... bytecodes
         ) {
@@ -262,7 +267,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public List<Class<?>> defineClasses(
+        public @NotNull List<@NotNull Class<?>> defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull List<byte @NotNull []> bytecodes
         ) {
@@ -276,7 +281,7 @@ public class GcClassDefiners {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Class<?>[] defineClasses(
+        public @NotNull Class<?> @NotNull [] defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull Pair<@Nullable String, byte @NotNull []>... bytecodes
         ) {
@@ -290,7 +295,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Map<String, Class<?>> defineClasses(
+        public @NotNull Map<@NotNull String, @NotNull Class<?>> defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull Map<String, byte @NotNull []> namedBytecode
         ) {
@@ -312,7 +317,7 @@ public class GcClassDefiners {
     private static final class TmpClassLoaderClassDefiner implements ClassDefiner {
 
         @Override
-        public Class<?> defineClass(
+        public @NotNull Class<?> defineClass(
                 final @NonNull Lookup owner,
                 final @Nullable String name,
                 final byte @NonNull [] bytecode
@@ -321,7 +326,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Class<?>[] defineClasses(
+        public @NotNull Class<?> @NotNull [] defineClasses(
                 final @NonNull Lookup owner,
                 final byte @NotNull [] @NonNull ... bytecodes
         ) {
@@ -335,7 +340,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public List<Class<?>> defineClasses(
+        public @NotNull List<@NotNull Class<?>> defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull List<byte @NotNull []> bytecodes
         ) {
@@ -349,7 +354,7 @@ public class GcClassDefiners {
 
         @Override
         @SuppressWarnings("unchecked")
-        public Class<?>[] defineClasses(
+        public @NotNull Class<?> @NotNull [] defineClasses(
                 final @NonNull Lookup owner,
                 final @NotNull Pair<@Nullable String, byte @NotNull []> @NonNull ... bytecodes
         ) {
@@ -366,7 +371,7 @@ public class GcClassDefiners {
         }
 
         @Override
-        public Map<String, Class<?>> defineClasses(
+        public @NotNull Map<@NotNull String, @NotNull Class<?>> defineClasses(
                 final @NonNull Lookup owner,
                 final @NonNull Map<@Nullable String, byte @NotNull []> namedBytecode
         ) {
@@ -384,10 +389,6 @@ public class GcClassDefiners {
         /**
          * Temporary class-loader which should be instantiated for groups of related classes which may be unloaded.
          */
-        @Internal(
-                "This class-loader is intended only for internal usage and should never be accessed outside "
-                        + "as there should be no strong references to it"
-        )
         private static final class TmpClassLoader extends ClassLoader {
 
             /**
@@ -406,8 +407,7 @@ public class GcClassDefiners {
              * @param bytecode bytecode of the class
              * @return defined class
              */
-            private Class<?> define(final @Nullable String name,
-                                    final byte @NotNull [] bytecode) {
+            private @NotNull Class<?> define(final @Nullable String name, final byte @NotNull [] bytecode) {
                 return defineClass(name, bytecode, 0, bytecode.length);
             }
         }

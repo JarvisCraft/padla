@@ -2,17 +2,18 @@
 
 ## Supported Versions
 
-| Version      | Supported          |
-|--------------| ------------------ |
-| [1.0.0-rc.9] | :heavy_check_mark: |
-| < 1.0.0-rc.9 | :x:                |
+| Version       | Supported          |
+|---------------| ------------------ |
+| [1.0.0-rc.10] | :heavy_check_mark: |
+| < 1.0.0-rc.10 | :x:                |
 
 ## Reporting a Vulnerability
 
-In order to report a vulnerability simply create an [issues](https://github.com/JarvisCraft/padla/issues) for it.
+In order to report a vulnerability simply create
+an [issues](https://github.com/JarvisCraft/padla/issues) for it.
 
 These are checked regularly and are the primary support channel.
 
 <!-- Version links -->
 
-[1.0.0-rc.8]: https://mvnrepository.com/artifact/ru.progrm-jarvis/padla/1.0.0-rc.8
+[1.0.0-rc.10]: https://mvnrepository.com/artifact/ru.progrm-jarvis/padla/1.0.0-rc.10

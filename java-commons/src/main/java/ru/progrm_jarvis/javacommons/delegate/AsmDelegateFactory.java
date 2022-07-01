@@ -3,11 +3,11 @@ package ru.progrm_jarvis.javacommons.delegate;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import ru.progrm_jarvis.javacommons.annotation.Internal;
 import ru.progrm_jarvis.javacommons.bytecode.CommonBytecodeLibrary;
 import ru.progrm_jarvis.javacommons.bytecode.annotation.UsesBytecodeModification;
 import ru.progrm_jarvis.javacommons.bytecode.asm.AsmUtil;
@@ -21,6 +21,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.function.Supplier;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -52,33 +53,48 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
     /**
      * Name of the generated field in which the lazy will be stored
      */
-    private static final @NotNull String GENERATED_INNER_LAZY_FIELD_NAME = "$" ,
+    private static final @NotNull String GENERATED_INNER_LAZY_FIELD_NAME = "$";
+
     /**
      * Name of {@link Supplier#get()} method
      */
-    GET_METHOD_NAME = "get" ,
+    private static final @NotNull String GET_METHOD_NAME = "get";
+
     /**
      * Internal name of {@link Supplier}
      */
-    SUPPLIER_INTERNAL_NAME = SUPPLIER_TYPE.getInternalName(),
+    private static final @NotNull String SUPPLIER_INTERNAL_NAME = SUPPLIER_TYPE.getInternalName();
+
     /**
      * Descriptor of {@link Supplier}
      */
-    SUPPLIER_DESCRIPTOR = SUPPLIER_TYPE.getDescriptor(),
+    private static final @NotNull String SUPPLIER_DESCRIPTOR = SUPPLIER_TYPE.getDescriptor();
+
     /**
      * Descriptor of {@code void(}{@link Supplier}{@code )} method
      */
-    VOID_SUPPLIER_METHOD_DESCRIPTOR = getMethodDescriptor(VOID_TYPE, SUPPLIER_TYPE);
+    private static final @NotNull String VOID_SUPPLIER_METHOD_DESCRIPTOR
+            = getMethodDescriptor(VOID_TYPE, SUPPLIER_TYPE);
 
     private AsmDelegateFactory(final @NotNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> factories) {
         super(factories);
     }
 
     /**
-     * Creates an {@link DelegateFactory ASM-based supplier wrapper}.
+     * Creates a {@link Proxy}-based {@link DelegateFactory delegate factory}.
      *
-     * @return ASM-based supplier wrapper
+     * @publicForSpi {@link #create() preferred creation method}
+     */
+    @ApiStatus.Internal
+    @SuppressWarnings("PublicConstructor") // SPI API
+    public AsmDelegateFactory() {
+        this(SharedCache.INSTANCE);
+    }
+
+    /**
+     * Creates an ASM-based {@link DelegateFactory delegate factory}.
      *
+     * @return ASM-based delegate factory
      * @apiNote singleton may be used here
      */
     public static DelegateFactory create() {
@@ -94,7 +110,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
             try {
                 constructor = generatedClass.getDeclaredConstructor(Supplier.class);
             } catch (final NoSuchMethodException e) {
-                throw new Error("Could not get an empty constructor of the generated class" , e);
+                throw new Error("Could not get an empty constructor of the generated class", e);
             }
             constructor.setAccessible(true);
         }
@@ -103,7 +119,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
             try {
                 return constructor.newInstance(supplier);
             } catch (final IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                throw new Error("Cannot invoke constructor of the generated class" , e);
+                throw new Error("Cannot invoke constructor of the generated class", e);
             }
         };
     }
@@ -113,6 +129,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
      *
      * @param targetClass class for which to create a delegate-wrapper
      * @param <T> type of implemented delegate-wrapper
+     *
      * @return created delegate-wrapper for the given type
      */
     private static <T> @NotNull Class<? extends T> generateWrapperClass(final @NotNull Class<T> targetClass) {
@@ -143,7 +160,7 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
                 clazz.visitField(
                         AsmUtil.OPCODES_ACC_PUBLIC_FINAL /* safe to use public here */, GENERATED_INNER_LAZY_FIELD_NAME,
                         SUPPLIER_DESCRIPTOR,
-                        supplierSignature = 'L' + SUPPLIER_INTERNAL_NAME + '<' + targetType.getDescriptor() + ">;" ,
+                        supplierSignature = 'L' + SUPPLIER_INTERNAL_NAME + '<' + targetType.getDescriptor() + ">;",
                         null
                 ).visitEnd();
                 //</editor-fold>
@@ -151,10 +168,12 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
                 //<editor-fold desc="Constructor generation" defaultstate="collapsed">
                 {
                     final MethodVisitor constructor;
-                    (constructor = clazz.visitMethod(
-                            ACC_PUBLIC, AsmUtil.CONSTRUCTOR_METHOD_NAME, VOID_SUPPLIER_METHOD_DESCRIPTOR,
-                            '(' + supplierSignature + ")V" , null /* no exceptions */
-                    )).visitCode();
+                    (
+                            constructor = clazz.visitMethod(
+                                    ACC_PUBLIC, AsmUtil.CONSTRUCTOR_METHOD_NAME, VOID_SUPPLIER_METHOD_DESCRIPTOR,
+                                    '(' + supplierSignature + ")V", null /* no exceptions */
+                            )
+                    ).visitCode();
 
                     // push `this` onto the stack
                     constructor.visitVarInsn(ALOAD, 0);
@@ -197,10 +216,12 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
                             for (var i = 0; i < parametersLength; i++) exceptions[i] = getDescriptor(exceptionTypes[i]);
                         }
 
-                        (method = clazz.visitMethod(
-                                ACC_PUBLIC, methodName = originalMethod.getName(),
-                                methodDescriptor = getMethodDescriptor(originalMethod), null, exceptions
-                        )).visitVarInsn(ALOAD, 0); // push `this` onto the stack
+                        (
+                                method = clazz.visitMethod(
+                                        ACC_PUBLIC, methodName = originalMethod.getName(),
+                                        methodDescriptor = getMethodDescriptor(originalMethod), null, exceptions
+                                )
+                        ).visitVarInsn(ALOAD, 0); // push `this` onto the stack
                     }
                     // get field storing the Supplier
                     method.visitFieldInsn(GETFIELD, internalName, GENERATED_INNER_LAZY_FIELD_NAME, SUPPLIER_DESCRIPTOR);
@@ -252,18 +273,29 @@ public final class AsmDelegateFactory extends CachingGeneratingDelegateFactory {
         }
         //</editor-fold>
 
-        return UncheckedCasts.uncheckedClassCast(GcClassDefiners.getDefault().defineClass(LOOKUP, className, clazz.toByteArray()));
+        return UncheckedCasts.uncheckedClassCast(
+                GcClassDefiners.getDefault().defineClass(LOOKUP, className, clazz.toByteArray()));
     }
 
     @UtilityClass
-    @Internal("Safe singleton implementation using class-loading rules for achieving efficient thread-safe laziness")
+    private static class SharedCache {
+
+        /**
+         * Shared cache instance to be used by {@link Singleton#INSTANCE}
+         * and all instances created via SPI {@link AsmDelegateFactory#AsmDelegateFactory()}.
+         *
+         * @apiNote  classes are GC-friendly loaded so they may be effectively weakly-referenced
+         */
+        private final @NotNull Cache<@NotNull Class<?>, @NotNull DelegateWrapperFactory<?>> INSTANCE
+                = Caches.weakKeysCache();
+    }
+
+    @UtilityClass
     private static class Singleton {
 
         /**
          * Instance of {@link AsmDelegateFactory ASM-based delegate factory}
          */
-        private final @NotNull DelegateFactory INSTANCE = new AsmDelegateFactory(
-                Caches.weakKeysCache() // classes are GC-friendly loaded so they may be effectively weakly-referenced
-        );
+        private final @NotNull DelegateFactory INSTANCE = new AsmDelegateFactory(SharedCache.INSTANCE);
     }
 }

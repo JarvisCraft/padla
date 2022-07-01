@@ -5,6 +5,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -15,6 +16,11 @@ import java.util.function.Supplier;
  */
 @UtilityClass
 public class ObjectUtil {
+
+    /**
+     * Empty array of objects.
+     */
+    public final @NotNull Object @NotNull @Unmodifiable [] EMPTY_ARRAY = new Object[0];
 
     /**
      * Returns the first nonnull value of specified variants or {@code null} if none found.

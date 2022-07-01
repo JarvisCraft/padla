@@ -5,8 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
-        <artifactId>padla</artifactId>
-        <version>1.0.0-rc.9</version>
+        <artifactId>padla-parent</artifactId>
+        <version>1.0.0-rc.10</version>
+        <relativePath>../padla-parent</relativePath>
     </parent>
     <artifactId>ultimate-messenger</artifactId>
 
@@ -23,6 +24,8 @@
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>

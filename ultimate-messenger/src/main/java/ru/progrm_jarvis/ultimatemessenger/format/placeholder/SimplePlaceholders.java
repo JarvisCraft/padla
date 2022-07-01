@@ -82,7 +82,7 @@ public final class SimplePlaceholders<T> implements Placeholders<T> {
     @Builder.Default @NonNull String unknownPlaceholderReplacement = "<?>";
 
     @Override
-    public @NotNull String format(@NotNull String source, final T target) {
+    public @NotNull String format(final @NotNull String source, final T target) {
         if (source.isEmpty()) return source;
 
         @Nullable StringBuilder result = null;
@@ -200,8 +200,8 @@ public final class SimplePlaceholders<T> implements Placeholders<T> {
             boolean escaping = false, inPlaceholder = false;
             @Nullable StringBuilder lastRawText = null;  // currently read text or
             int lastFlushIndex = -1, // index of the last flushed (written) character
-                    placeholderStartIndex = -1 // index at which the currently scanned placeholder starts
-                    , // index of the delimiter contextually
+                    placeholderStartIndex = -1, // index at which the currently scanned placeholder starts
+                    // index of the delimiter contextually
                     escapeCount = 0; // amount of escapes inside the placeholder
             val length = characters.length;
             for (var index = 0; index < length; index++) {
@@ -214,8 +214,7 @@ public final class SimplePlaceholders<T> implements Placeholders<T> {
                             // make sure this is a placeholder
                             if (index == placeholderStartIndex + 1) break format; // it was not a placeholder ...
                             // ... but just a sequence "PrefSuf"
-                            String value;/* also reused as placeholder key */
-                            String placeholder;
+                            String value /* also reused as placeholder key */, placeholder;
                             if (index == placeholderStartIndex + 2) {
                                 // rare case
                                 val singleChar = text.charAt(index - 1);
@@ -226,10 +225,9 @@ public final class SimplePlaceholders<T> implements Placeholders<T> {
                             } else {
                                 placeholder = text.substring(placeholderStartIndex + 1, index);
                                 if (escapeCount > 0) {
-                                    StringBuilder unescapedPlaceholder = new StringBuilder(
+                                    val unescapedPlaceholder = new StringBuilder(
                                             placeholder.length() + escapeCount);
-                                    for (val placeholderChar : placeholder.toCharArray())
-                                        if (placeholderChar
+                                    for (val placeholderChar : placeholder.toCharArray()) if (placeholderChar
                                                 != escapeCharacter) unescapedPlaceholder.append(placeholderChar);
                                     placeholder = unescapedPlaceholder.toString();
                                 }

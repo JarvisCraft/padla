@@ -5,24 +5,20 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ru.progrm-jarvis</groupId>
     <artifactId>padla</artifactId>
-    <version>1.0.0-rc.9</version>
+    <version>1.0.0-rc.10</version>
     <modules>
-        <module>java-commons</module>
-        <module>reflector</module>
-        <module>ultimate-messenger</module>
         <module>padla-bom</module>
+        <module>padla-parent</module>
     </modules>
     <packaging>pom</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version.minimal>8</java.version.minimal>
-        <!-- Duplicated dependency versions -->
-        <version.mockito>4.3.1</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
-    <description>Pack of Java utilities for various needs</description>
+    <description>Pack of Java utilities for various needs, this is not intended for use as a dependency</description>
     <url>https://padla.progrm-jarvis.ru/</url>
 
     <inceptionYear>2019</inceptionYear>
@@ -72,14 +68,19 @@
     </developers>
 
     <build>
-        <defaultGoal>verify install</defaultGoal>
+        <defaultGoal>
+            <!-- required due to use of MultiReleaseJar and Jigsaw modules -->
+            package
+            <!-- snapshots should end up in local Maven repository by default -->
+            install
+        </defaultGoal>
 
         <pluginManagement>
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.9.0</version>
+                    <version>3.10.1</version>
                     <configuration>
                         <fork>true</fork>
                         <release>${java.version.minimal}</release>
@@ -93,6 +94,20 @@
                         </compilerArgs>
                     </configuration>
                     <executions>
+                        <execution>
+                            <!-- Minimal required version for Java 9 modules -->
+                            <id>java-9</id>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                            <configuration>
+                                <release>9</release>
+                                <multiReleaseOutput>true</multiReleaseOutput>
+                                <compileSourceRoots>
+                                    <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
+                                </compileSourceRoots>
+                            </configuration>
+                        </execution>
                         <execution>
                             <id>java-11</id>
                             <goals>
@@ -143,7 +158,7 @@
                 <plugin>
                     <groupId>org.apache.drill.tools</groupId>
                     <artifactId>drill-fmpp-maven-plugin</artifactId>
-                    <version>1.19.0</version>
+                    <version>1.20.0-hadoop2</version>
                     <executions>
                         <execution>
                             <id>generate-fmpp</id>
@@ -164,7 +179,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.0.0-M7</version>
                     <configuration>
                         <parallel>all</parallel>
                         <useUnlimitedThreads>true</useUnlimitedThreads>
@@ -185,7 +200,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                     <configuration>
                         <release>${java.version.minimal}</release>
                         <tags>
@@ -204,13 +219,18 @@
                                 <placement>a</placement>
                                 <head>Implementation specification</head>
                             </tag>
+                            <tag>
+                                <name>publicForSpi</name>
+                                <placement>c</placement>
+                                <head>This constructor is only visible for Java SPI consider using</head>
+                            </tag>
                         </tags>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.8</version>
+                    <version>1.6.13</version>
                     <extensions>true</extensions>
                     <configuration>
                         <serverId>sonatype-ossrh</serverId>
@@ -224,88 +244,36 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Own dependencies -->
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>java-commons</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>reflector</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+            <!--
+            Optional dependencies: this should be present both in modules and the BOM
+            so that BOM users default to supported library versions
+            -->
 
             <!-- BOMs -->
             <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.8.2</version>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm-bom</artifactId>
+                <version>9.3</version>
                 <type>pom</type>
                 <scope>import</scope>
+                <optional>true</optional>
             </dependency>
 
-            <!-- Libraries -->
             <!-- Caching -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
-                <version>2.9.3</version>
+                <version>3.1.1</version>
                 <scope>provided</scope>
                 <optional>true</optional>
             </dependency>
             <!-- Bytecode generation -->
             <dependency>
-                <groupId>org.ow2.asm</groupId>
-                <artifactId>asm</artifactId>
-                <version>9.2</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.28.0-GA</version>
+                <version>3.29.0-GA</version>
                 <scope>provided</scope>
                 <optional>true</optional>
-            </dependency>
-
-            <!-- Code generation -->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.22</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-
-            <!-- Documenting -->
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>23.0.0</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-
-            <!-- Testing -->
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
-                <version>1.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${version.mockito}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-junit-jupiter</artifactId>
-                <version>${version.mockito}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
