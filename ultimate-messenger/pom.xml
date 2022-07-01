@@ -5,8 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
-        <artifactId>padla</artifactId>
+        <artifactId>padla-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../padla-parent</relativePath>
     </parent>
     <artifactId>ultimate-messenger</artifactId>
 

@@ -7,22 +7,18 @@
     <artifactId>padla</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <modules>
-        <module>java-commons</module>
-        <module>reflector</module>
-        <module>ultimate-messenger</module>
         <module>padla-bom</module>
+        <module>padla-parent</module>
     </modules>
     <packaging>pom</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version.minimal>8</java.version.minimal>
-        <!-- Duplicated dependency versions -->
-        <version.mockito>4.6.1</version.mockito>
     </properties>
 
     <name>PADLA for Java</name>
-    <description>Pack of Java utilities for various needs</description>
+    <description>Pack of Java utilities for various needs, this is not intended for use as a dependency</description>
     <url>https://padla.progrm-jarvis.ru/</url>
 
     <inceptionYear>2019</inceptionYear>
@@ -72,7 +68,12 @@
     </developers>
 
     <build>
-        <defaultGoal>verify install</defaultGoal>
+        <defaultGoal>
+            <!-- required due to use of MultiReleaseJar and Jigsaw modules -->
+            package
+            <!-- snapshots should end up in local Maven repository by default -->
+            install
+        </defaultGoal>
 
         <pluginManagement>
             <plugins>
@@ -236,19 +237,6 @@
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
-                    <dependencies>
-                        <!-- Manual fix of Plugin crash on latest Java versions -->
-                        <dependency>
-                            <groupId>com.thoughtworks.xstream</groupId>
-                            <artifactId>xstream</artifactId>
-                            <version>1.4.17</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.ogce</groupId>
-                            <artifactId>xpp3</artifactId>
-                            <version>1.1.6</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -256,17 +244,10 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Own dependencies -->
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>java-commons</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>reflector</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+            <!--
+            Optional dependencies: this should be present both in modules and the BOM
+            so that BOM users default to supported library versions
+            -->
 
             <!-- BOMs -->
             <dependency>
@@ -275,16 +256,9 @@
                 <version>9.3</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.8.2</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <optional>true</optional>
             </dependency>
 
-            <!-- Libraries -->
             <!-- Caching -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
@@ -300,44 +274,6 @@
                 <version>3.29.0-GA</version>
                 <scope>provided</scope>
                 <optional>true</optional>
-            </dependency>
-
-            <!-- Code generation -->
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.24</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-
-            <!-- Documenting -->
-            <dependency>
-                <groupId>org.jetbrains</groupId>
-                <artifactId>annotations</artifactId>
-                <version>23.0.0</version>
-                <scope>provided</scope>
-                <optional>true</optional>
-            </dependency>
-
-            <!-- Testing -->
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-all</artifactId>
-                <version>1.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>${version.mockito}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-junit-jupiter</artifactId>
-                <version>${version.mockito}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
