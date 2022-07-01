@@ -5,8 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
-        <artifactId>padla</artifactId>
-        <version>1.0.0-rc.9</version>
+        <artifactId>padla-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../padla-parent</relativePath>
     </parent>
     <artifactId>java-commons</artifactId>
 
@@ -61,10 +62,12 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
