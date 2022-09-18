@@ -9,7 +9,8 @@
 
 ## Reporting a Vulnerability
 
-In order to report a vulnerability simply create an [issues](https://github.com/JarvisCraft/padla/issues) for it.
+In order to report a vulnerability simply create
+an [issues](https://github.com/JarvisCraft/padla/issues) for it.
 
 These are checked regularly and are the primary support channel.
 

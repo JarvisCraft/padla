@@ -65,6 +65,16 @@
         "security",
         "doc"
       ]
+    },
+    {
+      "login": "Cheryl-des",
+      "name": "Cheryl",
+      "avatar_url": "https://avatars.githubusercontent.com/u/68248402?v=4",
+      "profile": "https://github.com/Cheryl-des",
+      "contributions": [
+        "infra",
+        "review"
+      ]
     }
   ],
   "contributorsPerLine": 7,
