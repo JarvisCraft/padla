@@ -6,7 +6,7 @@
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
         <artifactId>padla</artifactId>
-        <version>1.0.0-rc.10</version>
+        <version>1.0.0-rc.11</version>
     </parent>
     <artifactId>padla-parent</artifactId>
     <packaging>pom</packaging>
@@ -55,14 +55,14 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.8.2</version>
+                <version>5.9.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-bom</artifactId>
-                <version>4.6.1</version>
+                <version>4.8.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

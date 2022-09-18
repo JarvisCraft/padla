@@ -4,8 +4,8 @@
 
 | Version       | Supported          |
 |---------------| ------------------ |
-| [1.0.0-rc.10] | :heavy_check_mark: |
-| < 1.0.0-rc.10 | :x:                |
+| [1.0.0-rc.11] | :heavy_check_mark: |
+| < 1.0.0-rc.11 | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -16,4 +16,4 @@ These are checked regularly and are the primary support channel.
 
 <!-- Version links -->
 
-[1.0.0-rc.10]: https://mvnrepository.com/artifact/ru.progrm-jarvis/padla/1.0.0-rc.10
+[1.0.0-rc.11]: https://mvnrepository.com/artifact/ru.progrm-jarvis/padla/1.0.0-rc.11
