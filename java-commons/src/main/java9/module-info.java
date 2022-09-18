@@ -5,7 +5,7 @@ import ru.progrm_jarvis.javacommons.delegate.ProxyDelegateFactory;
 module ru.progrm_jarvis.javacommons {
     // optional dependencies
     requires org.objectweb.asm;
-    requires javassist;
+    requires org.javassist;
 
     requires static lombok;
     requires static org.jetbrains.annotations;

@@ -10,7 +10,7 @@ module ru.progrm_jarvis.ultimatemessenger {
     requires java.logging;
     // optional dependencies
     requires org.objectweb.asm;
-    requires javassist;
+    requires org.javassist;
 
     requires static lombok;
     requires static org.jetbrains.annotations;
