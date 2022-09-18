@@ -6,7 +6,7 @@
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
         <artifactId>padla-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0-rc.11</version>
         <relativePath>../padla-parent</relativePath>
     </parent>
     <artifactId>reflector</artifactId>
