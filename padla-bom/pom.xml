@@ -6,7 +6,7 @@
     <parent>
         <groupId>ru.progrm-jarvis</groupId>
         <artifactId>padla</artifactId>
-        <version>1.0.0-rc.11</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>padla-bom</artifactId>
     <packaging>pom</packaging>
@@ -20,17 +20,17 @@
             <dependency>
                 <groupId>ru.progrm-jarvis</groupId>
                 <artifactId>java-commons</artifactId>
-                <version>1.0.0-rc.11</version>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ru.progrm-jarvis</groupId>
                 <artifactId>reflector</artifactId>
-                <version>1.0.0-rc.11</version>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>ru.progrm-jarvis</groupId>
                 <artifactId>ultimate-messenger</artifactId>
-                <version>1.0.0-rc.11</version>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
