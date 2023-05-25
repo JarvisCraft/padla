@@ -29,12 +29,12 @@ jobs:
         cache: 'maven'
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2.3.3
+      uses: github/codeql-action/init@v2.3.4
       with:
         languages: java
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v2.3.3
+      uses: github/codeql-action/autobuild@v2.3.4
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2.3.3
+      uses: github/codeql-action/analyze@v2.3.4
