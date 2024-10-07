@@ -179,7 +179,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.5.1</version>
                     <configuration>
                         <parallel>all</parallel>
                         <useUnlimitedThreads>true</useUnlimitedThreads>
@@ -253,7 +253,7 @@
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm-bom</artifactId>
-                <version>9.7</version>
+                <version>9.7.1</version>
                 <type>pom</type>
                 <scope>import</scope>
                 <optional>true</optional>
